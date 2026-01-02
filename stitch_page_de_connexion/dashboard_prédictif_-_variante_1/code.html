@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Prédictif - ISI Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7C3AED",
+                        "primary-dark": "#6D28D9",
+                        "background-light": "#F9FAFB",
+                        "background-dark": "#111827",
+                        "danger": "#DC2626",
+                        "warning": "#EA580C",
+                        "success": "#16A34A",
+                        "text-main": "#111827",
+                        "text-muted": "#6B7280",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+<aside class="hidden lg:flex flex-col w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1f2937] h-full flex-shrink-0">
+<div class="flex flex-col h-full justify-between p-4">
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 flex-shrink-0 border border-gray-200" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBNpr5l6W_9vb4ngtAC8jMxBZDNx0_T6LjE_rQ34Eef_ayLAe40ZyjWT1B6yTtZyA3SOzuGOEOM-RyxecQfyPQwn5c1hxIeCoaEC2yTW1CxrdHLfxBN9U_mLdS9Tp23p2tTEgF0Gkmla4czFVji_iW9kOrWXIIaO37rNOcPTOL16MQnmde176UyfFeuRA993ApjBIgK8asDxCFvsr6FAMGNT1zbe_mUFD1hl-K2gJxgwRbYx-Y5AMIwTzwhKAdQZwskSoPVCEyTN6rS");'></div>
+<div class="flex flex-col overflow-hidden">
+<h1 class="text-text-main dark:text-white text-sm font-semibold truncate">Admin ISI</h1>
+<p class="text-text-muted text-xs truncate">Direction Pédagogique</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">dashboard</span>
+<span class="text-sm font-medium">Vue d'ensemble</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:bg-primary/20 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] fill-1">analytics</span>
+<span class="text-sm font-medium">Prédictif</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">groups</span>
+<span class="text-sm font-medium">Étudiants</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">school</span>
+<span class="text-sm font-medium">Programmes</span>
+</a>
+<div class="my-2 border-t border-gray-100 dark:border-gray-800"></div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary">settings</span>
+<span class="text-sm font-medium">Paramètres</span>
+</a>
+</nav>
+</div>
+<div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm">help</span>
+<span class="text-xs font-semibold text-text-main dark:text-white">Besoin d'aide ?</span>
+</div>
+<p class="text-[10px] text-text-muted leading-tight">Consultez la documentation ou contactez le support IT.</p>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<header class="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1f2937] flex-shrink-0 z-10">
+<div class="flex items-center gap-4">
+<button class="lg:hidden text-text-muted hover:text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center gap-2">
+<div class="size-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">school</span>
+</div>
+<h2 class="hidden md:block text-text-main dark:text-white text-lg font-bold tracking-tight">ISI Analytics</h2>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center relative w-64">
+<span class="material-symbols-outlined absolute left-3 text-text-muted text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 focus:ring-primary/50 text-text-main dark:text-white placeholder-text-muted" placeholder="Rechercher un étudiant..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-text-muted transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-danger rounded-full border border-white dark:border-[#1f2937]"></span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth">
+<div class="max-w-7xl mx-auto flex flex-col gap-8 pb-20">
+<div class="flex flex-col gap-6">
+<nav class="flex items-center text-sm text-text-muted">
+<a class="hover:text-primary transition-colors" href="#">Accueil</a>
+<span class="mx-2">/</span>
+<a class="hover:text-primary transition-colors" href="#">Tableau de bord</a>
+<span class="mx-2">/</span>
+<span class="text-primary font-medium">Prédictif</span>
+</nav>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl font-black tracking-tight text-text-main dark:text-white">Dashboard Prédictif</h1>
+<p class="text-text-muted">Analyse des risques et prévisions de décrochage pour la session en cours.</p>
+</div>
+<div class="flex flex-col min-w-[240px]">
+<label class="text-xs font-semibold text-text-muted mb-1.5 uppercase tracking-wider">Période Académique</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 text-text-main dark:text-white rounded-lg py-2.5 pl-4 pr-10 text-sm font-medium focus:ring-primary focus:border-primary shadow-sm">
+<option value="H2024">Hiver 2024 (En cours)</option>
+<option value="A2023">Automne 2023</option>
+<option value="E2023">Été 2023</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-white dark:bg-[#1f2937] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between gap-4">
+<div class="flex justify-between items-start">
+<div class="p-2.5 bg-danger/10 text-danger rounded-lg">
+<span class="material-symbols-outlined">trending_down</span>
+</div>
+<span class="bg-danger/10 text-danger text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                +2.1%
+                                <span class="material-symbols-outlined text-[12px]">arrow_upward</span>
+</span>
+</div>
+<div>
+<p class="text-sm font-medium text-text-muted">Taux de Décrochage</p>
+<h3 class="text-2xl font-bold text-text-main dark:text-white mt-1">12.4%</h3>
+<p class="text-xs text-text-muted mt-1">Prévision fin de session</p>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1f2937] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between gap-4">
+<div class="flex justify-between items-start">
+<div class="p-2.5 bg-warning/10 text-warning rounded-lg">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<span class="text-xs font-medium text-text-muted">Actifs</span>
+</div>
+<div>
+<div class="flex justify-between items-baseline">
+<p class="text-sm font-medium text-text-muted">Étudiants à Risque</p>
+<span class="text-2xl font-bold text-text-main dark:text-white">45</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 mt-3">
+<div class="bg-warning h-1.5 rounded-full" style="width: 15%"></div>
+</div>
+<p class="text-xs text-text-muted mt-2">15% de la cohorte totale</p>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1f2937] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between gap-4">
+<div class="flex justify-between items-start">
+<div class="p-2.5 bg-primary/10 text-primary rounded-lg">
+<span class="material-symbols-outlined">speed</span>
+</div>
+<span class="bg-success/10 text-success text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                -0.5
+                                <span class="material-symbols-outlined text-[12px]">arrow_downward</span>
+</span>
+</div>
+<div>
+<p class="text-sm font-medium text-text-muted">Score de Risque Moyen</p>
+<h3 class="text-2xl font-bold text-text-main dark:text-white mt-1">64.2 <span class="text-sm font-normal text-text-muted">/ 100</span></h3>
+<p class="text-xs text-text-muted mt-1">Stabilité globale</p>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1f2937] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between gap-4">
+<div class="flex justify-between items-start">
+<div class="p-2.5 bg-success/10 text-success rounded-lg">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<span class="text-xs font-medium text-text-muted">IA v2.4</span>
+</div>
+<div>
+<p class="text-sm font-medium text-text-muted">Précision du Modèle</p>
+<h3 class="text-2xl font-bold text-text-main dark:text-white mt-1">96.8%</h3>
+<div class="flex gap-1 mt-2">
+<span class="size-1.5 rounded-full bg-success"></span>
+<span class="size-1.5 rounded-full bg-success"></span>
+<span class="size-1.5 rounded-full bg-success"></span>
+<span class="size-1.5 rounded-full bg-success"></span>
+<span class="size-1.5 rounded-full bg-success/30"></span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 bg-white dark:bg-[#1f2937] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-white">Impact des Facteurs de Risque par Programme</h3>
+<p class="text-xs text-text-muted mt-1">Répartition des causes principales d'alerte par département</p>
+</div>
+<button class="text-text-muted hover:text-primary p-1 rounded-md hover:bg-gray-50">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="flex-1 min-h-[320px] flex items-end gap-6 md:gap-12 justify-between pb-4 border-b border-gray-100 dark:border-gray-700 px-2">
+<div class="flex flex-col items-center gap-3 group flex-1">
+<div class="w-full max-w-[64px] flex flex-col-reverse rounded-t-lg overflow-hidden bg-gray-50 dark:bg-gray-800 h-[240px] relative shadow-sm transition-transform hover:scale-105 duration-200">
+<div class="w-full bg-danger transition-all relative group/segment" style="height: 35%;">
+<div class="opacity-0 group-hover/segment:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-20 pointer-events-none">Notes: 35%</div>
+</div>
+<div class="w-full bg-warning transition-all relative group/segment" style="height: 25%;">
+<div class="opacity-0 group-hover/segment:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-20 pointer-events-none">Absence: 25%</div>
+</div>
+<div class="w-full bg-primary/60 transition-all relative group/segment" style="height: 15%;">
+<div class="opacity-0 group-hover/segment:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-20 pointer-events-none">Comportement: 15%</div>
+</div>
+</div>
+<span class="text-xs font-semibold text-text-muted truncate max-w-[80px]">Informatique</span>
+</div>
+<div class="flex flex-col items-center gap-3 group flex-1">
+<div class="w-full max-w-[64px] flex flex-col-reverse rounded-t-lg overflow-hidden bg-gray-50 dark:bg-gray-800 h-[200px] relative shadow-sm transition-transform hover:scale-105 duration-200">
+<div class="w-full bg-danger transition-all relative group/segment" style="height: 15%;"></div>
+<div class="w-full bg-warning transition-all relative group/segment" style="height: 45%;"></div>
+<div class="w-full bg-primary/60 transition-all relative group/segment" style="height: 20%;"></div>
+</div>
+<span class="text-xs font-semibold text-text-muted truncate max-w-[80px]">Gestion</span>
+</div>
+<div class="flex flex-col items-center gap-3 group flex-1">
+<div class="w-full max-w-[64px] flex flex-col-reverse rounded-t-lg overflow-hidden bg-gray-50 dark:bg-gray-800 h-[280px] relative shadow-sm transition-transform hover:scale-105 duration-200">
+<div class="w-full bg-danger transition-all relative group/segment" style="height: 55%;"></div>
+<div class="w-full bg-warning transition-all relative group/segment" style="height: 15%;"></div>
+<div class="w-full bg-primary/60 transition-all relative group/segment" style="height: 10%;"></div>
+</div>
+<span class="text-xs font-semibold text-text-muted truncate max-w-[80px]">Réseaux</span>
+</div>
+<div class="flex flex-col items-center gap-3 group flex-1">
+<div class="w-full max-w-[64px] flex flex-col-reverse rounded-t-lg overflow-hidden bg-gray-50 dark:bg-gray-800 h-[160px] relative shadow-sm transition-transform hover:scale-105 duration-200">
+<div class="w-full bg-danger transition-all relative group/segment" style="height: 10%;"></div>
+<div class="w-full bg-warning transition-all relative group/segment" style="height: 20%;"></div>
+<div class="w-full bg-primary/60 transition-all relative group/segment" style="height: 50%;"></div>
+</div>
+<span class="text-xs font-semibold text-text-muted truncate max-w-[80px]">Design Web</span>
+</div>
+<div class="flex flex-col items-center gap-3 group flex-1">
+<div class="w-full max-w-[64px] flex flex-col-reverse rounded-t-lg overflow-hidden bg-gray-50 dark:bg-gray-800 h-[220px] relative shadow-sm transition-transform hover:scale-105 duration-200">
+<div class="w-full bg-danger transition-all relative group/segment" style="height: 30%;"></div>
+<div class="w-full bg-warning transition-all relative group/segment" style="height: 30%;"></div>
+<div class="w-full bg-primary/60 transition-all relative group/segment" style="height: 20%;"></div>
+</div>
+<span class="text-xs font-semibold text-text-muted truncate max-w-[80px]">Marketing</span>
+</div>
+</div>
+<div class="flex flex-wrap justify-center gap-8 mt-6">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+<span class="size-3 rounded-full bg-danger"></span>
+<span class="text-xs font-medium text-text-main dark:text-white">Notes Faibles</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+<span class="size-3 rounded-full bg-warning"></span>
+<span class="text-xs font-medium text-text-main dark:text-white">Absence/Retard</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+<span class="size-3 rounded-full bg-primary/60"></span>
+<span class="text-xs font-medium text-text-main dark:text-white">Comportemental</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1f2937] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col">
+<h3 class="text-lg font-bold text-text-main dark:text-white mb-6">Distribution du Risque</h3>
+<div class="flex-1 flex flex-col items-center justify-center relative min-h-[240px]">
+<div class="size-52 rounded-full relative shadow-inner" style="background: conic-gradient(#16A34A 0% 60%, #EA580C 60% 85%, #DC2626 85% 100%);">
+<div class="absolute inset-5 bg-white dark:bg-[#1f2937] rounded-full flex flex-col items-center justify-center shadow-sm">
+<span class="text-4xl font-black text-text-main dark:text-white tracking-tight">458</span>
+<span class="text-[10px] text-text-muted uppercase font-bold tracking-widest mt-1">Étudiants</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 mt-6">
+<div class="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-default">
+<div class="flex items-center gap-3">
+<div class="size-3 rounded-full bg-success ring-4 ring-success/10"></div>
+<span class="text-text-muted font-medium">Risque Faible</span>
+</div>
+<span class="font-bold text-text-main dark:text-white">60%</span>
+</div>
+<div class="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-default">
+<div class="flex items-center gap-3">
+<div class="size-3 rounded-full bg-warning ring-4 ring-warning/10"></div>
+<span class="text-text-muted font-medium">Risque Moyen</span>
+</div>
+<span class="font-bold text-text-main dark:text-white">25%</span>
+</div>
+<div class="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-default">
+<div class="flex items-center gap-3">
+<div class="size-3 rounded-full bg-danger ring-4 ring-danger/10"></div>
+<span class="text-text-muted font-medium">Risque Élevé</span>
+</div>
+<span class="font-bold text-text-main dark:text-white">15%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 bg-white dark:bg-[#1f2937] p-0 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+<div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-white">Top 10 Étudiants à Risque Élevé</h3>
+<p class="text-xs text-text-muted mt-0.5">Priorité d'intervention immédiate</p>
+</div>
+<a class="text-sm font-medium text-primary hover:text-primary-dark hover:underline" href="#">Voir tout</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-gray-50 dark:bg-gray-800 text-text-muted font-medium">
+<tr>
+<th class="px-6 py-3 font-semibold">Étudiant</th>
+<th class="px-6 py-3 font-semibold">Programme</th>
+<th class="px-6 py-3 font-semibold">Risque IA</th>
+<th class="px-6 py-3 font-semibold">Facteur Principal</th>
+<th class="px-6 py-3 font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 rounded-full size-9 flex items-center justify-center text-primary text-xs font-bold group-hover:bg-primary group-hover:text-white transition-colors">SM</div>
+<div>
+<div class="font-bold text-text-main dark:text-white">Sophie Martin</div>
+<div class="text-xs text-text-muted">ID: 284931</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-text-muted">Informatique</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20">
+                                                92%
+                                                <span class="material-symbols-outlined text-[14px]">trending_up</span>
+</span>
+</td>
+<td class="px-6 py-4 text-text-muted">Absences Examens</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-muted hover:text-primary transition-colors p-1 hover:bg-primary/10 rounded">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 rounded-full size-9 flex items-center justify-center text-primary text-xs font-bold group-hover:bg-primary group-hover:text-white transition-colors">TD</div>
+<div>
+<div class="font-bold text-text-main dark:text-white">Thomas Dubois</div>
+<div class="text-xs text-text-muted">ID: 482910</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-text-muted">Réseaux</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20">
+                                                88%
+                                                <span class="material-symbols-outlined text-[14px]">trending_up</span>
+</span>
+</td>
+<td class="px-6 py-4 text-text-muted">Échecs Multiples</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-muted hover:text-primary transition-colors p-1 hover:bg-primary/10 rounded">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 rounded-full size-9 flex items-center justify-center text-primary text-xs font-bold group-hover:bg-primary group-hover:text-white transition-colors">AL</div>
+<div>
+<div class="font-bold text-text-main dark:text-white">Amélie Lefebvre</div>
+<div class="text-xs text-text-muted">ID: 938271</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-text-muted">Marketing</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-warning/10 text-warning border border-warning/20">
+                                                74%
+                                                <span class="material-symbols-outlined text-[14px]">remove</span>
+</span>
+</td>
+<td class="px-6 py-4 text-text-muted">Retard Paiement</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-muted hover:text-primary transition-colors p-1 hover:bg-primary/10 rounded">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 rounded-full size-9 flex items-center justify-center text-primary text-xs font-bold group-hover:bg-primary group-hover:text-white transition-colors">KR</div>
+<div>
+<div class="font-bold text-text-main dark:text-white">Kevin Rousseau</div>
+<div class="text-xs text-text-muted">ID: 102938</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-text-muted">Design Web</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-warning/10 text-warning border border-warning/20">
+                                                68%
+                                                <span class="material-symbols-outlined text-[14px]">trending_down</span>
+</span>
+</td>
+<td class="px-6 py-4 text-text-muted">Assiduité</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-muted hover:text-primary transition-colors p-1 hover:bg-primary/10 rounded">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 rounded-full size-9 flex items-center justify-center text-primary text-xs font-bold group-hover:bg-primary group-hover:text-white transition-colors">MB</div>
+<div>
+<div class="font-bold text-text-main dark:text-white">Marc Belanger</div>
+<div class="text-xs text-text-muted">ID: 394012</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-text-muted">Informatique</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-warning/10 text-warning border border-warning/20">
+                                                65%
+                                                <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+</span>
+</td>
+<td class="px-6 py-4 text-text-muted">Notes Faibles</td>
+<td class="px-6 py-4 text-right">
+<button class="text-text-muted hover:text-primary transition-colors p-1 hover:bg-primary/10 rounded">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1f2937] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col h-full">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold text-text-main dark:text-white">Facteurs Fréquents</h3>
+<button class="text-xs text-primary font-medium hover:underline">Voir les détails</button>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm">
+<span class="font-medium text-text-main dark:text-white">Absence aux examens</span>
+<span class="text-danger font-bold">85%</span>
+</div>
+<div class="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-danger rounded-full" style="width: 85%"></div>
+</div>
+<p class="text-[11px] text-text-muted">Prévalence critique en 1ère session</p>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm">
+<span class="font-medium text-text-main dark:text-white">Moyenne &lt; 60%</span>
+<span class="text-warning font-bold">60%</span>
+</div>
+<div class="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-warning rounded-full" style="width: 60%"></div>
+</div>
+<p class="text-[11px] text-text-muted">Concentré dans le programme Informatique</p>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm">
+<span class="font-medium text-text-main dark:text-white">Retards Systématiques</span>
+<span class="text-primary font-bold">42%</span>
+</div>
+<div class="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 42%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm">
+<span class="font-medium text-text-main dark:text-white">Non Remise Travaux</span>
+<span class="text-primary font-bold">35%</span>
+</div>
+<div class="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary/60 rounded-full" style="width: 35%"></div>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex gap-2 items-start">
+<span class="material-symbols-outlined text-primary text-[18px]">lightbulb</span>
+<p class="text-xs text-text-muted leading-relaxed">
+                                        Conseil IA : Organiser un atelier sur la gestion du temps pour les étudiants en Informatique réduirait le risque de 12%.
+                                    </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-shrink-0 p-4 bg-white dark:bg-[#1f2937] border-t border-gray-200 dark:border-gray-800 z-10 flex justify-between md:justify-end gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="hidden md:flex items-center gap-2 text-xs text-text-muted mr-auto px-2">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+                Dernière mise à jour: Aujourd'hui à 09:41
+            </div>
+<button class="flex-1 md:flex-none justify-center px-4 py-2.5 bg-white border border-gray-300 dark:border-gray-600 text-text-main dark:text-white rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                Rapport Complet PDF
+            </button>
+<button class="flex-1 md:flex-none justify-center px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors flex items-center gap-2 shadow-sm shadow-primary/20">
+<span class="material-symbols-outlined text-[18px]">autorenew</span>
+                Regénérer Prédictions
+            </button>
+</div>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,721 @@
+================================================================================
+SPAS - TOUS LES SERIALIZERS DJANGO REST FRAMEWORK
+================================================================================
+
+
+
+================================================================================
+APP: STUDENTS
+Fichier: backend/apps/students/serializers.py
+================================================================================
+
+
+"""
+Serializers for Student app.
+"""
+from rest_framework import serializers
+from .models import Student
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    """Serializer for Student model."""
+
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    program_name = serializers.CharField(source='program.name', read_only=True)
+
+    class Meta:
+        model = Student
+        fields = [
+            'id', 'student_id', 'first_name', 'last_name', 'full_name',
+            'email', 'phone', 'date_of_birth', 'program', 'program_name',
+            'admission_date', 'expected_graduation_date', 'status',
+            'address', 'emergency_contact_name', 'emergency_contact_phone',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class StudentCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating students."""
+
+    class Meta:
+        model = Student
+        fields = [
+            'student_id', 'first_name', 'last_name', 'email', 'phone',
+            'date_of_birth', 'program', 'admission_date',
+            'expected_graduation_date', 'address',
+            'emergency_contact_name', 'emergency_contact_phone'
+        ]
+
+
+class StudentListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for student lists."""
+
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    program_name = serializers.CharField(source='program.name', read_only=True)
+
+    class Meta:
+        model = Student
+        fields = [
+            'id', 'student_id', 'full_name', 'email',
+            'program_name', 'status', 'admission_date'
+        ]
+
+
+
+
+================================================================================
+APP: PROGRAMS
+Fichier: backend/apps/programs/serializers.py
+================================================================================
+
+
+"""
+Serializers for Program app.
+"""
+from rest_framework import serializers
+from .models import Program, Course
+
+
+class ProgramSerializer(serializers.ModelSerializer):
+    """Serializer for Program model."""
+
+    student_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Program
+        fields = [
+            'id', 'code', 'name', 'description', 'duration_months',
+            'credits_required', 'is_active', 'student_count',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_student_count(self, obj):
+        """Get number of active students in program."""
+        return obj.students.filter(status='ACTIVE').count()
+
+
+class ProgramListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for program lists."""
+
+    class Meta:
+        model = Program
+        fields = ['id', 'code', 'name', 'is_active']
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    """Serializer for Course model."""
+
+    program_name = serializers.CharField(source='program.name', read_only=True)
+    prerequisite_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Course
+        fields = [
+            'id', 'code', 'name', 'description', 'credits',
+            'program', 'program_name', 'is_mandatory',
+            'prerequisite_courses', 'prerequisite_count',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_prerequisite_count(self, obj):
+        """Get number of prerequisite courses."""
+        return obj.prerequisite_courses.count()
+
+
+class CourseListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for course lists."""
+
+    program_name = serializers.CharField(source='program.name', read_only=True)
+
+    class Meta:
+        model = Course
+        fields = ['id', 'code', 'name', 'credits', 'program_name', 'is_mandatory']
+
+
+
+
+================================================================================
+APP: SESSIONS
+Fichier: backend/apps/sessions/serializers.py
+================================================================================
+
+
+"""
+Serializers for Session app.
+"""
+from rest_framework import serializers
+from .models import AcademicPeriod, CourseSession, Enrollment
+
+
+class AcademicPeriodSerializer(serializers.ModelSerializer):
+    """Serializer for AcademicPeriod model."""
+
+    class Meta:
+        model = AcademicPeriod
+        fields = [
+            'id', 'name', 'season', 'year', 'start_date', 'end_date',
+            'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class CourseSessionSerializer(serializers.ModelSerializer):
+    """Serializer for CourseSession model."""
+
+    course_code = serializers.CharField(source='course.code', read_only=True)
+    course_name = serializers.CharField(source='course.name', read_only=True)
+    period_name = serializers.CharField(source='academic_period.name', read_only=True)
+    teacher_name = serializers.SerializerMethodField()
+    current_enrollment = serializers.IntegerField(read_only=True)
+    is_full = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = CourseSession
+        fields = [
+            'id', 'course', 'course_code', 'course_name',
+            'academic_period', 'period_name', 'teacher', 'teacher_name',
+            'section', 'max_students', 'current_enrollment', 'is_full',
+            'room', 'schedule', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_teacher_name(self, obj):
+        """Get teacher full name."""
+        return obj.teacher.get_full_name() if obj.teacher else None
+
+
+class CourseSessionListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for course session lists."""
+
+    course_code = serializers.CharField(source='course.code', read_only=True)
+    course_name = serializers.CharField(source='course.name', read_only=True)
+    period_name = serializers.CharField(source='academic_period.name', read_only=True)
+    current_enrollment = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = CourseSession
+        fields = [
+            'id', 'course_code', 'course_name', 'period_name',
+            'section', 'current_enrollment', 'max_students'
+        ]
+
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    """Serializer for Enrollment model."""
+
+    student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    student_id_display = serializers.CharField(source='student.student_id', read_only=True)
+    course_code = serializers.CharField(source='course_session.course.code', read_only=True)
+    course_name = serializers.CharField(source='course_session.course.name', read_only=True)
+    period_name = serializers.CharField(source='course_session.academic_period.name', read_only=True)
+
+    class Meta:
+        model = Enrollment
+        fields = [
+            'id', 'student', 'student_name', 'student_id_display',
+            'course_session', 'course_code', 'course_name', 'period_name',
+            'status', 'enrollment_date', 'drop_date',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'enrollment_date', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        """Validate enrollment."""
+        course_session = attrs.get('course_session')
+        if course_session and course_session.is_full:
+            raise serializers.ValidationError({
+                'course_session': 'Cette session est complète.'
+            })
+        return attrs
+
+
+
+
+================================================================================
+APP: GRADES
+Fichier: backend/apps/grades/serializers.py
+================================================================================
+
+
+"""
+Serializers for Grade app.
+"""
+from rest_framework import serializers
+from .models import Grade, CourseGradeSummary
+
+
+class GradeSerializer(serializers.ModelSerializer):
+    """Serializer for Grade model."""
+
+    student_name = serializers.CharField(source='enrollment.student.get_full_name', read_only=True)
+    course_code = serializers.CharField(source='enrollment.course_session.course.code', read_only=True)
+    weighted_grade = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = Grade
+        fields = [
+            'id', 'enrollment', 'student_name', 'course_code',
+            'evaluation_name', 'grade', 'weight', 'weighted_grade',
+            'evaluation_date', 'comments', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class GradeCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating grades."""
+
+    class Meta:
+        model = Grade
+        fields = [
+            'enrollment', 'evaluation_name', 'grade', 'weight',
+            'evaluation_date', 'comments'
+        ]
+
+    def create(self, validated_data):
+        """Create grade and update summary."""
+        grade = super().create(validated_data)
+
+        # Update or create course grade summary
+        summary, created = CourseGradeSummary.objects.get_or_create(
+            enrollment=grade.enrollment
+        )
+        summary.calculate_final_grade()
+
+        return grade
+
+
+class CourseGradeSummarySerializer(serializers.ModelSerializer):
+    """Serializer for CourseGradeSummary model."""
+
+    student_name = serializers.CharField(source='enrollment.student.get_full_name', read_only=True)
+    student_id = serializers.CharField(source='enrollment.student.student_id', read_only=True)
+    course_code = serializers.CharField(source='enrollment.course_session.course.code', read_only=True)
+    course_name = serializers.CharField(source='enrollment.course_session.course.name', read_only=True)
+    period_name = serializers.CharField(source='enrollment.course_session.academic_period.name', read_only=True)
+
+    class Meta:
+        model = CourseGradeSummary
+        fields = [
+            'id', 'enrollment', 'student_name', 'student_id',
+            'course_code', 'course_name', 'period_name',
+            'final_grade', 'letter_grade', 'is_passing', 'gpa_points',
+            'calculated_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'final_grade', 'letter_grade', 'is_passing',
+            'gpa_points', 'calculated_at', 'created_at', 'updated_at'
+        ]
+
+
+
+
+================================================================================
+APP: ATTENDANCE
+Fichier: backend/apps/attendance/serializers.py
+================================================================================
+
+
+"""
+Serializers for Attendance app.
+"""
+from rest_framework import serializers
+from .models import AttendanceRecord, AttendanceSummary
+
+
+class AttendanceRecordSerializer(serializers.ModelSerializer):
+    """Serializer for AttendanceRecord model."""
+
+    student_name = serializers.CharField(source='enrollment.student.get_full_name', read_only=True)
+    student_id = serializers.CharField(source='enrollment.student.student_id', read_only=True)
+    course_code = serializers.CharField(source='enrollment.course_session.course.code', read_only=True)
+
+    class Meta:
+        model = AttendanceRecord
+        fields = [
+            'id', 'enrollment', 'student_name', 'student_id',
+            'course_code', 'date', 'status', 'notes',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class AttendanceRecordCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating attendance records."""
+
+    class Meta:
+        model = AttendanceRecord
+        fields = ['enrollment', 'date', 'status', 'notes']
+
+    def create(self, validated_data):
+        """Create attendance record and update summary."""
+        record = super().create(validated_data)
+
+        # Update or create attendance summary
+        summary, created = AttendanceSummary.objects.get_or_create(
+            enrollment=record.enrollment
+        )
+        summary.calculate_summary()
+
+        return record
+
+
+class AttendanceSummarySerializer(serializers.ModelSerializer):
+    """Serializer for AttendanceSummary model."""
+
+    student_name = serializers.CharField(source='enrollment.student.get_full_name', read_only=True)
+    student_id = serializers.CharField(source='enrollment.student.student_id', read_only=True)
+    course_code = serializers.CharField(source='enrollment.course_session.course.code', read_only=True)
+    course_name = serializers.CharField(source='enrollment.course_session.course.name', read_only=True)
+    period_name = serializers.CharField(source='enrollment.course_session.academic_period.name', read_only=True)
+
+    class Meta:
+        model = AttendanceSummary
+        fields = [
+            'id', 'enrollment', 'student_name', 'student_id',
+            'course_code', 'course_name', 'period_name',
+            'total_classes', 'present_count', 'absent_count',
+            'late_count', 'excused_count', 'attendance_rate',
+            'calculated_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'total_classes', 'present_count', 'absent_count',
+            'late_count', 'excused_count', 'attendance_rate',
+            'calculated_at', 'created_at', 'updated_at'
+        ]
+
+
+
+
+================================================================================
+APP: USERS
+Fichier: backend/apps/users/serializers.py
+================================================================================
+
+
+"""
+Serializers for User app.
+"""
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+
+User = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer for User model."""
+
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'email', 'first_name', 'last_name', 'full_name',
+            'role', 'phone', 'department', 'is_active',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    """Serializer for creating users."""
+
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password]
+    )
+    password_confirm = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'email', 'password', 'password_confirm',
+            'first_name', 'last_name', 'role', 'phone', 'department'
+        ]
+
+    def validate(self, attrs):
+        """Validate password confirmation."""
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({
+                "password": "Les mots de passe ne correspondent pas."
+            })
+        return attrs
+
+    def create(self, validated_data):
+        """Create a new user."""
+        validated_data.pop('password_confirm')
+        user = User.objects.create_user(**validated_data)
+        return user
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating users."""
+
+    class Meta:
+        model = User
+        fields = [
+            'first_name', 'last_name', 'phone', 'department', 'is_active'
+        ]
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Serializer for password change."""
+
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        validators=[validate_password]
+    )
+    new_password_confirm = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        """Validate passwords."""
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise serializers.ValidationError({
+                "new_password": "Les nouveaux mots de passe ne correspondent pas."
+            })
+        return attrs
+
+    def validate_old_password(self, value):
+        """Validate old password."""
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("L'ancien mot de passe est incorrect.")
+        return value
+
+    def save(self, **kwargs):
+        """Update user password."""
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
+
+
+
+
+================================================================================
+APP: ML
+Fichier: backend/apps/ml/serializers.py
+================================================================================
+
+
+"""
+Serializers for ML app.
+"""
+from rest_framework import serializers
+from .models import MLModel, TrainingJob
+
+
+class MLModelSerializer(serializers.ModelSerializer):
+    """Serializer for MLModel model."""
+
+    class Meta:
+        model = MLModel
+        fields = [
+            'id', 'name', 'version', 'model_type', 'description',
+            'file_path', 'accuracy', 'precision', 'recall', 'f1_score',
+            'is_active', 'trained_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class MLModelListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for ML model lists."""
+
+    class Meta:
+        model = MLModel
+        fields = ['id', 'name', 'version', 'model_type', 'is_active', 'accuracy']
+
+
+class TrainingJobSerializer(serializers.ModelSerializer):
+    """Serializer for TrainingJob model."""
+
+    model_name = serializers.CharField(source='model.name', read_only=True)
+    duration = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TrainingJob
+        fields = [
+            'id', 'model', 'model_name', 'status', 'dataset_size',
+            'parameters', 'metrics', 'error_message', 'duration',
+            'started_at', 'completed_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'status', 'error_message', 'started_at',
+            'completed_at', 'created_at', 'updated_at'
+        ]
+
+    def get_duration(self, obj):
+        """Calculate training duration in seconds."""
+        if obj.started_at and obj.completed_at:
+            delta = obj.completed_at - obj.started_at
+            return delta.total_seconds()
+        return None
+
+
+
+
+================================================================================
+APP: PREDICTIONS
+Fichier: backend/apps/predictions/serializers.py
+================================================================================
+
+
+"""
+Serializers for Prediction app.
+"""
+from rest_framework import serializers
+from .models import Prediction, RecommendedIntervention
+
+
+class RecommendedInterventionSerializer(serializers.ModelSerializer):
+    """Serializer for RecommendedIntervention model."""
+
+    class Meta:
+        model = RecommendedIntervention
+        fields = [
+            'id', 'prediction', 'intervention_type', 'priority',
+            'title', 'description', 'estimated_impact',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class PredictionSerializer(serializers.ModelSerializer):
+    """Serializer for Prediction model."""
+
+    student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    student_id_display = serializers.CharField(source='student.student_id', read_only=True)
+    model_name = serializers.CharField(source='ml_model.name', read_only=True)
+    period_name = serializers.CharField(source='academic_period.name', read_only=True)
+    recommended_interventions = RecommendedInterventionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Prediction
+        fields = [
+            'id', 'student', 'student_name', 'student_id_display',
+            'ml_model', 'model_name', 'academic_period', 'period_name',
+            'risk_score', 'risk_level', 'is_at_risk', 'is_latest',
+            'attendance_factor', 'grade_factor', 'engagement_factor',
+            'features_used', 'confidence', 'notes',
+            'recommended_interventions', 'predicted_at',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'risk_level', 'is_at_risk', 'predicted_at',
+            'created_at', 'updated_at'
+        ]
+
+
+class PredictionListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for prediction lists."""
+
+    student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    student_id_display = serializers.CharField(source='student.student_id', read_only=True)
+
+    class Meta:
+        model = Prediction
+        fields = [
+            'id', 'student_id_display', 'student_name',
+            'risk_score', 'risk_level', 'is_at_risk',
+            'confidence', 'predicted_at'
+        ]
+
+
+
+
+================================================================================
+APP: ALERTS
+Fichier: backend/apps/alerts/serializers.py
+================================================================================
+
+
+"""
+Serializers for Alert app.
+"""
+from rest_framework import serializers
+from .models import Alert, AlertAction
+
+
+class AlertActionSerializer(serializers.ModelSerializer):
+    """Serializer for AlertAction model."""
+
+    taken_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AlertAction
+        fields = [
+            'id', 'alert', 'action_type', 'description',
+            'taken_by', 'taken_by_name', 'scheduled_date',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_taken_by_name(self, obj):
+        """Get full name of user who took action."""
+        return obj.taken_by.get_full_name() if obj.taken_by else None
+
+
+class AlertSerializer(serializers.ModelSerializer):
+    """Serializer for Alert model."""
+
+    student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    student_id_display = serializers.CharField(source='student.student_id', read_only=True)
+    assigned_to_name = serializers.SerializerMethodField()
+    acknowledged_by_name = serializers.SerializerMethodField()
+    resolved_by_name = serializers.SerializerMethodField()
+    actions = AlertActionSerializer(many=True, read_only=True)
+    actions_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Alert
+        fields = [
+            'id', 'student', 'student_name', 'student_id_display',
+            'alert_type', 'severity', 'status', 'title', 'message',
+            'prediction', 'assigned_to', 'assigned_to_name',
+            'acknowledged_by', 'acknowledged_by_name', 'acknowledged_at',
+            'resolved_by', 'resolved_by_name', 'resolved_at',
+            'actions', 'actions_count', 'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'acknowledged_by', 'acknowledged_at',
+            'resolved_by', 'resolved_at', 'created_at', 'updated_at'
+        ]
+
+    def get_assigned_to_name(self, obj):
+        """Get full name of assigned user."""
+        return obj.assigned_to.get_full_name() if obj.assigned_to else None
+
+    def get_acknowledged_by_name(self, obj):
+        """Get full name of acknowledging user."""
+        return obj.acknowledged_by.get_full_name() if obj.acknowledged_by else None
+
+    def get_resolved_by_name(self, obj):
+        """Get full name of resolving user."""
+        return obj.resolved_by.get_full_name() if obj.resolved_by else None
+
+    def get_actions_count(self, obj):
+        """Get count of actions taken."""
+        return obj.actions.count()
+
+
+class AlertListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for alert lists."""
+
+    student_name = serializers.CharField(source='student.get_full_name', read_only=True)
+    student_id_display = serializers.CharField(source='student.student_id', read_only=True)
+
+    class Meta:
+        model = Alert
+        fields = [
+            'id', 'student_id_display', 'student_name',
+            'alert_type', 'severity', 'status', 'title',
+            'created_at'
+        ]
+
+

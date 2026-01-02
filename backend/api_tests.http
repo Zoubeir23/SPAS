@@ -1,0 +1,445 @@
+###
+# SPAS API Tests
+# Usage: Install REST Client extension in VS Code
+# Click "Send Request" above each request
+###
+
+@baseUrl = http://localhost:8000/api
+@token = your-jwt-token-here
+
+### ============================================
+### AUTHENTICATION
+### ============================================
+
+### 1. Login (Get JWT Token)
+POST {{baseUrl}}/auth/token/
+Content-Type: application/json
+
+{
+  "email": "admin@spas.ca",
+  "password": "admin123"
+}
+
+### 2. Refresh Token
+POST {{baseUrl}}/auth/token/refresh/
+Content-Type: application/json
+
+{
+  "refresh": "your-refresh-token"
+}
+
+### ============================================
+### USERS
+### ============================================
+
+### 3. Get Current User Profile
+GET {{baseUrl}}/users/me/
+Authorization: Bearer {{token}}
+
+### 4. List All Users
+GET {{baseUrl}}/users/
+Authorization: Bearer {{token}}
+
+### 5. Update Profile
+PUT {{baseUrl}}/users/update_profile/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "first_name": "Updated",
+  "phone": "514-123-4567"
+}
+
+### 6. Change Password
+POST {{baseUrl}}/users/change_password/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "old_password": "admin123",
+  "new_password": "newpass123",
+  "new_password_confirm": "newpass123"
+}
+
+### ============================================
+### STUDENTS
+### ============================================
+
+### 7. List Students
+GET {{baseUrl}}/students/
+Authorization: Bearer {{token}}
+
+### 8. List Students - Filtered by Status
+GET {{baseUrl}}/students/?status=ACTIVE
+Authorization: Bearer {{token}}
+
+### 9. Search Students
+GET {{baseUrl}}/students/?search=Alexandre
+Authorization: Bearer {{token}}
+
+### 10. Get Student Details
+GET {{baseUrl}}/students/1/
+Authorization: Bearer {{token}}
+
+### 11. Create Student
+POST {{baseUrl}}/students/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "student_id": "2024999",
+  "first_name": "Test",
+  "last_name": "Student",
+  "email": "test.student@student.spas.ca",
+  "program": 1,
+  "admission_date": "2024-08-15",
+  "phone": "514-555-1234"
+}
+
+### 12. Update Student
+PATCH {{baseUrl}}/students/1/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "phone": "514-555-9999"
+}
+
+### 13. Get Students At Risk
+GET {{baseUrl}}/students/at_risk/
+Authorization: Bearer {{token}}
+
+### 14. Change Student Status
+POST {{baseUrl}}/students/1/change_status/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "DROPPED"
+}
+
+### ============================================
+### PROGRAMS & COURSES
+### ============================================
+
+### 15. List Programs
+GET {{baseUrl}}/programs/programs/
+Authorization: Bearer {{token}}
+
+### 16. Get Program Details
+GET {{baseUrl}}/programs/programs/1/
+Authorization: Bearer {{token}}
+
+### 17. Get Program Courses
+GET {{baseUrl}}/programs/programs/1/courses/
+Authorization: Bearer {{token}}
+
+### 18. List Courses
+GET {{baseUrl}}/programs/courses/
+Authorization: Bearer {{token}}
+
+### 19. Filter Courses by Program
+GET {{baseUrl}}/programs/courses/?program=1
+Authorization: Bearer {{token}}
+
+### ============================================
+### SESSIONS
+### ============================================
+
+### 20. List Academic Periods
+GET {{baseUrl}}/sessions/periods/
+Authorization: Bearer {{token}}
+
+### 21. Get Current Academic Period
+GET {{baseUrl}}/sessions/periods/current/
+Authorization: Bearer {{token}}
+
+### 22. List Course Sessions
+GET {{baseUrl}}/sessions/course-sessions/
+Authorization: Bearer {{token}}
+
+### 23. Filter Sessions by Period
+GET {{baseUrl}}/sessions/course-sessions/?period=1
+Authorization: Bearer {{token}}
+
+### 24. Get Session Enrollments
+GET {{baseUrl}}/sessions/course-sessions/1/enrollments/
+Authorization: Bearer {{token}}
+
+### 25. List Enrollments
+GET {{baseUrl}}/sessions/enrollments/
+Authorization: Bearer {{token}}
+
+### 26. Filter Enrollments by Student
+GET {{baseUrl}}/sessions/enrollments/?student=1
+Authorization: Bearer {{token}}
+
+### ============================================
+### GRADES
+### ============================================
+
+### 27. List Grades
+GET {{baseUrl}}/grades/grades/
+Authorization: Bearer {{token}}
+
+### 28. Filter Grades by Student
+GET {{baseUrl}}/grades/grades/?student=1
+Authorization: Bearer {{token}}
+
+### 29. Create Grade
+POST {{baseUrl}}/grades/grades/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "enrollment": 1,
+  "evaluation_name": "Test API",
+  "grade": 85.5,
+  "weight": 20.0,
+  "evaluation_date": "2024-11-15",
+  "comments": "Good work"
+}
+
+### 30. Grade Statistics
+GET {{baseUrl}}/grades/grades/statistics/
+Authorization: Bearer {{token}}
+
+### 31. Grade Summaries
+GET {{baseUrl}}/grades/summaries/
+Authorization: Bearer {{token}}
+
+### 32. Failing Students
+GET {{baseUrl}}/grades/summaries/failing_students/
+Authorization: Bearer {{token}}
+
+### 33. Recalculate Grade Summary
+POST {{baseUrl}}/grades/summaries/1/recalculate/
+Authorization: Bearer {{token}}
+
+### ============================================
+### ATTENDANCE
+### ============================================
+
+### 34. List Attendance Records
+GET {{baseUrl}}/attendance/records/
+Authorization: Bearer {{token}}
+
+### 35. Filter by Date Range
+GET {{baseUrl}}/attendance/records/?start_date=2024-09-01&end_date=2024-12-20
+Authorization: Bearer {{token}}
+
+### 36. Create Attendance Record
+POST {{baseUrl}}/attendance/records/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "enrollment": 1,
+  "date": "2024-11-15",
+  "status": "PRESENT",
+  "notes": "On time"
+}
+
+### 37. Bulk Create Attendance
+POST {{baseUrl}}/attendance/records/bulk_create/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "records": [
+    {
+      "enrollment": 1,
+      "date": "2024-11-16",
+      "status": "PRESENT"
+    },
+    {
+      "enrollment": 2,
+      "date": "2024-11-16",
+      "status": "ABSENT"
+    }
+  ]
+}
+
+### 38. Attendance Summaries
+GET {{baseUrl}}/attendance/summaries/
+Authorization: Bearer {{token}}
+
+### 39. Low Attendance
+GET {{baseUrl}}/attendance/summaries/low_attendance/?threshold=70
+Authorization: Bearer {{token}}
+
+### 40. Attendance Statistics
+GET {{baseUrl}}/attendance/summaries/statistics/
+Authorization: Bearer {{token}}
+
+### ============================================
+### MACHINE LEARNING
+### ============================================
+
+### 41. List ML Models
+GET {{baseUrl}}/ml/models/
+Authorization: Bearer {{token}}
+
+### 42. Filter Active Models
+GET {{baseUrl}}/ml/models/?is_active=true
+Authorization: Bearer {{token}}
+
+### 43. Activate Model
+POST {{baseUrl}}/ml/models/1/activate/
+Authorization: Bearer {{token}}
+
+### 44. Train Model
+POST {{baseUrl}}/ml/models/1/train/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "parameters": {
+    "n_estimators": 100,
+    "max_depth": 10
+  }
+}
+
+### 45. List Training Jobs
+GET {{baseUrl}}/ml/training-jobs/
+Authorization: Bearer {{token}}
+
+### ============================================
+### PREDICTIONS
+### ============================================
+
+### 46. List Predictions
+GET {{baseUrl}}/predictions/predictions/
+Authorization: Bearer {{token}}
+
+### 47. Latest Predictions Only
+GET {{baseUrl}}/predictions/predictions/?is_latest=true
+Authorization: Bearer {{token}}
+
+### 48. At Risk Students
+GET {{baseUrl}}/predictions/predictions/at_risk/
+Authorization: Bearer {{token}}
+
+### 49. Filter by Risk Level
+GET {{baseUrl}}/predictions/predictions/?risk_level=HIGH
+Authorization: Bearer {{token}}
+
+### 50. Prediction Statistics
+GET {{baseUrl}}/predictions/predictions/statistics/
+Authorization: Bearer {{token}}
+
+### 51. Generate Predictions
+POST {{baseUrl}}/predictions/predictions/generate_bulk/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "ml_model_id": 1,
+  "period_id": 1
+}
+
+### 52. Add Intervention to Prediction
+POST {{baseUrl}}/predictions/predictions/1/add_intervention/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "intervention_type": "TUTORING",
+  "priority": "HIGH",
+  "title": "Weekly Tutoring",
+  "description": "Math tutoring sessions twice a week",
+  "estimated_impact": 30.0
+}
+
+### 53. List Interventions
+GET {{baseUrl}}/predictions/interventions/
+Authorization: Bearer {{token}}
+
+### ============================================
+### ALERTS
+### ============================================
+
+### 54. List Alerts
+GET {{baseUrl}}/alerts/alerts/
+Authorization: Bearer {{token}}
+
+### 55. My Alerts
+GET {{baseUrl}}/alerts/alerts/my_alerts/
+Authorization: Bearer {{token}}
+
+### 56. Active Alerts
+GET {{baseUrl}}/alerts/alerts/active/
+Authorization: Bearer {{token}}
+
+### 57. Critical Alerts
+GET {{baseUrl}}/alerts/alerts/critical/
+Authorization: Bearer {{token}}
+
+### 58. Filter by Alert Type
+GET {{baseUrl}}/alerts/alerts/?alert_type=DROPOUT_RISK
+Authorization: Bearer {{token}}
+
+### 59. Create Alert
+POST {{baseUrl}}/alerts/alerts/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "student": 1,
+  "alert_type": "LOW_ATTENDANCE",
+  "severity": "WARNING",
+  "title": "Low attendance detected",
+  "message": "Student has 65% attendance rate",
+  "assigned_to": 2
+}
+
+### 60. Acknowledge Alert
+POST {{baseUrl}}/alerts/alerts/1/acknowledge/
+Authorization: Bearer {{token}}
+
+### 61. Resolve Alert
+POST {{baseUrl}}/alerts/alerts/1/resolve/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "resolution_note": "Met with student, issue resolved"
+}
+
+### 62. Dismiss Alert
+POST {{baseUrl}}/alerts/alerts/1/dismiss/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dismiss_reason": "False positive"
+}
+
+### 63. Assign Alert
+POST {{baseUrl}}/alerts/alerts/1/assign/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "user_id": 3
+}
+
+### 64. Alert Statistics
+GET {{baseUrl}}/alerts/alerts/statistics/
+Authorization: Bearer {{token}}
+
+### 65. List Alert Actions
+GET {{baseUrl}}/alerts/actions/
+Authorization: Bearer {{token}}
+
+### 66. Create Alert Action
+POST {{baseUrl}}/alerts/actions/
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "alert": 1,
+  "action_type": "CONTACT_STUDENT",
+  "description": "Email sent to student",
+  "scheduled_date": "2024-11-20T10:00:00Z"
+}

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Modale Intervention Pédagogique</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e3fae",
+                        "primary-hover": "#163296",
+                        "danger": "#DC2626",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121520",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a1d29",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-gray-500/50 font-display flex items-center justify-center min-h-screen p-4">
+<!-- Modal Backdrop & Container -->
+<div class="relative w-full max-w-3xl flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl shadow-2xl overflow-hidden max-h-[90vh]">
+<!-- Header -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-surface-light dark:bg-surface-dark sticky top-0 z-10">
+<h3 class="text-gray-900 dark:text-white tracking-tight text-xl font-bold">Créer une Intervention Pédagogique</h3>
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<!-- Student Context Card -->
+<div class="bg-background-light dark:bg-background-dark rounded-xl p-4 flex items-center justify-between border border-gray-200 dark:border-gray-700">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-14 w-14 shrink-0 shadow-sm" data-alt="Portrait of student Sophie Martin" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAQGPNNbR46EfghAzxExA516vdyxWc9vJd0gX9hty-qKq86Jft4r1XLzWdOcLLvWQ2bOdGJFnk6l6d427vQUbVq6eJ74Ldel-UnRhIgraLJgySiTganOmvmEWMLrturk4_NVRNjwTfc825nfqkPtjTcyYnn49YuxW0xc5daIo3jPTMhQwdKAan8u035fseop-qKmVlA2YpsDcNePa9qY4MD_PMQj12iVpvsChPd_t24DWsHW4dEUt5_Jv_C096Dq0xV64MoPieupGCh");'>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-gray-900 dark:text-white text-lg font-bold leading-tight">Sophie Martin</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Étudiante - 3ème année Sciences</p>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30">
+<span class="material-symbols-outlined text-danger text-xl">warning</span>
+<span class="text-danger font-semibold text-sm">Risque: Élevé</span>
+</div>
+</div>
+<!-- Form Section: Type -->
+<div class="space-y-3">
+<h4 class="text-gray-900 dark:text-white text-sm font-bold uppercase tracking-wide">Type d'intervention</h4>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+<label class="cursor-pointer group relative">
+<input checked="" class="peer sr-only" name="intervention_type" type="radio"/>
+<div class="flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 peer-checked:border-primary peer-checked:bg-primary/5 dark:peer-checked:bg-primary/20 peer-checked:ring-1 peer-checked:ring-primary transition-all h-full text-center">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 peer-checked:text-primary mb-1">school</span>
+<span class="text-xs font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Soutien académique</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="intervention_type" type="radio"/>
+<div class="flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 peer-checked:border-primary peer-checked:bg-primary/5 dark:peer-checked:bg-primary/20 peer-checked:ring-1 peer-checked:ring-primary transition-all h-full text-center">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 peer-checked:text-primary mb-1">gavel</span>
+<span class="text-xs font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Rencontre disciplinaire</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="intervention_type" type="radio"/>
+<div class="flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 peer-checked:border-primary peer-checked:bg-primary/5 dark:peer-checked:bg-primary/20 peer-checked:ring-1 peer-checked:ring-primary transition-all h-full text-center">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 peer-checked:text-primary mb-1">diversity_3</span>
+<span class="text-xs font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Mentorat</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="intervention_type" type="radio"/>
+<div class="flex flex-col items-center justify-center p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 peer-checked:border-primary peer-checked:bg-primary/5 dark:peer-checked:bg-primary/20 peer-checked:ring-1 peer-checked:ring-primary transition-all h-full text-center">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 peer-checked:text-primary mb-1">more_horiz</span>
+<span class="text-xs font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Autre</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Form Section: Details -->
+<div class="space-y-6">
+<div class="space-y-1">
+<label class="block text-sm font-medium text-gray-900 dark:text-gray-100">Description de la situation</label>
+<textarea class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:ring-primary min-h-[100px] resize-none p-3 text-sm placeholder-gray-400" placeholder="Détaillez le contexte, les comportements observés ou les difficultés académiques..."></textarea>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-medium text-gray-900 dark:text-gray-100">Objectifs pédagogiques</label>
+<textarea class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:ring-primary min-h-[80px] resize-none p-3 text-sm placeholder-gray-400" placeholder="Quels sont les résultats attendus de cette intervention ?"></textarea>
+</div>
+</div>
+<!-- Form Section: Logistics -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1">
+<label class="block text-sm font-medium text-gray-900 dark:text-gray-100">Date et heure</label>
+<div class="relative">
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:ring-primary p-2.5 text-sm" type="datetime-local"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-medium text-gray-900 dark:text-gray-100">Durée estimée</label>
+<select class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:ring-primary p-2.5 text-sm">
+<option>15 minutes</option>
+<option>30 minutes</option>
+<option selected="">45 minutes</option>
+<option>1 heure</option>
+<option>1 heure 30</option>
+</select>
+</div>
+</div>
+<!-- Form Section: Participants -->
+<div class="space-y-1">
+<label class="block text-sm font-medium text-gray-900 dark:text-gray-100">Participants</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="material-symbols-outlined text-gray-400 text-[20px]">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:ring-primary text-sm placeholder-gray-400" placeholder="Ajouter des professeurs, direction, personnel..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-2 pt-2">
+<!-- Participant Tag -->
+<div class="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-300 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-800 text-xs font-medium">
+<span>Marc Dupont (Prof. Math)</span>
+<button class="hover:text-blue-700 dark:hover:text-blue-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-px bg-gray-100 dark:bg-gray-800 w-full"></div>
+<!-- Follow-up & Attachments Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Follow Up -->
+<div class="space-y-3">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+<span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Programmer un suivi</span>
+</label>
+<div class="pt-1">
+<label class="block text-xs font-medium text-gray-500 mb-1">Date du suivi (optionnel)</label>
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-800 text-gray-900 dark:text-white focus:border-primary focus:ring-primary p-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed" type="date"/>
+</div>
+</div>
+<!-- Attachments -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-gray-900 dark:text-gray-100">Pièces jointes</label>
+<div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary text-3xl mb-1 transition-colors">cloud_upload</span>
+<p class="text-xs text-gray-500 dark:text-gray-400">
+<span class="text-primary font-medium hover:underline">Cliquez pour uploader</span> ou glissez un fichier
+                        </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3 sticky bottom-0">
+<button class="px-5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm">
+                Annuler
+            </button>
+<button class="px-5 py-2.5 rounded-lg bg-primary hover:bg-primary-hover text-white font-medium shadow-md hover:shadow-lg transition-all text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
+                Planifier l'intervention
+            </button>
+</div>
+</div>
+</body></html>

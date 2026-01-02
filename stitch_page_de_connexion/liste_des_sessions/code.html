@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Liste des Sessions - ISI Administration</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e3fae",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121520",
+                        "success": "#16A34A",
+                        "danger": "#DC2626",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111827] dark:text-white font-display min-h-screen flex flex-col overflow-x-hidden">
+<div class="relative flex flex-col w-full h-full grow">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-8">
+<div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 px-4 py-2 mb-4">
+<a class="text-[#536293] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Home</a>
+<span class="text-[#536293] dark:text-gray-500 text-sm font-medium leading-normal">/</span>
+<a class="text-[#536293] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Administration</a>
+<span class="text-[#536293] dark:text-gray-500 text-sm font-medium leading-normal">/</span>
+<span class="text-[#0f111a] dark:text-gray-200 text-sm font-medium leading-normal">Sessions</span>
+</div>
+<!-- Page Heading -->
+<div class="flex flex-col sm:flex-row flex-wrap justify-between items-start sm:items-center gap-4 px-4 pb-6">
+<div>
+<h1 class="text-[#0f111a] dark:text-white text-3xl font-bold leading-tight tracking-tight">Liste des Sessions</h1>
+<p class="text-[#536293] dark:text-gray-400 text-sm mt-1">Gérez les sessions académiques et consultez les prédictions IA.</p>
+</div>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-primary hover:bg-primary/90 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="truncate">Nouvelle session</span>
+</button>
+</div>
+<!-- Filters -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 px-4 pb-6 items-end">
+<div class="col-span-1 md:col-span-5 lg:col-span-4">
+<label class="flex flex-col">
+<span class="text-[#0f111a] dark:text-gray-300 text-sm font-medium leading-normal pb-1.5">Filtrer par Année</span>
+<div class="relative">
+<select class="form-select w-full rounded-lg border border-[#d1d6e5] dark:border-gray-700 bg-white dark:bg-[#1a1d2d] text-[#0f111a] dark:text-gray-200 h-11 pl-4 pr-10 text-sm focus:border-primary focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+<option value="">Toutes les années</option>
+<option value="2024">2024-2025</option>
+<option value="2023">2023-2024</option>
+<option value="2022">2022-2023</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#536293]">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</div>
+</div>
+</label>
+</div>
+<div class="col-span-1 md:col-span-5 lg:col-span-4">
+<label class="flex flex-col">
+<span class="text-[#0f111a] dark:text-gray-300 text-sm font-medium leading-normal pb-1.5">Filtrer par Type</span>
+<div class="relative">
+<select class="form-select w-full rounded-lg border border-[#d1d6e5] dark:border-gray-700 bg-white dark:bg-[#1a1d2d] text-[#0f111a] dark:text-gray-200 h-11 pl-4 pr-10 text-sm focus:border-primary focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+<option value="">Tous les types</option>
+<option value="Principale">Principale</option>
+<option value="Rattrapage">Rattrapage</option>
+<option value="Intensive">Intensive</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#536293]">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</div>
+</div>
+</label>
+</div>
+<div class="col-span-1 md:col-span-2 lg:col-span-4 flex justify-start md:justify-end">
+<button class="flex items-center justify-center rounded-lg h-11 px-4 border border-[#d1d6e5] dark:border-gray-700 bg-white dark:bg-[#1a1d2d] text-[#536293] dark:text-gray-400 hover:text-primary hover:border-primary transition-colors text-sm font-medium">
+<span class="material-symbols-outlined mr-2 text-[20px]">search</span>
+                                Rechercher
+                             </button>
+</div>
+</div>
+<!-- Table -->
+<div class="px-4 py-2">
+<div class="w-full overflow-hidden rounded-xl border border-[#d1d6e5] dark:border-gray-700 bg-white dark:bg-[#1a1d2d] shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead class="bg-[#f8f9fb] dark:bg-[#232634] border-b border-[#d1d6e5] dark:border-gray-700">
+<tr>
+<th class="px-6 py-4 text-left text-[#536293] dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Code</th>
+<th class="px-6 py-4 text-left text-[#536293] dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Période</th>
+<th class="px-6 py-4 text-left text-[#536293] dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Type</th>
+<th class="px-6 py-4 text-left text-[#536293] dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Statut</th>
+<th class="px-6 py-4 text-left text-[#536293] dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">
+<div class="flex items-center gap-1">
+<span>Prédictions IA</span>
+<span class="material-symbols-outlined text-[16px] text-primary" title="Analyses prédictives disponibles">auto_awesome</span>
+</div>
+</th>
+<th class="px-6 py-4 text-right text-[#536293] dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#d1d6e5] dark:divide-gray-700">
+<!-- Row 1 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium text-[#0f111a] dark:text-white">
+                                                S-2023-AUT
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Automne 2023
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Principale
+                                            </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                                                    Active
+                                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-success animate-pulse"></div>
+<span class="text-sm text-[#0f111a] dark:text-gray-200">Prêt</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[#536293] hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium text-[#0f111a] dark:text-white">
+                                                S-2023-HIVER
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Hiver 2023
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Rattrapage
+                                            </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger/10 text-danger border border-danger/20">
+                                                    Fermée
+                                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-success"></div>
+<span class="text-sm text-[#0f111a] dark:text-gray-200">Archivé</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[#536293] hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium text-[#0f111a] dark:text-white">
+                                                S-2024-ETE
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Été 2024
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Intensive
+                                            </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                                                    Active
+                                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-yellow-500 animate-pulse"></div>
+<span class="text-sm text-[#0f111a] dark:text-gray-200">En cours</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[#536293] hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium text-[#0f111a] dark:text-white">
+                                                S-2022-AUT
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Automne 2022
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Principale
+                                            </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger/10 text-danger border border-danger/20">
+                                                    Fermée
+                                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-gray-400">check_circle</span>
+<span class="text-sm text-[#536293] dark:text-gray-400">Terminé</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[#536293] hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+<td class="px-6 py-4 text-sm font-medium text-[#0f111a] dark:text-white">
+                                                S-2022-HIV
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Hiver 2022
+                                            </td>
+<td class="px-6 py-4 text-sm text-[#536293] dark:text-gray-300">
+                                                Principale
+                                            </td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger/10 text-danger border border-danger/20">
+                                                    Fermée
+                                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-gray-400">check_circle</span>
+<span class="text-sm text-[#536293] dark:text-gray-400">Terminé</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[#536293] hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between px-4 py-6">
+<div class="hidden sm:flex text-sm text-[#536293] dark:text-gray-400">
+                            Affichage de <span class="font-medium text-[#0f111a] dark:text-gray-200 mx-1">1</span> à <span class="font-medium text-[#0f111a] dark:text-gray-200 mx-1">5</span> sur <span class="font-medium text-[#0f111a] dark:text-gray-200 mx-1">24</span> sessions
+                        </div>
+<div class="flex items-center gap-1 mx-auto sm:mx-0">
+<a class="flex size-9 items-center justify-center rounded-lg border border-transparent text-[#536293] hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition-colors disabled:opacity-50" href="#">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</a>
+<a class="text-sm font-bold leading-normal flex size-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm" href="#">1</a>
+<a class="text-sm font-normal leading-normal flex size-9 items-center justify-center rounded-lg text-[#536293] hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition-colors dark:text-gray-400" href="#">2</a>
+<a class="text-sm font-normal leading-normal flex size-9 items-center justify-center rounded-lg text-[#536293] hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition-colors dark:text-gray-400" href="#">3</a>
+<span class="flex size-9 items-center justify-center text-[#536293] dark:text-gray-500">...</span>
+<a class="text-sm font-normal leading-normal flex size-9 items-center justify-center rounded-lg text-[#536293] hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition-colors dark:text-gray-400" href="#">5</a>
+<a class="flex size-9 items-center justify-center rounded-lg border border-transparent text-[#536293] hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Liste des Étudiants - Academic Information System</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e3fae",
+                        "primary-dark": "#152d7e",
+                        "danger": "#DC2626",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121520",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e2230",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for table if needed */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111827] dark:text-gray-100 transition-colors duration-200">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex-none flex items-center justify-between border-b border-[#e8eaf2] dark:border-gray-800 bg-surface-light dark:bg-surface-dark px-6 py-3 z-10 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-8 rounded bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[24px]">school</span>
+</div>
+<h2 class="text-[#0f111a] dark:text-white text-lg font-bold tracking-tight">Academic IS</h2>
+</div>
+<nav class="hidden md:flex items-center gap-1">
+<a class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark rounded-md transition-colors" href="#">Dashboard</a>
+<a class="px-3 py-2 text-sm font-bold text-primary bg-primary/5 rounded-md" href="#">Étudiants</a>
+<a class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark rounded-md transition-colors" href="#">Enseignants</a>
+<a class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark rounded-md transition-colors" href="#">Cours</a>
+<a class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-dark rounded-md transition-colors" href="#">Paramètres</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border border-gray-200" data-alt="User profile avatar showing a generic silhouette" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCYpN1Mj2WRaUEqOAlFKqUm4cXJ-F7hxjq3Ox2rZ_dpRCup3MyFrugtTDBIox6KoZ8maJUXRJxM09fECHidFcqDL4IIQ7CEjigHpmqcrg7N8MVKEitmyfvqJBlqHHvVOAKdPk7Yg0URM1zw8dnmsV9FjljSGrO4zMuMfMdoX3IQtVMnr-hRMdIZb1wCpFIfcHL5THuj1X2zK_TF5a5uKGulwXQnczZeLMcxUUCkoD2m9aZ_R1XqoNVn0NxsoxvvHODNlGAPMNDGN9Lt");'></div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="flex-1 overflow-y-auto overflow-x-hidden bg-background-light dark:bg-background-dark p-4 md:p-8">
+<div class="mx-auto max-w-7xl flex flex-col gap-6">
+<!-- Page Heading & Actions -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-3xl font-black text-[#0f111a] dark:text-white tracking-tight">Liste des Étudiants</h1>
+<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gérez les inscriptions, les filières et suivez les risques.</p>
+</div>
+<button class="flex items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-dark text-white px-5 py-2.5 text-sm font-semibold shadow-sm transition-all active:scale-95 w-full md:w-auto">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Nouvel étudiant</span>
+</button>
+</div>
+<!-- Filters & Toolbar -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-[#e8eaf2] dark:border-gray-700 shadow-sm p-4">
+<div class="flex flex-col lg:flex-row gap-4 justify-between">
+<!-- Search -->
+<div class="relative flex-1 max-w-lg">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400 dark:text-white" placeholder="Rechercher par nom, matricule..." type="text"/>
+</div>
+<!-- Filter Chips -->
+<div class="flex flex-wrap items-center gap-3">
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors">
+<span>Filière: Toutes</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
+</button>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors">
+<span>Niveau: Tous</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
+</button>
+</div>
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors">
+<span>Statut: Actif</span>
+<span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
+</button>
+</div>
+<button class="p-2 text-gray-400 hover:text-primary transition-colors border border-transparent hover:border-gray-200 rounded-lg">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl border border-[#e8eaf2] dark:border-gray-700 shadow-sm overflow-hidden flex-1 min-h-[500px]">
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full min-w-[800px] text-left border-collapse">
+<thead>
+<tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+<th class="p-4 w-12 text-center">
+<input class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/25 bg-transparent" type="checkbox"/>
+</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Matricule</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Étudiant</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Filière</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Niveau</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut / Risque</th>
+<th class="p-4 w-16 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+<!-- Row 1: Normal -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4 text-center">
+<input class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/25 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+</td>
+<td class="p-4 text-sm font-medium text-gray-500 font-mono">20230812</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-cover bg-center border border-gray-100" data-alt="Portrait of Sarah Benali" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB59fcnqweCvCrIkTOCdyX4DvI0MpmmOmpMVYKIfkteUvJRopWTIiz5mqMm3vgXQHL1ZdolCfui73gNNuEEM9gcZRKPISIc9IM9ooPTc5rLXUHAx8Q_AeEtXxKev5Fqqh7AM_LfRucyy6rRtgrbo9NWwRdx0eY-kV9oKTqzNVkP-mPuMV8lwm2q5n6MGLQKnc8g0dcKjSEyJVq1Wvo3ADOYN8RKBkY1ySBIiU3WvO8VMMFUNVOBti88hnfXUfPJE6l6GUIV_mqBnCSo");'></div>
+<div>
+<div class="text-sm font-semibold text-[#0f111a] dark:text-white">Sarah Benali</div>
+<div class="text-xs text-gray-500">sarah.benali@isi.edu</div>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-gray-700 dark:text-gray-300">Génie Logiciel</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            L3
+                                        </span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                            Normal
+                                        </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: High Risk -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4 text-center">
+<input class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/25 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+</td>
+<td class="p-4 text-sm font-medium text-gray-500 font-mono">20230945</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-cover bg-center border border-gray-100" data-alt="Portrait of Karim Idrissi" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBrlPZCdxLySon29ElOSKfNOy_vnCY4VPnLU2VJ5xGYFE0sEJ2bJtUvnnui4kpjTT-xPoj6r3jkpamkUbJkpR7UFOYQ_krOAEvhDmgHE-q1Ed5K4tNc9wK6A2KGyIlNxhVb-E-ACsklzy2fn2ONUH_bRmfz8rkNn5lm-Du8kwziO9O69abdxY_7h7Lnr74Za1KxqTgWImFTi9gwDyafC9_1Oxe3CccVyiVUv0rAuR-beARQwxBnG72SdH7KoOWGwBrgCyJBeDB-eUSn");'></div>
+<div>
+<div class="text-sm font-semibold text-[#0f111a] dark:text-white">Karim Idrissi</div>
+<div class="text-xs text-gray-500">karim.idrissi@isi.edu</div>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-gray-700 dark:text-gray-300">Data Science</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            M1
+                                        </span>
+</td>
+<td class="p-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-danger border border-red-100 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-danger"></span>
+</span>
+                                            Risque Élevé
+                                        </div>
+</td>
+<td class="p-4 text-right">
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Normal -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4 text-center">
+<input class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/25 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+</td>
+<td class="p-4 text-sm font-medium text-gray-500 font-mono">20231102</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-cover bg-center border border-gray-100" data-alt="Portrait of Amine Touré" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA8PnplpZOSg-konib0eXJTRGmk-DvWRuRTaMWOPXeEqBnSU9orULmoAidwGpD6b12cmaF9cCdqRGRCAQ5AYF3rF75n9ebRABgdfXH27eYt5fmU0TfV8qaC1YNfxRUoagjv1JO4UBWuLXnQkQ5uOddV_VEV4OdW4r2Z94PT-QdVE8f_4ro0A5avCX2md8l3TO_xnmQLwfz4-q4aBCOo7P2ztQjJxP6lVP98Smgu7PKW2IPO4v2B6jR7fTd3YPHdPMml-XO2dhRSZ305");'></div>
+<div>
+<div class="text-sm font-semibold text-[#0f111a] dark:text-white">Amine Touré</div>
+<div class="text-xs text-gray-500">amine.toure@isi.edu</div>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-gray-700 dark:text-gray-300">Réseaux &amp; Télécom</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            L2
+                                        </span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                            Normal
+                                        </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: High Risk -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4 text-center">
+<input class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/25 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+</td>
+<td class="p-4 text-sm font-medium text-gray-500 font-mono">20230567</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-cover bg-center border border-gray-100" data-alt="Portrait of Lina Mansouri" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDjUVlYjCIyeyjhlqdHWBXVQ0_Kewh8Y9nzQieDE7jkijPEP7wF3v3nEEyghpgV0uVUD1vHHQdzXHtOFak53LJySS8tf8Er3iSjRCRCVfUfZ95e4CpLXadkZSRILuFlH-sDnhfRPJIiJXXMvFvBpHHCoqdwJT_rhnTxclGp1gBNxo16MYNEEIX8uy-vnkhtoGAsINPgd3yIJyIAZv25MUQtHH80vR3kxNzbgfAhZTwZcGz0QgFR3P-b0ZtTXFTdGg-3C_AHxWmmfAMw");'></div>
+<div>
+<div class="text-sm font-semibold text-[#0f111a] dark:text-white">Lina Mansouri</div>
+<div class="text-xs text-gray-500">lina.mansouri@isi.edu</div>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-gray-700 dark:text-gray-300">Génie Logiciel</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            M2
+                                        </span>
+</td>
+<td class="p-4">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-danger border border-red-100 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-danger"></span>
+</span>
+                                            Risque Élevé
+                                        </div>
+</td>
+<td class="p-4 text-right">
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Normal -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="p-4 text-center">
+<input class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/25 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/>
+</td>
+<td class="p-4 text-sm font-medium text-gray-500 font-mono">20230221</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-cover bg-center border border-gray-100" data-alt="Portrait of Youssef Fassi" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB5-wQ99CV1eEwV5MnEc0HmNLk4_Fh86EI-Q53rBv8wrTC99urGIXxUD7Qaa5-oAq2j1o4FNHV_sOp7LB2ZrCIKpI84c2w4fkfXReRIkKLthvZpqG-gZ5Q81muk9a6Zn5WrSUCkhI_L2E0e4Dfy44pGXrVxJVhkdS9DUWqQkt-YOxdJQPOIZLnJkva5N0YsYturh2QRasnNDYph_xc-zn-LDOXbrSB_c1TmP1zr_gUm9YIcB5hZtwODP1lcijWFDtfDGfwYRH3wPQO-");'></div>
+<div>
+<div class="text-sm font-semibold text-[#0f111a] dark:text-white">Youssef Fassi</div>
+<div class="text-xs text-gray-500">youssef.fassi@isi.edu</div>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-gray-700 dark:text-gray-300">Sécurité Info</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            L1
+                                        </span>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                            Normal
+                                        </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50/50 dark:bg-gray-800/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+<span>Afficher</span>
+<select class="form-select text-sm py-1 pl-2 pr-8 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md focus:ring-primary focus:border-primary">
+<option>10</option>
+<option>25</option>
+<option>50</option>
+</select>
+<span>par page</span>
+<span class="hidden sm:inline text-gray-300 dark:text-gray-600 mx-2">|</span>
+<span class="hidden sm:inline">1-10 sur 145 étudiants</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-700 text-gray-500 disabled:opacity-50">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="px-3 py-1.5 rounded-md bg-primary text-white text-sm font-medium">1</button>
+<button class="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium">2</button>
+<button class="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium">3</button>
+<span class="px-2 text-gray-400">...</span>
+<button class="px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium">15</button>
+<button class="p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-700 text-gray-500">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Réinitialisation du mot de passe - ISI</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c41a6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121620",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0f121a] dark:text-white antialiased">
+<div class="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-[#f8f9fb] to-white dark:from-[#0f121a] dark:via-[#121620] dark:to-[#1a202c]">
+<!-- Header / Logo Area -->
+<div class="mb-8 flex flex-col items-center gap-3">
+<div class="flex items-center gap-3 text-primary dark:text-blue-400">
+<div class="size-10 bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl text-primary dark:text-blue-400">school</span>
+</div>
+<h1 class="text-2xl font-bold tracking-tight text-[#0f121a] dark:text-white">ISI - Academic System</h1>
+</div>
+</div>
+<!-- Main Card -->
+<main class="w-full max-w-[480px] bg-white dark:bg-[#1c212e] rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-[#e8ebf2] dark:border-[#2d3748] overflow-hidden">
+<!-- Card Header -->
+<div class="px-8 pt-8 pb-4 text-center">
+<div class="mx-auto mb-6 flex size-14 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20">
+<span class="material-symbols-outlined text-[32px] text-primary dark:text-blue-400">lock_reset</span>
+</div>
+<h2 class="text-[#0f121a] dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] mb-3">
+                    Réinitialisation du mot de passe
+                </h2>
+<p class="text-[#536493] dark:text-gray-400 text-base font-normal leading-normal">
+                    Entrez votre adresse email institutionnelle. Nous vous enverrons un lien pour réinitialiser votre mot de passe.
+                </p>
+</div>
+<!-- Form Content -->
+<div class="px-8 pb-8 pt-2 flex flex-col gap-6">
+<!-- Email Input -->
+<label class="flex flex-col w-full gap-2">
+<span class="text-[#0f121a] dark:text-gray-200 text-sm font-semibold leading-normal">Adresse Email</span>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[#536493] dark:text-gray-500">mail</span>
+</div>
+<input class="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-lg text-[#0f121a] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#d1d7e5] dark:border-[#4a5568] bg-[#f8f9fb] dark:bg-[#2d3748] focus:border-primary h-12 pl-10 pr-4 placeholder:text-[#536493] dark:placeholder:text-gray-500 text-base font-normal leading-normal transition-all" placeholder="exemple@isi.edu" required="" type="email" value=""/>
+</div>
+</label>
+<!-- Submit Button -->
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary hover:bg-[#16348a] dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors shadow-sm active:scale-[0.98]">
+<span class="truncate">Envoyer le lien</span>
+</button>
+<!-- Back Link -->
+<div class="text-center pt-2">
+<a class="inline-flex items-center gap-2 text-[#536493] dark:text-gray-400 hover:text-primary dark:hover:text-blue-400 text-sm font-medium leading-normal transition-colors group" href="#">
+<span class="material-symbols-outlined text-[18px] transition-transform group-hover:-translate-x-1">arrow_back</span>
+                        Retour à la connexion
+                    </a>
+</div>
+</div>
+<!-- Optional Visual Divider or Footer in card -->
+<div class="h-1 w-full bg-gradient-to-r from-transparent via-[#e8ebf2] dark:via-[#2d3748] to-transparent opacity-50"></div>
+<div class="px-8 py-4 bg-[#f8f9fb] dark:bg-[#171b26] text-center">
+<p class="text-xs text-[#536493] dark:text-gray-500">
+                    Besoin d'aide ? Contactez <a class="underline hover:text-primary dark:hover:text-blue-400" href="#">le support informatique</a>.
+                </p>
+</div>
+</main>
+<!-- Footer Info -->
+<footer class="mt-8 text-center px-4">
+<p class="text-sm text-[#536493] dark:text-gray-500">
+                © 2024 ISI - Institut Supérieur d'Informatique. Tous droits réservés.
+            </p>
+</footer>
+</div>
+</body></html>

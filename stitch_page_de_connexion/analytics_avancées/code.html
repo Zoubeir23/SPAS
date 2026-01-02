@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Analytics Avancées - ISI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7c3bed",
+                        "primary-dark": "#5e2cb5",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#171121",
+                        "success": "#16A34A",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1f182b",
+                        "text-primary": "#111827",
+                        "text-secondary": "#6b7280",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.375rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide scrollbar for clean look in some containers */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-primary dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Navbar / Top Bar Placeholder -->
+<header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-surface-light dark:bg-surface-dark px-6 dark:border-gray-800">
+<div class="flex items-center gap-4">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+<span class="material-symbols-outlined text-primary">school</span>
+</div>
+<h1 class="text-lg font-bold text-text-primary dark:text-white">ISI Dashboard</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="rounded-full p-2 text-text-secondary hover:bg-gray-100 dark:hover:bg-gray-800">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-8 overflow-hidden rounded-full bg-gray-200">
+<img alt="User Avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAngA_SE-0XNkC970Z_pxHUSu4mXpS5iy2tPzPzlBplS_R-bSVnECceNxnRDB6UHhyawC38_jbQNicgceri7F1la4yoSoLCuMHMdwgGYrOX6OqU5jddq-73-_bik45zk54QuVcmHx9sowstC06Ne9wYwjLnHJODg-eL8UBvNjn5W59cmi_jWpXrAo57iDgvIfhcAOiVshEZ6Pie38b7t2UgcI9MK9CocRkYz_XYt4TgXLrzjknF7HoifylL6kcfKR0frlhKfGKcn-w"/>
+</div>
+</div>
+</header>
+<main class="flex-1 px-4 py-6 md:px-8 lg:px-12">
+<div class="mx-auto max-w-7xl">
+<!-- Breadcrumbs -->
+<nav class="mb-4 flex items-center text-sm font-medium text-text-secondary dark:text-gray-400">
+<a class="hover:text-primary transition-colors" href="#">Accueil</a>
+<span class="mx-2 text-gray-400">/</span>
+<span class="text-primary font-semibold">Analytics Avancées</span>
+</nav>
+<!-- Page Heading & Date Filters -->
+<div class="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl font-black tracking-tight text-text-primary dark:text-white sm:text-4xl">Analytics Avancées</h1>
+<p class="text-base text-text-secondary dark:text-gray-400">
+                            Suivi des performances académiques et prédictions IA en temps réel.
+                        </p>
+</div>
+<div class="flex flex-wrap items-end gap-3">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase text-text-secondary dark:text-gray-400">Période du</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">calendar_today</span>
+<input class="h-10 w-40 rounded-lg border border-gray-200 bg-surface-light px-3 pl-10 text-sm font-medium text-text-primary focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-surface-dark dark:text-white" type="date" value="2023-09-01"/>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase text-text-secondary dark:text-gray-400">au</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">event</span>
+<input class="h-10 w-40 rounded-lg border border-gray-200 bg-surface-light px-3 pl-10 text-sm font-medium text-text-primary focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-surface-dark dark:text-white" type="date" value="2024-06-30"/>
+</div>
+</div>
+<button class="mb-[1px] flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-md transition-all hover:bg-primary-dark active:scale-95">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+                            Appliquer
+                        </button>
+</div>
+</div>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+<!-- KPI Cards Row (Optional Quick Stats) -->
+<div class="col-span-1 grid grid-cols-1 gap-6 md:grid-cols-3 lg:col-span-12">
+<!-- KPI 1 -->
+<div class="rounded-xl border border-gray-100 bg-surface-light p-6 shadow-sm dark:border-gray-800 dark:bg-surface-dark">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-medium text-text-secondary dark:text-gray-400">Risque de Décrochage Global</h3>
+<span class="rounded-full bg-red-100 p-1.5 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+<span class="material-symbols-outlined text-sm font-bold">trending_up</span>
+</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<p class="text-3xl font-bold text-text-primary dark:text-white">4.2%</p>
+<span class="text-sm font-medium text-red-500">+0.8%</span>
+</div>
+<p class="mt-1 text-xs text-text-secondary dark:text-gray-500">vs mois dernier</p>
+</div>
+<!-- KPI 2 -->
+<div class="rounded-xl border border-gray-100 bg-surface-light p-6 shadow-sm dark:border-gray-800 dark:bg-surface-dark">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-medium text-text-secondary dark:text-gray-400">Interventions Actives</h3>
+<span class="rounded-full bg-primary/20 p-1.5 text-primary">
+<span class="material-symbols-outlined text-sm font-bold">psychology</span>
+</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<p class="text-3xl font-bold text-text-primary dark:text-white">128</p>
+<span class="text-sm font-medium text-success">+12%</span>
+</div>
+<p class="mt-1 text-xs text-text-secondary dark:text-gray-500">vs mois dernier</p>
+</div>
+<!-- KPI 3 -->
+<div class="rounded-xl border border-gray-100 bg-surface-light p-6 shadow-sm dark:border-gray-800 dark:bg-surface-dark">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-medium text-text-secondary dark:text-gray-400">Précision Modèle IA</h3>
+<span class="rounded-full bg-green-100 p-1.5 text-success dark:bg-green-900/30 dark:text-green-400">
+<span class="material-symbols-outlined text-sm font-bold">auto_awesome</span>
+</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<p class="text-3xl font-bold text-text-primary dark:text-white">94.8%</p>
+<span class="text-sm font-medium text-success">+1.2%</span>
+</div>
+<p class="mt-1 text-xs text-text-secondary dark:text-gray-500">Score F1</p>
+</div>
+</div>
+<!-- Main Chart: Dropout Rate -->
+<div class="col-span-1 rounded-xl border border-gray-100 bg-surface-light p-6 shadow-sm dark:border-gray-800 dark:bg-surface-dark lg:col-span-8">
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+<div>
+<h2 class="text-lg font-bold text-text-primary dark:text-white">Taux de Décrochage Prédit vs Réel</h2>
+<p class="text-sm text-text-secondary dark:text-gray-400">Comparaison sur l'année académique en cours</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="h-3 w-3 rounded-full bg-primary"></span>
+<span class="text-xs font-medium text-text-secondary dark:text-gray-400">Prédit (IA)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="h-3 w-3 rounded-full bg-success"></span>
+<span class="text-xs font-medium text-text-secondary dark:text-gray-400">Réel</span>
+</div>
+</div>
+</div>
+<!-- Line Chart Visualization -->
+<div class="relative h-72 w-full pt-4">
+<div class="absolute inset-0 flex flex-col justify-between text-xs text-gray-400">
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-full relative">
+<span class="absolute -left-8 -top-2">10%</span>
+</div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-full relative">
+<span class="absolute -left-8 -top-2">7.5%</span>
+</div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-full relative">
+<span class="absolute -left-8 -top-2">5%</span>
+</div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-full relative">
+<span class="absolute -left-8 -top-2">2.5%</span>
+</div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-full relative">
+<span class="absolute -left-8 -top-2">0%</span>
+</div>
+</div>
+<!-- SVG Lines -->
+<svg class="absolute inset-0 h-full w-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Dashed Grid Lines are handled by divs above -->
+<!-- Predicted Line (Purple) -->
+<path d="M0 80 Q 10 75, 20 60 T 40 50 T 60 55 T 80 40 T 100 30" fill="none" stroke="#7c3bed" stroke-linecap="round" stroke-width="2.5"></path>
+<defs>
+<lineargradient id="gradientPredicted" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#7c3bed" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#7c3bed" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0 80 Q 10 75, 20 60 T 40 50 T 60 55 T 80 40 T 100 30 V 100 H 0 Z" fill="url(#gradientPredicted)" opacity="0.5" stroke="none"></path>
+<!-- Real Line (Green) -->
+<path d="M0 85 Q 10 82, 20 70 T 40 65 T 60 70 T 80 55" fill="none" stroke="#16A34A" stroke-dasharray="4,4" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Tooltip Point Example -->
+<circle cx="80" cy="40" fill="#7c3bed" r="3" stroke="white" stroke-width="2"></circle>
+</svg>
+<!-- X Axis Labels -->
+<div class="absolute bottom-[-24px] flex w-full justify-between text-xs font-medium text-gray-500">
+<span>Sep</span>
+<span>Oct</span>
+<span>Nov</span>
+<span>Déc</span>
+<span>Jan</span>
+<span>Fév</span>
+<span>Mar</span>
+<span>Avr</span>
+<span>Mai</span>
+<span>Juin</span>
+</div>
+</div>
+</div>
+<!-- Gauge Chart: Alert Response Time -->
+<div class="col-span-1 flex flex-col justify-between rounded-xl border border-gray-100 bg-surface-light p-6 shadow-sm dark:border-gray-800 dark:bg-surface-dark lg:col-span-4">
+<div>
+<h2 class="text-lg font-bold text-text-primary dark:text-white">Temps de Réponse</h2>
+<p class="text-sm text-text-secondary dark:text-gray-400">Moyen pour traiter une alerte</p>
+</div>
+<div class="relative flex flex-1 items-center justify-center py-6">
+<!-- Gauge SVG -->
+<div class="relative h-48 w-48">
+<svg class="h-full w-full -rotate-90 transform" viewbox="0 0 36 36">
+<!-- Background Circle -->
+<path class="text-gray-200 dark:text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="75, 100" stroke-width="3"></path>
+<!-- Progress Circle (75% = 270 degrees roughly) -->
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="60, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-3xl font-black text-text-primary dark:text-white">24h</span>
+<span class="text-xs font-medium text-text-secondary">Objectif: &lt; 48h</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-center gap-2 rounded-lg bg-green-50 p-3 dark:bg-green-900/10">
+<span class="material-symbols-outlined text-success text-sm">check_circle</span>
+<span class="text-sm font-medium text-success">Performance Optimale</span>
+</div>
+</div>
+<!-- Bar Charts Row -->
+<div class="col-span-1 grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-span-12">
+<!-- Analysis By Department -->
+<div class="rounded-xl border border-gray-100 bg-surface-light p-6 shadow-sm dark:border-gray-800 dark:bg-surface-dark">
+<h2 class="mb-6 text-lg font-bold text-text-primary dark:text-white">Analyse par Filière</h2>
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-text-primary dark:text-gray-300">Informatique</span>
+<span class="font-bold text-primary">12%</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="h-full bg-primary" style="width: 12%"></div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-text-primary dark:text-gray-300">Gestion</span>
+<span class="font-bold text-primary">8%</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="h-full bg-primary/80" style="width: 8%"></div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-text-primary dark:text-gray-300">Droit</span>
+<span class="font-bold text-primary">15%</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="h-full bg-primary" style="width: 15%"></div>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-sm">
+<span class="font-medium text-text-primary dark:text-gray-300">Architecture</span>
+<span class="font-bold text-primary">5%</span>
+</div>
+<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="h-full bg-primary/60" style="width: 5%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Analysis By Level -->
+<div class="rounded-xl border border-gray-100 bg-surface-light p-6 shadow-sm dark:border-gray-800 dark:bg-surface-dark">
+<h2 class="mb-6 text-lg font-bold text-text-primary dark:text-white">Analyse par Niveau</h2>
+<div class="flex h-[180px] items-end justify-between gap-4 px-2">
+<!-- Bar 1 -->
+<div class="group flex flex-1 flex-col items-center gap-2">
+<div class="relative w-full max-w-[40px] rounded-t-lg bg-primary/40 transition-all group-hover:bg-primary" style="height: 40%">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">40%</div>
+</div>
+<span class="text-xs font-semibold text-text-secondary">L1</span>
+</div>
+<!-- Bar 2 -->
+<div class="group flex flex-1 flex-col items-center gap-2">
+<div class="relative w-full max-w-[40px] rounded-t-lg bg-primary/60 transition-all group-hover:bg-primary" style="height: 65%">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">65%</div>
+</div>
+<span class="text-xs font-semibold text-text-secondary">L2</span>
+</div>
+<!-- Bar 3 -->
+<div class="group flex flex-1 flex-col items-center gap-2">
+<div class="relative w-full max-w-[40px] rounded-t-lg bg-primary/80 transition-all group-hover:bg-primary" style="height: 30%">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">30%</div>
+</div>
+<span class="text-xs font-semibold text-text-secondary">L3</span>
+</div>
+<!-- Bar 4 -->
+<div class="group flex flex-1 flex-col items-center gap-2">
+<div class="relative w-full max-w-[40px] rounded-t-lg bg-primary transition-all group-hover:bg-primary" style="height: 85%">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">85%</div>
+</div>
+<span class="text-xs font-semibold text-text-secondary">M1</span>
+</div>
+<!-- Bar 5 -->
+<div class="group flex flex-1 flex-col items-center gap-2">
+<div class="relative w-full max-w-[40px] rounded-t-lg bg-primary/50 transition-all group-hover:bg-primary" style="height: 25%">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">25%</div>
+</div>
+<span class="text-xs font-semibold text-text-secondary">M2</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Intervention Efficacy Table -->
+<div class="col-span-1 lg:col-span-12">
+<div class="overflow-hidden rounded-xl border border-gray-100 bg-surface-light shadow-sm dark:border-gray-800 dark:bg-surface-dark">
+<div class="flex flex-wrap items-center justify-between gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+<h2 class="text-lg font-bold text-text-primary dark:text-white">Efficacité des Interventions</h2>
+<div class="flex gap-2">
+<button class="flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+<span class="material-symbols-outlined text-sm">download</span>
+                                        Exporter les données
+                                    </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm text-text-secondary dark:text-gray-400">
+<thead class="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-800/50 dark:text-gray-300">
+<tr>
+<th class="px-6 py-4 font-semibold" scope="col">Type d'Intervention</th>
+<th class="px-6 py-4 font-semibold" scope="col">Nombre d'Étudiants</th>
+<th class="px-6 py-4 font-semibold" scope="col">Impact Moyen (GPA)</th>
+<th class="px-6 py-4 font-semibold" scope="col">Rétention</th>
+<th class="px-6 py-4 font-semibold text-right" scope="col">Efficacité</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 border-t border-gray-100 dark:divide-gray-800 dark:border-gray-800">
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="whitespace-nowrap px-6 py-4 font-medium text-text-primary dark:text-white">
+                                                Soutien Psychologique
+                                            </td>
+<td class="whitespace-nowrap px-6 py-4">45</td>
+<td class="whitespace-nowrap px-6 py-4 text-success">+0.5 pts</td>
+<td class="whitespace-nowrap px-6 py-4">+15%</td>
+<td class="whitespace-nowrap px-6 py-4 text-right">
+<span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                    Élevée
+                                                </span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="whitespace-nowrap px-6 py-4 font-medium text-text-primary dark:text-white">
+                                                Tutorat par les pairs
+                                            </td>
+<td class="whitespace-nowrap px-6 py-4">120</td>
+<td class="whitespace-nowrap px-6 py-4 text-success">+0.2 pts</td>
+<td class="whitespace-nowrap px-6 py-4">+8%</td>
+<td class="whitespace-nowrap px-6 py-4 text-right">
+<span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                    Moyenne
+                                                </span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="whitespace-nowrap px-6 py-4 font-medium text-text-primary dark:text-white">
+                                                Atelier de Méthodologie
+                                            </td>
+<td class="whitespace-nowrap px-6 py-4">85</td>
+<td class="whitespace-nowrap px-6 py-4 text-success">+0.8 pts</td>
+<td class="whitespace-nowrap px-6 py-4">+12%</td>
+<td class="whitespace-nowrap px-6 py-4 text-right">
+<span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                    Élevée
+                                                </span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<td class="whitespace-nowrap px-6 py-4 font-medium text-text-primary dark:text-white">
+                                                Rappel Automatique SMS
+                                            </td>
+<td class="whitespace-nowrap px-6 py-4">350</td>
+<td class="whitespace-nowrap px-6 py-4 text-gray-400">0.0 pts</td>
+<td class="whitespace-nowrap px-6 py-4">+1%</td>
+<td class="whitespace-nowrap px-6 py-4 text-right">
+<span class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                                    Faible
+                                                </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="sticky bottom-4 z-20 mt-8 flex flex-wrap justify-end gap-4 rounded-xl border border-gray-200 bg-surface-light/80 p-4 shadow-lg backdrop-blur-md dark:border-gray-800 dark:bg-surface-dark/80">
+<button class="flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                        Générer PDF
+                    </button>
+<button class="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-primary-dark hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+<span class="material-symbols-outlined text-lg">table_view</span>
+                        Exporter Rapport Excel
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

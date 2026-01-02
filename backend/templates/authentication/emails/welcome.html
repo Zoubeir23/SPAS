@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur SPAS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4F46E5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9fafb;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4F46E5;
+            color: white !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .feature {
+            background-color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4F46E5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Bienvenue sur SPAS!</h1>
+        <p>Système Prédictif d'Alerte Scolaire</p>
+    </div>
+
+    <div class="content">
+        <h2>Félicitations {{ user.first_name }} {{ user.last_name }}!</h2>
+
+        <p>Votre compte a été activé avec succès. Vous pouvez maintenant accéder à toutes les fonctionnalités de SPAS.</p>
+
+        <h3>Que pouvez-vous faire avec SPAS?</h3>
+
+        <div class="feature">
+            <strong>Gestion des étudiants</strong><br>
+            Suivez les performances académiques de vos étudiants en temps réel.
+        </div>
+
+        <div class="feature">
+            <strong>Prédictions ML</strong><br>
+            Bénéficiez de prédictions basées sur l'intelligence artificielle pour identifier les étudiants à risque.
+        </div>
+
+        <div class="feature">
+            <strong>Alertes personnalisées</strong><br>
+            Recevez des alertes automatiques pour intervenir rapidement.
+        </div>
+
+        <div class="feature">
+            <strong>Analyses et rapports</strong><br>
+            Générez des rapports détaillés sur les performances académiques.
+        </div>
+
+        <center>
+            <a href="http://localhost:5173/login" class="button">Commencer maintenant</a>
+        </center>
+
+        <p>Si vous avez des questions ou besoin d'aide, n'hésitez pas à contacter le support technique.</p>
+
+        <p>Cordialement,<br>L'équipe SPAS</p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2026 SPAS - Tous droits réservés</p>
+        <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+    </div>
+</body>
+</html>

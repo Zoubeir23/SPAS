@@ -1,0 +1,16 @@
+ Plan d'Action Recommandé
+Phase 1 : Connexion Frontend/Backend (2-3 jours)
+Compléter endpoints.ts avec tous les endpoints
+Remplacer les mocks dans chaque service par des vrais appels Axios
+Tester l'authentification réelle
+
+Phase 2 : Implémenter ML Réel (1 semaine)
+Créer le modèle TrainingJob
+Implémenter scikit-learn dans les tâches Celery
+Ajouter le calcul réel de prédiction de risque
+
+Phase 3 : Finalisation (3-5 jours)
+Compléter les TODO dans les modales
+Corriger la commande init_spas
+Ajouter tests d'intégration
+Import/Export CSV

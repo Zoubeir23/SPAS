@@ -1,0 +1,416 @@
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { clsx } from 'clsx'
+import MiseEnPagePrincipale from '@/components/layout/MiseEnPagePrincipale'
+import Carte from '@/components/common/Carte'
+import Badge from '@/components/common/Badge'
+import Bouton from '@/components/common/Bouton'
+import GraphiqueLignes from '@/components/charts/GraphiqueLignes'
+import { studentService, Student } from '@/api/services/studentService'
+import { predictionService, Prediction } from '@/api/services/predictionService'
+import { ROUTES } from '@/utils/constants'
+
+export default function DetailPrediction() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const [student, setStudent] = useState<Student | null>(null)
+  const [prediction, setPrediction] = useState<Prediction | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const [riskEvolution] = useState([
+    { month: 'Oct', value: 80 },
+    { month: 'Nov', value: 72 },
+    { month: 'Déc', value: 74 },
+    { month: 'Jan', value: 48 },
+    { month: 'Fév', value: 36 },
+    { month: 'Mar', value: 16 },
+    { month: 'Avr', value: 8 },
+  ])
+
+  const [interventions] = useState([
+    {
+      date: '12 Mai 2024',
+      type: 'Entretien',
+      typeColor: 'purple',
+      responsible: 'M. Diop (Dir. Péd.)',
+      status: 'Réalisé',
+      statusVariant: 'success' as const,
+    },
+    {
+      date: '05 Mai 2024',
+      type: 'Email',
+      typeColor: 'blue',
+      responsible: 'Système (Auto)',
+      status: 'Envoyé',
+      statusVariant: 'info' as const,
+    },
+    {
+      date: '28 Avr 2024',
+      type: 'Alerte',
+      typeColor: 'orange',
+      responsible: 'Mme. Sow (Prof.)',
+      status: 'En attente',
+      statusVariant: 'warning' as const,
+    },
+  ])
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!id) return
+      setLoading(true)
+      try {
+        const predictionData = await predictionService.getById(id)
+        if (predictionData) {
+          setPrediction(predictionData)
+          if (predictionData.studentId) {
+            const studentData = await studentService.getById(predictionData.studentId)
+            setStudent(studentData)
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [id])
+
+  if (loading) {
+    return (
+      <MiseEnPagePrincipale>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500 dark:text-gray-400">Chargement...</div>
+        </div>
+      </MiseEnPagePrincipale>
+    )
+  }
+
+  if (!prediction || !student) {
+    return (
+      <MiseEnPagePrincipale>
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Prédiction non trouvée
+            </h2>
+            <Bouton onClick={() => navigate(ROUTES.STUDENTS)}>Retour</Bouton>
+          </div>
+        </div>
+      </MiseEnPagePrincipale>
+    )
+  }
+
+  const getRiskLevel = () => {
+    const score = prediction.riskScore ?? 0
+    if (score >= 85) return { label: 'ALERTE DÉCROCHAGE', color: 'danger', threshold: 'critique' }
+    if (score >= 70) return { label: 'RISQUE ÉLEVÉ', color: 'danger', threshold: 'élevé' }
+    if (score >= 50) return { label: 'RISQUE MOYEN', color: 'warning', threshold: 'moyen' }
+    return { label: 'RISQUE FAIBLE', color: 'success', threshold: 'faible' }
+  }
+
+  const riskInfo = getRiskLevel()
+
+  // Préparer les facteurs SHAP (mélange de facteurs positifs et négatifs)
+  const shapFactors = [
+    { name: 'Absences (Cours Mag.)', impact: 0.18, color: 'danger' },
+    { name: 'Retard Rendu Projets', impact: 0.12, color: 'danger' },
+    { name: 'Note Moyenne Maths', impact: 0.08, color: 'danger' },
+    { name: 'Participation Forum', impact: -0.05, color: 'success' },
+  ]
+
+  return (
+    <MiseEnPagePrincipale title="Détail Prédiction">
+      <div className="mx-auto max-w-7xl flex flex-col gap-6">
+        {/* Top Section: Profile & Risk Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Student Profile Carte */}
+          <Carte className="lg:col-span-7 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+              <span className="material-symbols-outlined text-[180px]">school</span>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-6 relative z-10">
+              <div className="flex-shrink-0 relative">
+                <div className="w-32 h-32 rounded-xl bg-gray-200 dark:bg-gray-700 shadow-md flex items-center justify-center">
+                  <span className="material-symbols-outlined text-6xl text-gray-400">person</span>
+                </div>
+                <div className="absolute -bottom-2 -right-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-bold px-2 py-1 rounded-md border border-white dark:border-gray-800">
+                  Actif
+                </div>
+              </div>
+              <div className="flex flex-col justify-center flex-1">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  {student.firstName} {student.lastName}
+                </h1>
+                <p className="text-purple-600 dark:text-purple-400 font-medium mb-4">
+                  Matricule: <span className="text-gray-900 dark:text-gray-200">{student.matricule}</span>
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-[18px]">school</span>
+                    <span className="text-gray-900 dark:text-gray-300">{student.programName || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-[18px]">calendar_today</span>
+                    <span className="text-gray-900 dark:text-gray-300">Semestre 2 - 2023/2024</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-[18px]">mail</span>
+                    <span className="text-gray-900 dark:text-gray-300">{student.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-[18px]">call</span>
+                    <span className="text-gray-900 dark:text-gray-300">{student.phone || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Carte>
+
+          {/* Risk Hero Carte */}
+          <Carte className={clsx(
+            'lg:col-span-5 p-0 overflow-hidden',
+            riskInfo.color === 'danger' && 'border-red-200 dark:border-red-900/30',
+            riskInfo.color === 'warning' && 'border-amber-200 dark:border-amber-900/30',
+            riskInfo.color === 'success' && 'border-green-200 dark:border-green-900/30'
+          )}>
+            <div className={clsx(
+              'p-4 flex justify-between items-center border-b',
+              riskInfo.color === 'danger' && 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30',
+              riskInfo.color === 'warning' && 'bg-amber-50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30',
+              riskInfo.color === 'success' && 'bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/30'
+            )}>
+              <div className={clsx(
+                'flex items-center gap-2 font-bold',
+                riskInfo.color === 'danger' && 'text-red-600 dark:text-red-400',
+                riskInfo.color === 'warning' && 'text-amber-600 dark:text-amber-400',
+                riskInfo.color === 'success' && 'text-green-600 dark:text-green-400'
+              )}>
+                <span className="material-symbols-outlined">warning</span>
+                <span>{riskInfo.label}</span>
+              </div>
+              <span className={clsx(
+                'text-xs font-medium bg-white px-2 py-1 rounded border',
+                riskInfo.color === 'danger' && 'dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30',
+                riskInfo.color === 'warning' && 'dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30',
+                riskInfo.color === 'success' && 'dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/30'
+              )}>
+                Mise à jour: Il y a 2h
+              </span>
+            </div>
+            <div className="p-6 flex-1 flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">Probabilité de Risque</p>
+                  <div className="text-5xl font-bold text-gray-900 dark:text-white">
+                    {prediction.riskScore}
+                    <span className="text-2xl text-purple-600 dark:text-purple-400">%</span>
+                  </div>
+                </div>
+                <div className="h-16 w-16 rounded-full border-4 border-red-200 dark:border-red-900/30 flex items-center justify-center relative">
+                  <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-3xl">trending_up</span>
+                  <div className="absolute inset-0 border-4 border-red-600 dark:border-red-500 rounded-full border-l-transparent border-b-transparent rotate-[-45deg]"></div>
+                </div>
+              </div>
+              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 mb-2">
+                <div 
+                  className={clsx(
+                    'h-3 rounded-full',
+                    riskInfo.color === 'danger' && 'bg-red-600',
+                    riskInfo.color === 'warning' && 'bg-amber-600',
+                    riskInfo.color === 'success' && 'bg-green-600'
+                  )}
+                  style={{ width: `${prediction.riskScore}%` }}
+                />
+              </div>
+              <p className={clsx(
+                'text-xs font-medium mb-6',
+                riskInfo.color === 'danger' && 'text-red-600 dark:text-red-400',
+                riskInfo.color === 'warning' && 'text-amber-600 dark:text-amber-400',
+                riskInfo.color === 'success' && 'text-green-600 dark:text-green-400'
+              )}>
+                Seuil {riskInfo.threshold} dépassé ({(prediction.riskScore ?? 0) >= 85 ? '>85%' : '>70%'}). Action requise {(prediction.riskScore ?? 0) >= 85 ? 'immédiate' : ''}.
+              </p>
+              <div className="grid grid-cols-2 gap-3 mt-auto">
+                <Bouton>
+                  <span className="material-symbols-outlined text-[18px]">add_task</span>
+                  Intervention
+                </Bouton>
+                <Bouton variant="outline">
+                  <span className="material-symbols-outlined text-[18px]">notifications_active</span>
+                  Alerte
+                </Bouton>
+              </div>
+            </div>
+          </Carte>
+        </div>
+
+        {/* Analytics Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Evolution Chart */}
+          <Carte className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Évolution du Score de Risque</h3>
+                <p className="text-sm text-purple-600 dark:text-purple-400">Tendance sur les 6 derniers mois</p>
+              </div>
+              <select className="bg-gray-50 dark:bg-gray-800 border-none text-sm rounded-lg py-1.5 px-3 focus:ring-1 focus:ring-primary text-gray-900 dark:text-white">
+                <option>Semestre en cours</option>
+                <option>Année complète</option>
+              </select>
+            </div>
+            <GraphiqueLignes
+              data={riskEvolution}
+              dataKey="value"
+              lines={[{ key: 'value', name: 'Score de Risque', color: '#DC2626' }]}
+              xAxisKey="month"
+              height={250}
+            />
+          </Carte>
+
+          {/* SHAP Analysis */}
+          <Carte>
+            <div className="flex items-center gap-2 mb-6">
+              <span className="material-symbols-outlined text-primary">psychology</span>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Facteurs Clés (SHAP)</h3>
+            </div>
+            <div className="space-y-5">
+              {shapFactors.map((factor, index) => (
+                <div key={index} className="group cursor-help">
+                  <div className="flex justify-between items-end mb-1">
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-200">{factor.name}</span>
+                    <span className={`text-xs font-bold ${
+                      factor.impact > 0 
+                        ? 'text-red-600 dark:text-red-400' 
+                        : 'text-green-600 dark:text-green-400'
+                    }`}>
+                      {factor.impact > 0 ? '+' : ''}{(factor.impact * 100).toFixed(0)}% {factor.impact > 0 ? 'Impact' : 'Réduction'}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        factor.impact > 0 
+                          ? 'bg-red-600 dark:bg-red-500' 
+                          : 'bg-green-600 dark:bg-green-500'
+                      }`}
+                      style={{ width: `${Math.abs(factor.impact) * 500}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 p-3 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/10 flex gap-2">
+              <span className="material-symbols-outlined text-primary text-sm mt-0.5">info</span>
+              <p className="text-xs text-purple-600 dark:text-purple-400 leading-relaxed">
+                L'absentéisme est le facteur dominant ce mois-ci, augmentant le risque global de 18%.
+              </p>
+            </div>
+          </Carte>
+        </div>
+
+        {/* History & Interventions Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Intervention List */}
+          <Carte className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Historique d'Interventions</h3>
+              <button className="text-primary text-sm font-medium hover:underline">Voir tout</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-100 dark:border-gray-800 text-xs text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                    <th className="pb-3 font-medium">Date</th>
+                    <th className="pb-3 font-medium">Type</th>
+                    <th className="pb-3 font-medium">Responsable</th>
+                    <th className="pb-3 font-medium">Statut</th>
+                    <th className="pb-3 font-medium text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {interventions.map((intervention, index) => (
+                    <tr key={index} className="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <td className="py-4 border-b border-gray-50 dark:border-gray-800 text-gray-900 dark:text-gray-300">
+                        {intervention.date}
+                      </td>
+                      <td className="py-4 border-b border-gray-50 dark:border-gray-800">
+                        <span className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full bg-${intervention.typeColor}-500`}></span>
+                          {intervention.type}
+                        </span>
+                      </td>
+                      <td className="py-4 border-b border-gray-50 dark:border-gray-800 text-purple-600 dark:text-purple-400">
+                        {intervention.responsible}
+                      </td>
+                      <td className="py-4 border-b border-gray-50 dark:border-gray-800">
+                        <Badge variant={intervention.statusVariant} size="sm">
+                          {intervention.status}
+                        </Badge>
+                      </td>
+                      <td className="py-4 border-b border-gray-50 dark:border-gray-800 text-right">
+                        <button className="text-purple-600 dark:text-purple-400 hover:text-primary transition-colors">
+                          <span className="material-symbols-outlined text-[20px]">visibility</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Carte>
+
+          {/* Notes & Metadata */}
+          <div className="lg:col-span-1 flex flex-col gap-6">
+            {/* Quick Notes */}
+            <Carte className="flex-1">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Notes Rapides</h3>
+              <div className="space-y-4">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mb-1 flex justify-between">
+                    <span>Prof. Mathématiques</span>
+                    <span>Hier</span>
+                  </p>
+                  <p className="text-sm text-gray-900 dark:text-gray-300 italic">
+                    "{student.firstName} semble désintéressé(e) en classe depuis deux semaines. A surveiller."
+                  </p>
+                </div>
+                <div className="relative">
+                  <input
+                    className="w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary"
+                    placeholder="Ajouter une note..."
+                    type="text"
+                  />
+                  <button className="absolute right-2 top-2 text-primary hover:text-purple-700 dark:hover:text-purple-300">
+                    <span className="material-symbols-outlined text-[20px]">send</span>
+                  </button>
+                </div>
+              </div>
+            </Carte>
+
+            {/* Metadata Carte */}
+            <Carte>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Informations Prédiction</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-purple-600 dark:text-purple-400">Modèle</span>
+                  <span className="text-gray-900 dark:text-white font-medium">{prediction.modelVersion}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-purple-600 dark:text-purple-400">Date de calcul</span>
+                  <span className="text-gray-900 dark:text-white font-medium">
+                    {new Date(prediction.createdAt || Date.now()).toLocaleDateString('fr-FR')}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-purple-600 dark:text-purple-400">Taux de réussite prédit</span>
+                  <span className="text-gray-900 dark:text-white font-medium">{prediction.predictedSuccessRate}%</span>
+                </div>
+              </div>
+            </Carte>
+          </div>
+        </div>
+      </div>
+    </MiseEnPagePrincipale>
+  )
+}

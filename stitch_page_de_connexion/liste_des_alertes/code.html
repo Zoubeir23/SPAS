@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ISI Analytics - Liste des Alertes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f38bd",
+                        "primary-light": "#eff6ff",
+                        "background-light": "#f8f9fc",
+                        "background-dark": "#101422",
+                        "danger": "#DC2626",
+                        "warning": "#EA580C",
+                        "success": "#16A34A",
+                        "text-main": "#111827",
+                        "text-secondary": "#4c5e9a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main antialiased overflow-hidden h-screen flex">
+<!-- SideNavBar -->
+<aside class="w-64 bg-white dark:bg-[#1a1f36] border-r border-[#e7eaf3] dark:border-gray-800 flex-shrink-0 flex flex-col h-full z-20 hidden md:flex">
+<div class="p-6 flex flex-col gap-1">
+<h1 class="text-text-main dark:text-white text-lg font-bold leading-normal">ISI Analytics</h1>
+<p class="text-text-secondary text-xs font-medium uppercase tracking-wider">Admin Console</p>
+</div>
+<div class="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-background-light dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#4c5e9a] group-hover:text-primary">dashboard</span>
+<span class="text-sm font-medium">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-background-light dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#4c5e9a] group-hover:text-primary">school</span>
+<span class="text-sm font-medium">Étudiants</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-white dark:bg-primary/20" href="#">
+<span class="material-symbols-outlined fill text-primary dark:text-white">warning</span>
+<span class="text-sm font-bold">Alertes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-background-light dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#4c5e9a] group-hover:text-primary">menu_book</span>
+<span class="text-sm font-medium">Cours</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-background-light dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[#4c5e9a] group-hover:text-primary">pie_chart</span>
+<span class="text-sm font-medium">Rapports</span>
+</a>
+</div>
+<div class="p-4 border-t border-[#e7eaf3] dark:border-gray-800">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center text-white text-xs font-bold">
+                    JD
+                </div>
+<div class="flex flex-col">
+<p class="text-sm font-semibold text-text-main dark:text-white">Jean Dubois</p>
+<p class="text-xs text-text-secondary">Pédagogie</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- TopNavBar -->
+<header class="h-16 bg-white dark:bg-[#1a1f36] border-b border-[#e7eaf3] dark:border-gray-800 flex items-center justify-between px-6 shrink-0 z-10">
+<div class="flex items-center gap-4 md:hidden">
+<button class="text-text-main dark:text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="text-text-main dark:text-white text-lg font-bold">Alertes</h2>
+</div>
+<!-- Breadcrumbs (Desktop) -->
+<div class="hidden md:flex items-center gap-2 text-sm">
+<a class="text-text-secondary hover:text-primary transition-colors" href="#">Accueil</a>
+<span class="text-gray-300">/</span>
+<a class="text-text-secondary hover:text-primary transition-colors" href="#">Suivi Pédagogique</a>
+<span class="text-gray-300">/</span>
+<span class="text-text-main dark:text-white font-medium">Alertes</span>
+</div>
+<div class="flex items-center gap-3 ml-auto">
+<div class="relative hidden sm:block">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-[20px]">search</span>
+<input class="h-9 pl-10 pr-4 rounded-full bg-background-light dark:bg-gray-800 border-none text-sm text-text-main w-64 focus:ring-2 focus:ring-primary/50" placeholder="Rechercher..." type="text"/>
+</div>
+<button class="size-9 flex items-center justify-center rounded-full bg-background-light dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-text-main dark:text-white relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-danger rounded-full border-2 border-white dark:border-gray-800"></span>
+</button>
+<button class="size-9 flex items-center justify-center rounded-full bg-background-light dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-text-main dark:text-white">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Page Content -->
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-6">
+<div class="max-w-[1200px] mx-auto flex flex-col gap-6">
+<!-- Page Heading & Actions -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="text-text-main dark:text-white text-3xl font-black tracking-tight mb-2">Liste des Alertes Prédictives</h1>
+<p class="text-text-secondary dark:text-gray-400">Gérez les risques de décrochage et les alertes de performance.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 h-10 px-4 bg-white dark:bg-gray-800 border border-[#e7eaf3] dark:border-gray-700 rounded-lg text-text-main dark:text-white text-sm font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span>Filtres avancés</span>
+</button>
+<button class="flex items-center gap-2 h-10 px-4 bg-primary text-white rounded-lg text-sm font-bold shadow-md hover:bg-blue-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Nouvelle règle</span>
+</button>
+</div>
+</div>
+<!-- Tabs & Quick Filters -->
+<div class="bg-white dark:bg-[#1a1f36] rounded-xl border border-[#e7eaf3] dark:border-gray-800 shadow-sm p-1">
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4 px-3 py-2">
+<!-- Tabs -->
+<div class="flex gap-1 bg-background-light dark:bg-gray-800 p-1 rounded-lg w-full sm:w-auto">
+<button class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-sm font-semibold bg-white dark:bg-[#1a1f36] text-primary shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                                Toutes (24)
+                            </button>
+<button class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-sm font-medium text-text-secondary hover:text-text-main hover:bg-white/50 dark:hover:bg-gray-700 transition-all">
+                                Non vues (5)
+                            </button>
+<button class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-sm font-medium text-text-secondary hover:text-text-main hover:bg-white/50 dark:hover:bg-gray-700 transition-all">
+                                Non traitées (12)
+                            </button>
+</div>
+<!-- Toolbar -->
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<div class="relative flex-1 sm:flex-none sm:w-48">
+<select class="w-full h-9 pl-3 pr-8 rounded-lg border-gray-200 dark:border-gray-700 text-sm focus:border-primary focus:ring-primary bg-transparent text-text-main dark:text-white">
+<option>Priorité: Toutes</option>
+<option>Critique</option>
+<option>Moyenne</option>
+<option>Faible</option>
+</select>
+</div>
+<div class="relative flex-1 sm:flex-none sm:w-48">
+<select class="w-full h-9 pl-3 pr-8 rounded-lg border-gray-200 dark:border-gray-700 text-sm focus:border-primary focus:ring-primary bg-transparent text-text-main dark:text-white">
+<option>Assigné à: Tous</option>
+<option>Moi</option>
+<option>Non assigné</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- Alert Cards Grid -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Card 1: Critical -->
+<div class="group bg-white dark:bg-[#1a1f36] rounded-xl border-l-[6px] border-l-danger border-y border-r border-r-[#e7eaf3] border-y-[#e7eaf3] dark:border-r-gray-800 dark:border-y-gray-800 shadow-sm hover:shadow-md transition-all p-5">
+<div class="flex flex-col md:flex-row gap-6">
+<!-- Left: Student Info -->
+<div class="flex gap-4 md:w-1/4 min-w-[240px]">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-cover bg-center border border-gray-100" data-alt="Portrait of Sophie Martin" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCnDryGB4KBz7yyhcOOtR9P4fhWiEcFol7ifORIF9qLK_ESnYMCILESb9M918zZVMVpxHKXA__kiX0dHcjgfuavT0b5wi7G0-MZkDUovLJRsrXCspXjEzkqa06gekpHLDz78NmJz5Mdm3O9oL-x4hV8zqYMeo717EBPyzNUvbRdw8B8ItjdiZdDd5rQ4m8wlDqo_NkeGIMo3IQszPJY5xynbV3WC1_o-Oawh_NtUS72qYkdzH8OezNOqCuz67tPgh3ws5UafJaUnG3f');"></div>
+<div class="absolute -bottom-1 -right-1 bg-danger text-white rounded-full p-1 border-2 border-white dark:border-[#1a1f36]" title="Critique">
+<span class="material-symbols-outlined text-[14px] font-bold block">priority_high</span>
+</div>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="text-text-main dark:text-white font-bold text-lg leading-tight">Sophie Martin</h3>
+<p class="text-text-secondary text-sm">Bachelor 2 - Info</p>
+<p class="text-xs text-text-secondary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">id_card</span> ID: 2023-4482
+                                    </p>
+</div>
+</div>
+<!-- Middle: Risk Analysis -->
+<div class="flex-1 flex flex-col justify-center border-l border-r border-dashed border-gray-200 dark:border-gray-700 px-0 md:px-6 py-2 md:py-0 my-2 md:my-0 border-l-0 border-r-0 md:border-l md:border-r">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-danger flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">analytics</span> Risque de décrochage
+                                    </span>
+<span class="text-sm font-bold text-text-main dark:text-white">85%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mb-3">
+<div class="bg-danger h-2 rounded-full" style="width: 85%"></div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center px-2 py-1 rounded bg-red-50 dark:bg-red-900/20 text-danger text-xs font-medium border border-red-100 dark:border-red-900/30">
+                                        Absences consécutives (3)
+                                    </span>
+<span class="inline-flex items-center px-2 py-1 rounded bg-red-50 dark:bg-red-900/20 text-danger text-xs font-medium border border-red-100 dark:border-red-900/30">
+                                        Chute moyenne (-4 pts)
+                                    </span>
+<span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-medium">
+                                        Non participation
+                                    </span>
+</div>
+</div>
+<!-- Right: Meta & Actions -->
+<div class="flex flex-col justify-between items-end gap-4 md:w-1/4 min-w-[200px]">
+<div class="flex items-center gap-2 text-xs text-text-secondary w-full justify-end">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Il y a 2h</span>
+<span class="mx-1">•</span>
+<span class="text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded font-medium border border-orange-100">Non traitée</span>
+</div>
+<div class="flex flex-col gap-2 w-full">
+<button class="w-full h-9 bg-primary hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+                                        Créer intervention
+                                    </button>
+<button class="w-full h-9 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 text-text-main dark:text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-gray-400">visibility</span>
+                                        Marquer comme vu
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Warning -->
+<div class="group bg-white dark:bg-[#1a1f36] rounded-xl border-l-[6px] border-l-warning border-y border-r border-r-[#e7eaf3] border-y-[#e7eaf3] dark:border-r-gray-800 dark:border-y-gray-800 shadow-sm hover:shadow-md transition-all p-5">
+<div class="flex flex-col md:flex-row gap-6">
+<!-- Left: Student Info -->
+<div class="flex gap-4 md:w-1/4 min-w-[240px]">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-cover bg-center border border-gray-100" data-alt="Portrait of Lucas Dubois" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAJzoRklTUz3bxGa_KUn26qsv0gHfu8asqUi9AzrmasGbsPTnYdFsmgLhTfFX1xXo7wo4dRYwKcTtlVvz9q8DRTz0qxj9OuAwfrjHIEIJHHmaRqH5s-FarxGEzhN3etBvIH3qgU1L0FUd3ZeGa_IlEZ-JvL7cnIYB7Xatb2vX488TETsEi6YVpu6X_h9l7sRBpnkKKYgo1yxTeCdCvJLmcZwZ-R4eMCuQcMdVQtsLskf-HHIEN0adYKoiI9J_WRz79E7rghakboPfK3');"></div>
+<div class="absolute -bottom-1 -right-1 bg-warning text-white rounded-full p-1 border-2 border-white dark:border-[#1a1f36]" title="Moyenne">
+<span class="material-symbols-outlined text-[14px] font-bold block">warning</span>
+</div>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="text-text-main dark:text-white font-bold text-lg leading-tight">Lucas Dubois</h3>
+<p class="text-text-secondary text-sm">Master 1 - Data Science</p>
+<p class="text-xs text-text-secondary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">id_card</span> ID: 2023-1102
+                                    </p>
+</div>
+</div>
+<!-- Middle: Risk Analysis -->
+<div class="flex-1 flex flex-col justify-center border-l border-r border-dashed border-gray-200 dark:border-gray-700 px-0 md:px-6 py-2 md:py-0 my-2 md:my-0 border-l-0 border-r-0 md:border-l md:border-r">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-warning flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">trending_down</span> Stagnation des notes
+                                    </span>
+<span class="text-sm font-bold text-text-main dark:text-white">45%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mb-3">
+<div class="bg-warning h-2 rounded-full" style="width: 45%"></div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center px-2 py-1 rounded bg-orange-50 dark:bg-orange-900/20 text-warning text-xs font-medium border border-orange-100 dark:border-orange-900/30">
+                                        Notes sous la moyenne
+                                    </span>
+<span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-medium">
+                                        Retard devoir (1)
+                                    </span>
+</div>
+</div>
+<!-- Right: Meta & Actions -->
+<div class="flex flex-col justify-between items-end gap-4 md:w-1/4 min-w-[200px]">
+<div class="flex items-center gap-2 text-xs text-text-secondary w-full justify-end">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Hier, 14:30</span>
+<span class="mx-1">•</span>
+<span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium border border-blue-100">En cours</span>
+</div>
+<div class="flex flex-col gap-2 w-full">
+<button class="w-full h-9 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-primary text-primary dark:text-blue-400 text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+                                        Traiter l'alerte
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3: Warning (Unassigned) -->
+<div class="group bg-white dark:bg-[#1a1f36] rounded-xl border-l-[6px] border-l-warning border-y border-r border-r-[#e7eaf3] border-y-[#e7eaf3] dark:border-r-gray-800 dark:border-y-gray-800 shadow-sm hover:shadow-md transition-all p-5 opacity-90 hover:opacity-100">
+<div class="flex flex-col md:flex-row gap-6">
+<!-- Left: Student Info -->
+<div class="flex gap-4 md:w-1/4 min-w-[240px]">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full flex items-center justify-center bg-gray-100 text-gray-500 font-bold text-xl border border-gray-200">
+                                        KL
+                                    </div>
+<div class="absolute -bottom-1 -right-1 bg-warning text-white rounded-full p-1 border-2 border-white dark:border-[#1a1f36]" title="Moyenne">
+<span class="material-symbols-outlined text-[14px] font-bold block">warning</span>
+</div>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="text-text-main dark:text-white font-bold text-lg leading-tight">Kevin Leroy</h3>
+<p class="text-text-secondary text-sm">Bachelor 1 - Gestion</p>
+<p class="text-xs text-text-secondary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">id_card</span> ID: 2023-8821
+                                    </p>
+</div>
+</div>
+<!-- Middle: Risk Analysis -->
+<div class="flex-1 flex flex-col justify-center border-l border-r border-dashed border-gray-200 dark:border-gray-700 px-0 md:px-6 py-2 md:py-0 my-2 md:my-0 border-l-0 border-r-0 md:border-l md:border-r">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-warning flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">group_off</span> Isolement social
+                                    </span>
+<span class="text-sm font-bold text-text-main dark:text-white">52%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mb-3">
+<div class="bg-warning h-2 rounded-full" style="width: 52%"></div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center px-2 py-1 rounded bg-orange-50 dark:bg-orange-900/20 text-warning text-xs font-medium border border-orange-100 dark:border-orange-900/30">
+                                        Aucune interaction forum
+                                    </span>
+<span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-text-secondary text-xs font-medium">
+                                        Pas de groupe projet
+                                    </span>
+</div>
+</div>
+<!-- Right: Meta & Actions -->
+<div class="flex flex-col justify-between items-end gap-4 md:w-1/4 min-w-[200px]">
+<div class="flex items-center gap-2 text-xs text-text-secondary w-full justify-end">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>24 Oct, 09:15</span>
+<span class="mx-1">•</span>
+<span class="text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded font-medium border border-gray-200">Non assigné</span>
+</div>
+<div class="flex flex-col gap-2 w-full">
+<button class="w-full h-9 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-text-main dark:text-white text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                                        S'assigner
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 4: Success/Processed (Example of history or resolved) -->
+<div class="group bg-gray-50 dark:bg-[#15192b] rounded-xl border border-gray-200 dark:border-gray-800 p-5 opacity-75 hover:opacity-100 transition-opacity">
+<div class="flex flex-col md:flex-row gap-6">
+<!-- Left: Student Info -->
+<div class="flex gap-4 md:w-1/4 min-w-[240px]">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-cover bg-center border border-gray-100 grayscale" data-alt="Portrait of Amina" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDhOg2U5cb3JGJeHByl-45k_99EcuOaoFaqqoXUr7OkwlDZ3NR16vIYYjHMukX7JjOdVAPTOg7fxR2w7re7bgKAZ0Fav46ny7UiHSuT0tF8DyyT7utG1AEvmefbv6uyFuBwDxGNJl9Hy4t5xIzfuDiaVyPbHUtgX7s1Srw902Gr9LkK0wDKKDgbeQ4WNl9aKVVQhcI-_gTm1lqpcHXWbZO3x5bCMvlPv__0QOmJ8vEbm0OIuQVwaGycExd72KwKxy_VV2hCU--gCPXp');"></div>
+<div class="absolute -bottom-1 -right-1 bg-success text-white rounded-full p-1 border-2 border-white dark:border-[#1a1f36]" title="Faible / Résolu">
+<span class="material-symbols-outlined text-[14px] font-bold block">check</span>
+</div>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="text-gray-700 dark:text-gray-300 font-bold text-lg leading-tight">Amina Benali</h3>
+<p class="text-text-secondary text-sm">Bachelor 3 - Marketing</p>
+<p class="text-xs text-text-secondary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">id_card</span> ID: 2022-3004
+                                    </p>
+</div>
+</div>
+<!-- Middle: Risk Analysis -->
+<div class="flex-1 flex flex-col justify-center border-l border-r border-dashed border-gray-200 dark:border-gray-700 px-0 md:px-6 py-2 md:py-0 my-2 md:my-0 border-l-0 border-r-0 md:border-l md:border-r">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold uppercase tracking-wider text-success flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">task_alt</span> Résolu
+                                    </span>
+<span class="text-sm font-bold text-gray-500">15%</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3">
+<div class="bg-success h-2 rounded-full" style="width: 15%"></div>
+</div>
+<p class="text-xs text-gray-500 italic">Intervention le 20 Octobre: Plan de soutien mis en place.</p>
+</div>
+<!-- Right: Meta & Actions -->
+<div class="flex flex-col justify-between items-end gap-4 md:w-1/4 min-w-[200px]">
+<div class="flex items-center gap-2 text-xs text-text-secondary w-full justify-end">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span>20 Oct</span>
+<span class="mx-1">•</span>
+<span class="text-success bg-green-50 px-1.5 py-0.5 rounded font-medium border border-green-100">Traité</span>
+</div>
+<div class="flex flex-col gap-2 w-full">
+<button class="w-full h-9 bg-transparent hover:bg-white dark:hover:bg-gray-800 border border-transparent hover:border-gray-300 text-text-secondary text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                                        Voir dossier
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 pt-4">
+<p class="text-sm text-text-secondary">Affichage de 1 à 4 sur 24 alertes</p>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium disabled:opacity-50" disabled="">Précédent</button>
+<button class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-text-main dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium">Suivant</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Prédictif ISI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#8253d5",
+                        "primary-light": "#a785e2",
+                        "primary-dark": "#613ea1",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#17131f",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#231e2e",
+                        "danger": "#DC2626",
+                        "warning": "#EA580C",
+                        "success": "#16A34A",
+                        "text-main": "#111827",
+                        "text-sub": "#6b578e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+        }
+        
+        /* Chart styles */
+        .chart-circle {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Side Navigation -->
+<aside class="flex w-64 flex-col border-r border-[#d9d3e4] dark:border-gray-700 bg-surface-light dark:bg-surface-dark transition-colors duration-300">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-6">
+<!-- User Profile / Branding -->
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-gray-200 dark:border-gray-600" data-alt="User profile avatar showing a professional portrait" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD-seEBFGXEnduCfHiwDwqWeddyMuRIntQ2w38hHlQSwcDOhLAahKof_HzSJbIKcQ5FcMZaUTCtXk5V7G-MD_JHEcuWKYtdeR2Cv56Zhb_qP4PTkPa0F5IWcUPgi5FRpOMFTdfEoGmNolGyW9ihKxe7i9TjA-tjtvywOvoI59PKY2PqlBix_Uv0Gp15HLDHKXdEt9fbi5flrE0PNYh_rptlTkOqvAHzaf-_2-mHBPIF6JsYDhFMcmF9xiuBmc_mQACDVZ_tJCJqelX-");'></div>
+<div class="flex flex-col">
+<h1 class="text-text-main dark:text-white text-base font-bold leading-normal">ISI Admin</h1>
+<p class="text-text-sub dark:text-gray-400 text-xs font-normal leading-normal">Direction Pédagogique</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">group</span>
+<span class="text-sm font-medium">Étudiants</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">menu_book</span>
+<span class="text-sm font-medium">Cours</span>
+</a>
+<!-- Active Link -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light" href="#">
+<span class="material-symbols-outlined text-primary dark:text-primary-light" data-weight="fill">psychology</span>
+<span class="text-sm font-bold">Prédictions</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">settings</span>
+<span class="text-sm font-medium">Paramètres</span>
+</a>
+</nav>
+</div>
+<!-- Footer/Logout -->
+<div class="px-2">
+<button class="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-danger hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm font-medium">Déconnexion</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-y-auto bg-background-light dark:bg-background-dark">
+<!-- Page Header -->
+<header class="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm px-8 py-6 border-b border-gray-200 dark:border-gray-800">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto">
+<div class="flex flex-col gap-1">
+<h1 class="text-text-main dark:text-white text-3xl font-black tracking-tight">Dashboard Prédictif</h1>
+<p class="text-text-sub dark:text-gray-400 text-sm font-normal">Analyse prédictive de la rétention étudiante par l'IA</p>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-text-main dark:text-white text-sm font-bold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+<span>Rapport Complet PDF</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-md hover:bg-primary-dark transition-colors">
+<span class="material-symbols-outlined text-[20px] animate-pulse">refresh</span>
+<span>Regénérer Prédictions</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-8 max-w-7xl mx-auto w-full flex flex-col gap-8">
+<!-- Filters Section -->
+<section class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex flex-col sm:flex-row gap-4">
+<div class="flex-1 flex flex-col gap-1">
+<label class="text-xs font-semibold text-text-sub dark:text-gray-400 uppercase tracking-wider">Session Académique</label>
+<div class="relative">
+<select class="w-full h-11 pl-4 pr-10 rounded-lg bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 text-text-main dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none cursor-pointer">
+<option>Automne 2023</option>
+<option>Hiver 2024</option>
+<option>Été 2023</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-gray-500 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<label class="text-xs font-semibold text-text-sub dark:text-gray-400 uppercase tracking-wider">Programme</label>
+<div class="relative">
+<select class="w-full h-11 pl-4 pr-10 rounded-lg bg-background-light dark:bg-background-dark border border-gray-200 dark:border-gray-700 text-text-main dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none cursor-pointer">
+<option>Tous les programmes</option>
+<option>Génie Logiciel</option>
+<option>Sciences Infirmières</option>
+<option>Administration</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-gray-500 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="flex-none flex items-end">
+<button class="h-11 px-4 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-transparent transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+</section>
+<!-- KPI Cards -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- High Risk -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-danger">warning</span>
+</div>
+<p class="text-text-sub dark:text-gray-400 text-sm font-medium">Étudiants à Risque Élevé</p>
+<div class="flex items-baseline gap-2 mt-2">
+<h2 class="text-3xl font-bold text-danger">42</h2>
+<span class="text-xs font-bold text-danger bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +5%
+                            </span>
+</div>
+<p class="text-xs text-gray-400 mt-1">Nécessite attention immédiate</p>
+</div>
+<!-- Medium Risk -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-warning">error</span>
+</div>
+<p class="text-text-sub dark:text-gray-400 text-sm font-medium">Étudiants à Risque Moyen</p>
+<div class="flex items-baseline gap-2 mt-2">
+<h2 class="text-3xl font-bold text-warning">115</h2>
+<span class="text-xs font-bold text-warning bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +2%
+                            </span>
+</div>
+<p class="text-xs text-gray-400 mt-1">Surveillance recommandée</p>
+</div>
+<!-- Low Risk -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-success">check_circle</span>
+</div>
+<p class="text-text-sub dark:text-gray-400 text-sm font-medium">Étudiants à Risque Faible</p>
+<div class="flex items-baseline gap-2 mt-2">
+<h2 class="text-3xl font-bold text-success">850</h2>
+<span class="text-xs font-bold text-success bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-[14px]">trending_down</span> -1%
+                            </span>
+</div>
+<p class="text-xs text-gray-400 mt-1">Progression normale</p>
+</div>
+<!-- Dropout Rate -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">analytics</span>
+</div>
+<p class="text-text-sub dark:text-gray-400 text-sm font-medium">Taux d'Abandon Prévu</p>
+<div class="flex items-baseline gap-2 mt-2">
+<h2 class="text-3xl font-bold text-text-main dark:text-white">12.5%</h2>
+<span class="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-[14px]">remove</span> 0.0%
+                            </span>
+</div>
+<p class="text-xs text-gray-400 mt-1">Prédiction fin de session</p>
+</div>
+</section>
+<!-- Charts Section -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Donut Chart -->
+<div class="lg:col-span-1 bg-surface-light dark:bg-surface-dark rounded-xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-text-main dark:text-white font-bold text-lg">Distribution des Risques</h3>
+<p class="text-text-sub dark:text-gray-400 text-sm">Vue d'ensemble de la cohorte</p>
+</div>
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center relative">
+<!-- SVG Donut Chart -->
+<div class="relative size-48">
+<svg class="size-full chart-circle" viewbox="0 0 36 36">
+<!-- Background Circle -->
+<path class="text-gray-100 dark:text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<!-- Low Risk (Green) - 84% -->
+<path class="text-success" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="84, 100" stroke-width="3"></path>
+<!-- Medium Risk (Orange) - 11% offset 84 -->
+<path class="text-warning" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="11, 100" stroke-dashoffset="-84" stroke-width="3"></path>
+<!-- High Risk (Red) - 5% offset 95 -->
+<path class="text-danger" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="5, 100" stroke-dashoffset="-95" stroke-width="3"></path>
+</svg>
+<!-- Center Text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+<span class="text-3xl font-black text-text-main dark:text-white">1007</span>
+<span class="text-xs text-text-sub dark:text-gray-400 font-medium">Étudiants</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 mt-6">
+<div class="flex flex-col items-center gap-1">
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-success"></div>
+<span class="text-xs text-gray-500">Faible</span>
+</div>
+<span class="font-bold text-text-main dark:text-white">84%</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-warning"></div>
+<span class="text-xs text-gray-500">Moyen</span>
+</div>
+<span class="font-bold text-text-main dark:text-white">11%</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-danger"></div>
+<span class="text-xs text-gray-500">Élevé</span>
+</div>
+<span class="font-bold text-text-main dark:text-white">5%</span>
+</div>
+</div>
+</div>
+<!-- Line Chart -->
+<div class="lg:col-span-2 bg-surface-light dark:bg-surface-dark rounded-xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-text-main dark:text-white font-bold text-lg">Évolution Hebdomadaire du Risque</h3>
+<p class="text-text-sub dark:text-gray-400 text-sm">Tendance du score de risque moyen</p>
+</div>
+<!-- Legend -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-0.5 bg-primary"></div>
+<span class="text-xs text-gray-500">Score Moyen</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-0.5 bg-gray-300 border border-gray-300 border-dashed"></div>
+<span class="text-xs text-gray-500">Seuil Critique</span>
+</div>
+</div>
+</div>
+<div class="flex-1 w-full min-h-[200px] relative">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 300">
+<defs>
+<lineargradient id="lineGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#8253d5" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#8253d5" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#e5e7eb" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
+<line stroke="#e5e7eb" stroke-dasharray="4,4" stroke-width="1" x1="0" x2="800" y1="150" y2="150"></line>
+<line stroke="#e5e7eb" stroke-width="1" x1="0" x2="800" y1="50" y2="50"></line>
+<!-- Threshold Line (Dashed) -->
+<line stroke="#9ca3af" stroke-dasharray="6,4" stroke-width="1" x1="0" x2="800" y1="100" y2="100"></line>
+<!-- Data Area -->
+<path d="M0,200 Q100,180 200,210 T400,150 T600,120 T800,90 V300 H0 Z" fill="url(#lineGradient)"></path>
+<!-- Data Line -->
+<path d="M0,200 Q100,180 200,210 T400,150 T600,120 T800,90" fill="none" stroke="#8253d5" stroke-linecap="round" stroke-width="3"></path>
+<!-- Points -->
+<circle cx="0" cy="200" fill="#8253d5" r="4"></circle>
+<circle cx="200" cy="210" fill="#8253d5" r="4"></circle>
+<circle cx="400" cy="150" fill="#8253d5" r="4"></circle>
+<circle cx="600" cy="120" fill="#8253d5" r="4"></circle>
+<circle cx="800" cy="90" fill="#8253d5" r="4"></circle>
+</svg>
+</div>
+<div class="flex justify-between mt-4 px-2">
+<span class="text-xs text-gray-400">Semaine 1</span>
+<span class="text-xs text-gray-400">Semaine 3</span>
+<span class="text-xs text-gray-400">Semaine 5</span>
+<span class="text-xs text-gray-400">Semaine 7</span>
+<span class="text-xs text-gray-400">Semaine 10</span>
+</div>
+</div>
+</section>
+<!-- Details Section -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Top 10 High Risk Students List -->
+<div class="lg:col-span-2 bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+<div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+<h3 class="text-text-main dark:text-white font-bold text-lg">Top 10 Étudiants à Risque</h3>
+<a class="text-sm text-primary hover:text-primary-dark font-medium" href="#">Voir tout</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 dark:bg-gray-800/50">
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Étudiant</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Programme</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Score de Risque</th>
+<th class="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Statut</th>
+<th class="p-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+<!-- Student 1 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 bg-gray-200" data-alt="Avatar of student Sophie Martin" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBDG6M-FJXu6pZ7mzdfAWGvgUhZ-pC7i2i3rqmBLEREYTPt_rY_wV7LMxTsxPHT8qxb8JELujVf38T9CAo3hhHc2LzxgMVTYSnr0bTdMPN__zI3H8OSydKhTsMZG_8q1EMHZRUDs8S94g19QkfpNPwtP7fjx_Dpu2QKFLzJ_v1OwGB9PtIb-1V12Cfs9saCHWH_cRGYZ6QLaK82piC9873HgMfovvlt6n8okMn2iNzOXkHDsFAzgL3PwyxAMmf9gsgM-t-411_8JN00");'></div>
+<div>
+<p class="font-bold text-text-main dark:text-white text-sm">Sophie Martin</p>
+<p class="text-xs text-gray-500">ID: 20230012</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-text-sub dark:text-gray-300">Génie Logiciel</td>
+<td class="p-4 text-right">
+<span class="font-bold text-danger">98%</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                                                Critique
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">chevron_right</span>
+</td>
+</tr>
+<!-- Student 2 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 bg-gray-200" data-alt="Avatar of student Thomas Dubois" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBVZz2fWjEx12-Z-m95tflz4jycMXgSdGSczzezMvirjts83tBxl-0628EWj7uDgvne6IPpqSbp4MQW3wNZhS3nYlh-jRaWO4jpi0YrLSSkYLh2KW8q-VDn1KyZhaiwjDruo0fplzSp2T9kNqVQRXVnIw_Rx0UbpPtklkT6zyeZeN-j9YYKOVYKYaqVQwpGgGxZdiW0aOQcxV76YBDB9YysFn7xBbQX8Sf-nyXTFVl6mpODv4OEhbZByQfZkjCnpJwzm-Po9A9xxZhE");'></div>
+<div>
+<p class="font-bold text-text-main dark:text-white text-sm">Thomas Dubois</p>
+<p class="text-xs text-gray-500">ID: 20230541</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-text-sub dark:text-gray-300">Administration</td>
+<td class="p-4 text-right">
+<span class="font-bold text-danger">92%</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                                                Critique
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">chevron_right</span>
+</td>
+</tr>
+<!-- Student 3 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 bg-gray-200" data-alt="Avatar of student Amina Bennani" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDfYQpYn_jBXxDcqKgNGuU7CJ-FzzGGvV1WTNJKZRyJVFxjtfvIibLRaqKzdZao80GSxg7exX0WYE9wm9LXeYyOsv4WswmhAIcXiITd860MS4nF4hL5dhxBXbGSA9wCPPcla4u7ycOXkA-DYgY8nTTWb1l4rWUiri1TvdFYInDTdCyuTFNTwCWpkGeTHegyo7EGs6cIbxQGF5fQJg3K-4j704n1GGoTkTJSdMEbvqyuZo5Ik4QUp017w6QFMZRMBsHmjOuM3f4lT3i6");'></div>
+<div>
+<p class="font-bold text-text-main dark:text-white text-sm">Amina Bennani</p>
+<p class="text-xs text-gray-500">ID: 20230882</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-text-sub dark:text-gray-300">Sciences Infirmières</td>
+<td class="p-4 text-right">
+<span class="font-bold text-danger">87%</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                                                Critique
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">chevron_right</span>
+</td>
+</tr>
+<!-- Student 4 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors cursor-pointer group">
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 bg-gray-200" data-alt="Avatar of student Lucas Moretti" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC1450jD3C551kvLNJ2Ekqh-Ycq3kC9MpZOJFoCPtWjU0hhuageUhGe15AVOW_gsYrfJVTwaJOzmhYbw8o2gdUkABEPozP1cWYFYJM8_UfTmppWsFuTEErZbRdCChcABpyAvsUqVgfcl5mnTkKtDwYMgv17UXRdblcaaGZrgS-6MqHIWXA2KcsXXfBNkK7XIVJVjxuCDN-29BG1ySL0qWfs3N17r0GJ5h__cxL1RTxI_uJcKoFFJChQhbiB1H9-NvtBKfHr3tRuo3AF");'></div>
+<div>
+<p class="font-bold text-text-main dark:text-white text-sm">Lucas Moretti</p>
+<p class="text-xs text-gray-500">ID: 20231023</p>
+</div>
+</div>
+</td>
+<td class="p-4 text-sm text-text-sub dark:text-gray-300">Génie Civil</td>
+<td class="p-4 text-right">
+<span class="font-bold text-warning">78%</span>
+</td>
+<td class="p-4 text-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300">
+                                                Moyen
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">chevron_right</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Risk Factors -->
+<div class="lg:col-span-1 bg-surface-light dark:bg-surface-dark rounded-xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col gap-6">
+<h3 class="text-text-main dark:text-white font-bold text-lg">Facteurs de Risque Fréquents</h3>
+<div class="flex flex-col gap-5">
+<!-- Factor 1 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="text-sm font-medium text-text-main dark:text-white">Absentéisme (&gt;15%)</span>
+<span class="text-xs font-bold text-danger">65%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-danger h-2 rounded-full" style="width: 65%"></div>
+</div>
+<p class="text-xs text-gray-400">Affecte 27 étudiants à risque</p>
+</div>
+<!-- Factor 2 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="text-sm font-medium text-text-main dark:text-white">Échecs Partiels</span>
+<span class="text-xs font-bold text-warning">42%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-warning h-2 rounded-full" style="width: 42%"></div>
+</div>
+<p class="text-xs text-gray-400">Notes inférieures à 60%</p>
+</div>
+<!-- Factor 3 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="text-sm font-medium text-text-main dark:text-white">Remises Tardives</span>
+<span class="text-xs font-bold text-primary">30%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 30%"></div>
+</div>
+<p class="text-xs text-gray-400">Plus de 3 retards consécutifs</p>
+</div>
+<!-- Factor 4 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<span class="text-sm font-medium text-text-main dark:text-white">Faible Engagement LMS</span>
+<span class="text-xs font-bold text-primary-light">18%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-primary-light h-2 rounded-full" style="width: 18%"></div>
+</div>
+<p class="text-xs text-gray-400">Peu de connexions à Moodle</p>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+<button class="text-primary hover:text-primary-dark text-sm font-medium w-full text-center">Voir l'analyse détaillée des facteurs</button>
+</div>
+</div>
+</section>
+<!-- Bottom Spacer -->
+<div class="h-8"></div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Page Détails Modèle - ISI Admin</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7c3bed",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#171121",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e1b29",
+                        "text-main": "#130e1b",
+                        "text-secondary": "#694d99",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-row overflow-hidden">
+<!-- Side Navigation -->
+<aside class="flex w-64 flex-col border-r border-[#e5e7eb] dark:border-[#2d2d3b] bg-background-light dark:bg-surface-dark transition-all">
+<div class="flex h-full flex-col justify-between p-4">
+<div class="flex flex-col gap-6">
+<!-- Brand -->
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 shadow-sm" data-alt="Abstract purple geometric logo representing AI" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDPNbMp-i39bwxoDHUDECmZukYBILOcykbW8Lqzlc_s6iV5n7qtHAoMCBbH7FjWNZC9MMIRiW18eivV_nz39gdzC--ODiee7i1QjHCeWp7Tn0b1ASC8RrbcrUPzPKnPVmYQxyWc4tYXIX7ujXGNUE-wrPHM0EZX7lfU-FVEDP2hOsW-0xcao45WTF3etnGYrsAgSIN43ig41ZH_42nS1ZiWY7NwZ3vZ0bXmtMjQnnGz3duVLgfAbHbZHlxaxUVVyGDTgfijNu6vRgzR");'></div>
+<div class="flex flex-col">
+<h1 class="text-text-main dark:text-white text-base font-bold leading-normal">ISI Admin</h1>
+<p class="text-text-secondary dark:text-gray-400 text-xs font-normal leading-normal">Administration IA</p>
+</div>
+</div>
+<!-- Navigation Items -->
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-[#ece7f3] dark:hover:bg-[#2d2838] transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary">dashboard</span>
+<p class="text-sm font-medium leading-normal">Tableau de bord</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light" href="#">
+<span class="material-symbols-outlined text-primary fill-1">smart_toy</span>
+<p class="text-sm font-bold leading-normal">Modèles</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-[#ece7f3] dark:hover:bg-[#2d2838] transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary">school</span>
+<p class="text-sm font-medium leading-normal">Étudiants</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-[#ece7f3] dark:hover:bg-[#2d2838] transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary">settings</span>
+<p class="text-sm font-medium leading-normal">Paramètres</p>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-main dark:text-gray-300 hover:bg-[#ece7f3] dark:hover:bg-[#2d2838] transition-colors group" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 group-hover:text-primary">help</span>
+<p class="text-sm font-medium leading-normal">Aide</p>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-screen overflow-y-auto">
+<div class="p-6 md:p-10 max-w-7xl mx-auto w-full flex flex-col gap-6">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap items-center gap-2 text-sm">
+<a class="text-text-secondary dark:text-gray-400 hover:text-primary font-medium" href="#">Modèles</a>
+<span class="text-text-secondary dark:text-gray-500">/</span>
+<a class="text-text-secondary dark:text-gray-400 hover:text-primary font-medium" href="#">Liste des modèles</a>
+<span class="text-text-secondary dark:text-gray-500">/</span>
+<span class="text-text-main dark:text-white font-semibold">Détails v2024.12.10</span>
+</div>
+<!-- Page Header & Actions -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex flex-col gap-2">
+<h1 class="text-text-main dark:text-white text-3xl font-bold tracking-tight">Modèle v2024.12.10_143022</h1>
+<div class="flex items-center gap-2">
+<span class="flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+<p class="text-text-secondary dark:text-gray-300 text-sm font-medium">Statut: <span class="text-text-main dark:text-white">Déployé (Production)</span></p>
+</div>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="flex h-10 items-center justify-center rounded-lg px-4 border border-[#d8d0e7] dark:border-gray-600 bg-transparent hover:bg-white dark:hover:bg-gray-800 text-text-main dark:text-white text-sm font-semibold transition-all">
+<span class="material-symbols-outlined text-[20px] mr-2">history</span>
+                            Réentraîner
+                        </button>
+<button class="flex h-10 items-center justify-center rounded-lg px-4 border border-[#d8d0e7] dark:border-gray-600 bg-transparent hover:bg-white dark:hover:bg-gray-800 text-text-main dark:text-white text-sm font-semibold transition-all">
+<span class="material-symbols-outlined text-[20px] mr-2">archive</span>
+                            Archiver
+                        </button>
+<button class="flex h-10 items-center justify-center rounded-lg px-6 bg-primary hover:bg-primary/90 text-white text-sm font-bold shadow-md shadow-primary/20 transition-all">
+<span class="material-symbols-outlined text-[20px] mr-2">rocket_launch</span>
+                            Déployer
+                        </button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="border-b border-[#d8d0e7] dark:border-gray-700">
+<nav aria-label="Tabs" class="flex gap-8 overflow-x-auto">
+<a class="border-b-[3px] border-primary pb-3 px-1 text-sm font-bold text-primary" href="#">
+                            Métriques
+                        </a>
+<a class="border-b-[3px] border-transparent pb-3 px-1 text-sm font-medium text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-all" href="#">
+                            Features
+                        </a>
+<a class="border-b-[3px] border-transparent pb-3 px-1 text-sm font-medium text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-all" href="#">
+                            Confusion
+                        </a>
+<a class="border-b-[3px] border-transparent pb-3 px-1 text-sm font-medium text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-all" href="#">
+                            SHAP
+                        </a>
+<a class="border-b-[3px] border-transparent pb-3 px-1 text-sm font-medium text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600 transition-all" href="#">
+                            Export
+                        </a>
+</nav>
+</div>
+<!-- Dashboard Grid -->
+<div class="flex flex-col gap-6">
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Accuracy -->
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium">Accuracy</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-text-main dark:text-white">94.2%</h3>
+<span class="flex items-center text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 2.1%
+                                </span>
+</div>
+</div>
+<!-- Precision -->
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium">Précision</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-text-main dark:text-white">91.5%</h3>
+<span class="flex items-center text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 0.8%
+                                </span>
+</div>
+</div>
+<!-- Recall -->
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium">Rappel (Recall)</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-text-main dark:text-white">89.0%</h3>
+<span class="flex items-center text-xs font-bold text-red-500 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">trending_down</span> 1.2%
+                                </span>
+</div>
+</div>
+<!-- F1 Score -->
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium">F1-Score</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-text-main dark:text-white">90.2%</h3>
+<span class="flex items-center text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 0.5%
+                                </span>
+</div>
+</div>
+</div>
+<!-- Chart & Info Split -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- ROC Curve -->
+<div class="lg:col-span-2 bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col h-full min-h-[400px]">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-white">Courbe ROC</h3>
+<p class="text-sm text-text-secondary dark:text-gray-400">Performance globale du classificateur binaire</p>
+</div>
+<div class="px-3 py-1 rounded bg-primary/10 text-primary font-bold text-sm">
+                                    AUC: 0.96
+                                </div>
+</div>
+<!-- Custom CSS/SVG Chart Representation -->
+<div class="flex-1 w-full relative flex items-end pl-8 pb-8 border-l border-b border-gray-200 dark:border-gray-700">
+<!-- Grid Lines -->
+<div class="absolute inset-0 pl-8 pb-8 grid grid-cols-4 grid-rows-4 pointer-events-none">
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-t border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-r border-gray-100 dark:border-gray-800/50"></div>
+<div class="border-r border-gray-100 dark:border-gray-800/50"></div>
+<div></div>
+</div>
+<!-- Axis Labels -->
+<div class="absolute bottom-0 left-0 -translate-x-1/2 translate-y-full text-xs text-gray-400 mt-2">0</div>
+<div class="absolute bottom-0 left-1/4 -translate-x-1/2 translate-y-full text-xs text-gray-400 mt-2">0.25</div>
+<div class="absolute bottom-0 left-2/4 -translate-x-1/2 translate-y-full text-xs text-gray-400 mt-2">0.5</div>
+<div class="absolute bottom-0 left-3/4 -translate-x-1/2 translate-y-full text-xs text-gray-400 mt-2">0.75</div>
+<div class="absolute bottom-0 right-0 translate-y-full text-xs text-gray-400 mt-2">1.0</div>
+<div class="absolute bottom-0 w-full text-center translate-y-8 text-xs font-medium text-gray-500">False Positive Rate</div>
+<div class="absolute left-0 bottom-0 -translate-x-full translate-y-1/2 text-xs text-gray-400 mr-2">0</div>
+<div class="absolute left-0 bottom-1/4 -translate-x-full translate-y-1/2 text-xs text-gray-400 mr-2">0.25</div>
+<div class="absolute left-0 bottom-2/4 -translate-x-full translate-y-1/2 text-xs text-gray-400 mr-2">0.5</div>
+<div class="absolute left-0 bottom-3/4 -translate-x-full translate-y-1/2 text-xs text-gray-400 mr-2">0.75</div>
+<div class="absolute left-0 top-0 -translate-x-full text-xs text-gray-400 mr-2">1.0</div>
+<div class="absolute left-0 h-full flex items-center -translate-x-10 text-xs font-medium text-gray-500" style="writing-mode: vertical-rl; transform: rotate(180deg);">True Positive Rate</div>
+<!-- The Curve (SVG overlay) -->
+<svg class="absolute inset-0 h-full w-full pl-8 pb-8 overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Diagonal (Random Guess) -->
+<line class="text-gray-300 dark:text-gray-700" stroke="currentColor" stroke-dasharray="4" stroke-width="1" x1="0" x2="100" y1="100" y2="0"></line>
+<!-- Area under curve -->
+<path class="fill-primary/10" d="M0,100 C10,100 10,60 20,40 C40,10 60,5 100,0 L100,100 Z"></path>
+<!-- The Line -->
+<path class="text-primary" d="M0,100 C10,100 10,60 20,40 C40,10 60,5 100,0" fill="none" stroke="currentColor" stroke-width="3"></path>
+<!-- Point -->
+<circle class="fill-white stroke-primary" cx="20" cy="40" r="3" stroke-width="2"></circle>
+<!-- Tooltip simulation -->
+<g transform="translate(25, 30)">
+<rect class="opacity-90" fill="#1e1b29" height="24" rx="4" width="60"></rect>
+<text fill="white" font-size="10" text-anchor="middle" x="30" y="16">Threshold: 0.65</text>
+</g>
+</svg>
+</div>
+</div>
+<!-- Training Info -->
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 h-full">
+<h3 class="text-lg font-bold text-text-main dark:text-white mb-6">Informations d'entraînement</h3>
+<div class="flex flex-col gap-5">
+<div class="flex items-start gap-3">
+<div class="p-2 rounded bg-purple-50 dark:bg-purple-900/20 text-primary">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+</div>
+<div>
+<p class="text-xs text-text-secondary dark:text-gray-400">Algorithme</p>
+<p class="text-sm font-semibold text-text-main dark:text-white">RandomForestClassifier</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-2 rounded bg-purple-50 dark:bg-purple-900/20 text-primary">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<div>
+<p class="text-xs text-text-secondary dark:text-gray-400">Entraîné par</p>
+<p class="text-sm font-semibold text-text-main dark:text-white">Dr. A. Dupont</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-2 rounded bg-purple-50 dark:bg-purple-900/20 text-primary">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</div>
+<div>
+<p class="text-xs text-text-secondary dark:text-gray-400">Durée</p>
+<p class="text-sm font-semibold text-text-main dark:text-white">4m 12s</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-2 rounded bg-purple-50 dark:bg-purple-900/20 text-primary">
+<span class="material-symbols-outlined text-[20px]">dataset</span>
+</div>
+<div>
+<p class="text-xs text-text-secondary dark:text-gray-400">Échantillons</p>
+<p class="text-sm font-semibold text-text-main dark:text-white">12,450 étudiants</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="p-2 rounded bg-purple-50 dark:bg-purple-900/20 text-primary">
+<span class="material-symbols-outlined text-[20px]">view_column</span>
+</div>
+<div>
+<p class="text-xs text-text-secondary dark:text-gray-400">Features</p>
+<p class="text-sm font-semibold text-text-main dark:text-white">24</p>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex justify-between items-center mb-1">
+<span class="text-xs font-medium text-text-secondary dark:text-gray-400">Date</span>
+<span class="text-xs text-text-main dark:text-white">10 Dec 2024, 14:30</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs font-medium text-text-secondary dark:text-gray-400">Cross-Validation</span>
+<span class="text-xs text-text-main dark:text-white">5-fold Stratified</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Metrics Table -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+<div class="p-6 border-b border-gray-100 dark:border-gray-800">
+<h3 class="text-lg font-bold text-text-main dark:text-white">Métriques par Classe</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm">
+<thead class="bg-gray-50 dark:bg-gray-900/50 text-text-secondary dark:text-gray-400 font-medium">
+<tr>
+<th class="px-6 py-4">Classe</th>
+<th class="px-6 py-4">Précision</th>
+<th class="px-6 py-4">Rappel</th>
+<th class="px-6 py-4">F1-Score</th>
+<th class="px-6 py-4">Support</th>
+<th class="px-6 py-4 text-right">Performance</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 font-semibold text-text-main dark:text-white flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                            Succès (1)
+                                        </td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">0.94</td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">0.96</td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">0.95</td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">8,200</td>
+<td class="px-6 py-4 text-right">
+<div class="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full inline-block overflow-hidden">
+<div class="h-full bg-green-500 w-[95%]"></div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-6 py-4 font-semibold text-text-main dark:text-white flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-red-400"></span>
+                                            Échec (0)
+                                        </td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">0.89</td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">0.82</td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">0.85</td>
+<td class="px-6 py-4 text-text-main dark:text-gray-300">4,250</td>
+<td class="px-6 py-4 text-right">
+<div class="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full inline-block overflow-hidden">
+<div class="h-full bg-primary w-[85%]"></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

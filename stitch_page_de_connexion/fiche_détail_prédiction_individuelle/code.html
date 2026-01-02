@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fiche Détail Prédiction Individuelle</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7c3bed",
+                        "primary-dark": "#5e2dce",
+                        "danger": "#DC2626",
+                        "success": "#10B981",
+                        "background-light": "#f9f8fc",
+                        "background-dark": "#171121",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1e1629",
+                        "text-main": "#130e1b",
+                        "text-muted": "#694d99",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-gray-100 min-h-screen flex flex-col">
+<!-- Navbar -->
+<header class="sticky top-0 z-50 bg-card-light dark:bg-card-dark border-b border-[#ece7f3] dark:border-[#2f253e] px-6 py-3 shadow-sm">
+<div class="max-w-[1280px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="p-2 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary">analytics</span>
+</div>
+<h2 class="text-text-main dark:text-white text-lg font-bold tracking-tight">ISI Predictive Analytics</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium transition-colors" href="#">Tableau de bord</a>
+<a class="text-primary font-medium text-sm transition-colors bg-primary/5 px-3 py-1.5 rounded-lg" href="#">Étudiants</a>
+<a class="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium transition-colors" href="#">Interventions</a>
+<a class="text-text-muted dark:text-gray-400 hover:text-primary text-sm font-medium transition-colors" href="#">Modèles</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[20px]">search</span>
+<input class="pl-10 pr-4 py-2 bg-[#f4f2f7] dark:bg-[#2a2036] border-none rounded-lg text-sm text-text-main dark:text-gray-200 w-64 focus:ring-2 focus:ring-primary/50" placeholder="Rechercher un étudiant..." type="text"/>
+</div>
+<div class="flex items-center gap-3 border-l border-gray-200 dark:border-gray-700 pl-6">
+<div class="flex flex-col items-end hidden sm:flex">
+<span class="text-sm font-semibold dark:text-white">Admin User</span>
+<span class="text-xs text-text-muted">Direction Pédagogique</span>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-white dark:border-[#2f253e] shadow-sm" data-alt="User avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC19eosynLUNlbKg9jdTmCXsU87KnfIzxounmwcXmqlNN57WJk50aAQWLerhOYK837ICFNV0KSFjgDmZyFFucaCLLbwJO7XM93Vj5kfyI18czluK5G2Jtw3DKLKSe4ulZhH7F8_aAmazfY0cvSt0OpNGR4drdBqEigcAw7ptSgvbHIGjCe0c5cww8Ku50vkPmfurroknvp_rV5v7_-4be1OlTp2d6rTckj7mWYSRfAiNC6m-tIqWDRdu2YwpxdhxS6aivAHz-uNpT7T");'></div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 py-8">
+<!-- Breadcrumbs -->
+<nav class="flex mb-8 text-sm text-text-muted dark:text-gray-400">
+<a class="hover:text-primary" href="#">Accueil</a>
+<span class="mx-2">/</span>
+<a class="hover:text-primary" href="#">Prédictions</a>
+<span class="mx-2">/</span>
+<span class="font-medium text-text-main dark:text-white">Détail Étudiant</span>
+</nav>
+<!-- Top Section: Profile & Risk Status -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+<!-- Student Profile Card (Left - 7 cols) -->
+<div class="lg:col-span-7 bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-[#ece7f3] dark:border-[#2f253e] flex flex-col sm:flex-row gap-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-[180px]">school</span>
+</div>
+<div class="flex-shrink-0 relative">
+<div class="w-32 h-32 rounded-xl bg-center bg-cover shadow-md" data-alt="Portrait of student Fatou SALL" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwos9R_sxQc-Qs4w_o7LpAJ815xJUFPxEbOfX-nluUdfvuCnV28AgWJ582M1A4bxmkZpWUsU242QWo8KlRPDhk-DnUq7VDDmoYD_a65RAgsLyLd0sJ5Y6Db1YrkAZDQ5hmkHSXOvu43zyPAVzMVILnyHM24AYmVJO8JKhS4fo0tmISGgS0kh_UvkiToCKpbPenj4o649QK97r2ooovoGV5RCqfXJGujIRkFPYy0QJmmvgq66189Fi9AiLZaI85-WzjWhmPHQjZ1Tma");'></div>
+<div class="absolute -bottom-2 -right-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-bold px-2 py-1 rounded-md border border-white dark:border-[#2f253e]">Actif</div>
+</div>
+<div class="flex flex-col justify-center flex-1 z-10">
+<div class="flex justify-between items-start">
+<div>
+<h1 class="text-2xl font-bold text-text-main dark:text-white mb-1">Fatou SALL</h1>
+<p class="text-text-muted dark:text-gray-400 font-medium mb-4">Matricule: <span class="text-text-main dark:text-gray-200">2023-0045</span></p>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8 text-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-muted text-[18px]">school</span>
+<span class="text-text-main dark:text-gray-300">Master 1 Data Science</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-muted text-[18px]">calendar_today</span>
+<span class="text-text-main dark:text-gray-300">Semestre 2 - 2023/2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-muted text-[18px]">mail</span>
+<span class="text-text-main dark:text-gray-300">f.sall@isi.edu.sn</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-muted text-[18px]">call</span>
+<span class="text-text-main dark:text-gray-300">+221 77 123 45 67</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Risk Hero Card (Right - 5 cols) -->
+<div class="lg:col-span-5 bg-white dark:bg-card-dark rounded-xl p-0 shadow-sm border border-danger/20 overflow-hidden flex flex-col">
+<div class="bg-red-50 dark:bg-red-900/10 border-b border-red-100 dark:border-red-900/30 p-4 flex justify-between items-center">
+<div class="flex items-center gap-2 text-danger font-bold">
+<span class="material-symbols-outlined filled-icon">warning</span>
+<span>ALERTE DÉCROCHAGE</span>
+</div>
+<span class="text-xs font-medium bg-white dark:bg-red-900/20 text-danger px-2 py-1 rounded border border-red-100 dark:border-red-900/30">Mise à jour: Il y a 2h</span>
+</div>
+<div class="p-6 flex-1 flex flex-col justify-center">
+<div class="flex items-center justify-between mb-6">
+<div>
+<p class="text-sm text-text-muted dark:text-gray-400 font-medium mb-1">Probabilité de Risque</p>
+<div class="text-5xl font-bold text-text-main dark:text-white">92<span class="text-2xl text-text-muted">%</span></div>
+</div>
+<div class="h-16 w-16 rounded-full border-4 border-danger/20 flex items-center justify-center relative">
+<span class="material-symbols-outlined text-danger text-3xl">trending_up</span>
+<div class="absolute inset-0 border-4 border-danger rounded-full border-l-transparent border-b-transparent rotate-[-45deg]"></div>
+</div>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 mb-2">
+<div class="bg-danger h-3 rounded-full" style="width: 92%"></div>
+</div>
+<p class="text-xs text-danger font-medium mb-6">Seuil critique dépassé (&gt;85%). Action requise immédiate.</p>
+<div class="grid grid-cols-2 gap-3 mt-auto">
+<button class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white py-2.5 px-4 rounded-lg font-medium transition-colors shadow-sm shadow-primary/30">
+<span class="material-symbols-outlined text-[18px]">add_task</span>
+                            Intervention
+                        </button>
+<button class="flex items-center justify-center gap-2 bg-white dark:bg-transparent border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-text-main dark:text-white py-2.5 px-4 rounded-lg font-medium transition-colors">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+                            Alerte
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Analytics Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<!-- Evolution Chart (2/3) -->
+<div class="lg:col-span-2 bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-[#ece7f3] dark:border-[#2f253e]">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-white">Évolution du Score de Risque</h3>
+<p class="text-sm text-text-muted dark:text-gray-400">Tendance sur les 6 derniers mois</p>
+</div>
+<select class="bg-[#f9f8fc] dark:bg-[#2a2036] border-none text-sm rounded-lg py-1.5 px-3 focus:ring-1 focus:ring-primary text-text-main dark:text-gray-200">
+<option>Semestre en cours</option>
+<option>Année complète</option>
+</select>
+</div>
+<!-- CSS Chart Simulation -->
+<div class="relative h-64 w-full mt-4">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between text-xs text-gray-400">
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-0"></div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-0"></div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-0"></div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-0"></div>
+<div class="border-b border-gray-100 dark:border-gray-800 w-full h-0"></div>
+</div>
+<!-- Y Axis Labels -->
+<div class="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-text-muted h-full pr-2 -translate-x-full">
+<span>100%</span>
+<span>75%</span>
+<span>50%</span>
+<span>25%</span>
+<span>0%</span>
+</div>
+<!-- Line Graph (Simulated with SVG) -->
+<svg class="absolute inset-0 w-full h-full overflow-visible" preserveaspectratio="none">
+<!-- Gradient Fill -->
+<defs>
+<lineargradient id="gradientRisk" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#DC2626" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#DC2626" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path class="text-danger" d="M0,200 L100,180 L200,185 L300,120 L400,90 L500,40 L600,20 L800,20" fill="url(#gradientRisk)" vector-effect="non-scaling-stroke"></path>
+<polyline class="text-danger" fill="none" points="0,200 120,180 240,185 360,120 480,90 600,40 720,20 840,20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" vector-effect="non-scaling-stroke"></polyline>
+<!-- Data Points -->
+<circle class="fill-white stroke-danger stroke-2" cx="0%" cy="80%" r="4"></circle>
+<circle class="fill-white stroke-danger stroke-2" cx="16.6%" cy="72%" r="4"></circle>
+<circle class="fill-white stroke-danger stroke-2" cx="33.2%" cy="74%" r="4"></circle>
+<circle class="fill-white stroke-danger stroke-2" cx="49.8%" cy="48%" r="4"></circle>
+<circle class="fill-white stroke-danger stroke-2" cx="66.4%" cy="36%" r="4"></circle>
+<circle class="fill-white stroke-danger stroke-2" cx="83%" cy="16%" r="4"></circle>
+<circle class="fill-danger stroke-white stroke-2" cx="100%" cy="8%" r="6"></circle>
+</svg>
+<!-- X Axis Labels -->
+<div class="absolute bottom-[-24px] left-0 right-0 flex justify-between text-xs text-text-muted">
+<span>Oct</span>
+<span>Nov</span>
+<span>Déc</span>
+<span>Jan</span>
+<span>Fév</span>
+<span>Mar</span>
+<span class="font-bold text-text-main">Avr</span>
+</div>
+</div>
+</div>
+<!-- SHAP Analysis (1/3) -->
+<div class="lg:col-span-1 bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-[#ece7f3] dark:border-[#2f253e]">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">psychology</span>
+<h3 class="text-lg font-bold text-text-main dark:text-white">Facteurs Clés (SHAP)</h3>
+</div>
+<div class="space-y-5">
+<!-- Positive Factor (Bad for score) -->
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium text-text-main dark:text-gray-200">Absences (Cours Mag.)</span>
+<span class="text-xs font-bold text-danger">+18% Impact</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-danger h-2 rounded-full" style="width: 85%"></div>
+</div>
+<p class="text-[11px] text-text-muted mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Plus de 15h d'absence non justifiée.</p>
+</div>
+<!-- Positive Factor -->
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium text-text-main dark:text-gray-200">Retard Rendu Projets</span>
+<span class="text-xs font-bold text-danger">+12% Impact</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-danger h-2 rounded-full" style="width: 60%"></div>
+</div>
+</div>
+<!-- Positive Factor -->
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium text-text-main dark:text-gray-200">Note Moyenne Maths</span>
+<span class="text-xs font-bold text-danger">+8% Impact</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-danger h-2 rounded-full" style="width: 40%"></div>
+</div>
+</div>
+<!-- Negative Factor (Good for score) -->
+<div class="group cursor-help">
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium text-text-main dark:text-gray-200">Participation Forum</span>
+<span class="text-xs font-bold text-success">-5% Réduction</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 relative">
+<!-- Invert direction visually for reduction -->
+<div class="bg-success h-2 rounded-full absolute right-0" style="width: 25%"></div>
+</div>
+</div>
+<!-- Info Alert -->
+<div class="mt-6 p-3 bg-primary/5 rounded-lg border border-primary/10 flex gap-2">
+<span class="material-symbols-outlined text-primary text-sm mt-0.5">info</span>
+<p class="text-xs text-text-muted leading-relaxed">
+                            L'absentéisme est le facteur dominant ce mois-ci, augmentant le risque global de 18%.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+<!-- History & Interventions Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Intervention List (2/3) -->
+<div class="lg:col-span-2 bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-[#ece7f3] dark:border-[#2f253e]">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-text-main dark:text-white">Historique d'Interventions</h3>
+<button class="text-primary text-sm font-medium hover:underline">Voir tout</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-gray-100 dark:border-gray-800 text-xs text-text-muted uppercase tracking-wider">
+<th class="pb-3 font-medium">Date</th>
+<th class="pb-3 font-medium">Type</th>
+<th class="pb-3 font-medium">Responsable</th>
+<th class="pb-3 font-medium">Statut</th>
+<th class="pb-3 font-medium text-right">Action</th>
+</tr>
+</thead>
+<tbody class="text-sm">
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-text-main dark:text-gray-300">12 Mai 2024</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800">
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                                        Entretien
+                                    </span>
+</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-text-muted">M. Diop (Dir. Péd.)</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800">
+<span class="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">Réalisé</span>
+</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-right">
+<button class="text-text-muted hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-text-main dark:text-gray-300">05 Mai 2024</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800">
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        Email
+                                    </span>
+</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-text-muted">Système (Auto)</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800">
+<span class="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Envoyé</span>
+</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-right">
+<button class="text-text-muted hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-text-main dark:text-gray-300">28 Avr 2024</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800">
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                                        Alerte
+                                    </span>
+</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-text-muted">Mme. Sow (Prof.)</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800">
+<span class="px-2 py-1 rounded text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">En attente</span>
+</td>
+<td class="py-4 border-b border-gray-50 dark:border-gray-800 text-right">
+<button class="text-text-muted hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Notes & Metadata (1/3) -->
+<div class="lg:col-span-1 flex flex-col gap-6">
+<!-- Quick Notes -->
+<div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-[#ece7f3] dark:border-[#2f253e] flex-1">
+<h3 class="text-lg font-bold text-text-main dark:text-white mb-4">Notes Rapides</h3>
+<div class="space-y-4">
+<div class="p-3 bg-[#f9f8fc] dark:bg-[#2a2036] rounded-lg border border-gray-100 dark:border-gray-700">
+<p class="text-xs text-text-muted mb-1 flex justify-between">
+<span>Prof. Mathématiques</span>
+<span>Hier</span>
+</p>
+<p class="text-sm text-text-main dark:text-gray-300 italic">"Fatou semble désintéressée en classe depuis deux semaines. A surveiller."</p>
+</div>
+<div class="relative">
+<input class="w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Ajouter une note..." type="text"/>
+<button class="absolute right-2 top-2 text-primary hover:text-primary-dark">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Metadata Footer -->
+<div class="bg-card-light dark:bg-card-dark rounded-xl p-6 shadow-sm border border-[#ece7f3] dark:border-[#2f253e]">
+<h4 class="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">Métadonnées du Modèle</h4>
+<ul class="space-y-2 text-xs text-text-muted">
+<li class="flex justify-between">
+<span>Version Modèle:</span>
+<span class="font-mono text-text-main dark:text-gray-300">v2.4.1 (XGBoost)</span>
+</li>
+<li class="flex justify-between">
+<span>Dernière inférence:</span>
+<span class="font-mono text-text-main dark:text-gray-300">14/05/2024 08:30</span>
+</li>
+<li class="flex justify-between">
+<span>Intervalle de confiance:</span>
+<span class="font-mono text-text-main dark:text-gray-300">95%</span>
+</li>
+<li class="flex justify-between items-center pt-2 mt-2 border-t border-gray-100 dark:border-gray-800">
+<span>ID Prédiction:</span>
+<span class="font-mono text-[10px] text-gray-400">#PRED-882910</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+</body></html>

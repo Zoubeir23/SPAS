@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Saisie des Notes - Academic IS</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#5a1eae",
+              "background-light": "#f7f6f8",
+              "background-dark": "#181220",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for better aesthetics in the table */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+        
+        /* Hide number input arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-display antialiased overflow-x-hidden min-h-screen flex flex-col">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Header / Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md px-6 py-3">
+<div class="max-w-[1200px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-4 text-gray-900 dark:text-white">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">school</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Academic IS</h2>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-primary" href="#">Notes</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Emploi du temps</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Profil</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden sm:flex h-9 items-center justify-center rounded-lg px-4 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[18px] mr-2">logout</span>
+<span>Déconnexion</span>
+</button>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-gray-200 dark:border-gray-700" data-alt="User profile picture showing a smiling teacher" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqCESpC26Tyb5ttyZyEEhCZOuBavYuwGiwZYmkwyy_Nh9WX-D4ALwYxWh0mlLvZO_aG0QXJaqO79vUUtHWzjCK1__0xrm_0uUdtlp0opuCbcEnNpS3nRLx6dDHV-dkOyU9Bbz448aaJ4SJRsFp0HiG6UTS-rSpupeu4SrLxZKGQplgyvrocHouUlW0QKI8CEZuMLbqm3cp32q-kN-2Zs8L_Rmc9aelS4KnbA59kkqrugvW6gqQH8WC32m7LwoLTBQzweZrzeFzQ68L");'>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex justify-center py-8 px-4 sm:px-8">
+<div class="w-full max-w-[1200px] flex flex-col gap-6">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+<a class="hover:text-primary transition-colors" href="#">Tableau de bord</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-gray-900 dark:text-white font-medium">Saisie des Notes</span>
+</nav>
+<!-- Page Heading -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div class="flex flex-col gap-1">
+<h1 class="text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] text-gray-900 dark:text-white">Saisie des Notes</h1>
+<p class="text-primary/80 text-base font-normal">Gestion des évaluations et résultats académiques</p>
+</div>
+<div class="hidden md:block">
+<div class="px-3 py-1 bg-primary/10 rounded-full border border-primary/20 text-primary text-xs font-bold uppercase tracking-wide">
+                            Mode Édition
+                        </div>
+</div>
+</div>
+<!-- Filters & Context Selection -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+<label class="flex flex-col gap-2">
+<span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Session</span>
+<div class="relative">
+<select class="w-full h-11 pl-4 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent appearance-none">
+<option>Hiver 2024</option>
+<option>Automne 2023</option>
+<option>Été 2023</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filière</span>
+<div class="relative">
+<select class="w-full h-11 pl-4 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent appearance-none">
+<option>Génie Logiciel - Gr. 01</option>
+<option>Génie Logiciel - Gr. 02</option>
+<option>Informatique de Gestion</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</label>
+<label class="flex flex-col gap-2">
+<span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Matière</span>
+<div class="relative">
+<select class="w-full h-11 pl-4 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-background-light dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent appearance-none">
+<option>Base de données II</option>
+<option>Algorithmique</option>
+<option>Développement Web</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</label>
+</div>
+<!-- Data Table Section -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+<!-- Toolbar inside card -->
+<div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+<h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">groups</span>
+                            Liste des étudiants (24)
+                        </h3>
+<div class="flex gap-2">
+<button class="flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                                Filtres
+                           </button>
+</div>
+</div>
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 dark:bg-gray-700/50 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">
+<th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-700">Matricule</th>
+<th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-700">Nom &amp; Prénom</th>
+<th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-700 w-[180px]">Note (/20)</th>
+<th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-700">Observation</th>
+<th class="px-6 py-4 font-semibold border-b border-gray-200 dark:border-gray-700 text-center w-[80px]">Statut</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+<!-- Row 1: Validated -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 font-mono text-gray-500 dark:text-gray-400">2023-0045</td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">JD</div>
+<span>Jean Dupont</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="relative">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 font-mono font-medium" max="20" min="0" placeholder="0-20" type="number" value="16.5"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+<span class="material-symbols-outlined text-green-500 text-[18px]">check_circle</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-3">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 text-sm placeholder:text-gray-400" placeholder="Ajouter une observation..." type="text" value="Excellent travail"/>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex size-6 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">done</span>
+</span>
+</td>
+</tr>
+<!-- Row 2: Empty/Active -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 font-mono text-gray-500 dark:text-gray-400">2023-0112</td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">AM</div>
+<span>Alice Martin</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="relative">
+<input autofocus="" class="block w-full rounded-lg border-primary ring-1 ring-primary pl-3 pr-10 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 font-mono font-medium" max="20" min="0" placeholder="0-20" type="number"/>
+<!-- No icon yet -->
+</div>
+</td>
+<td class="px-6 py-3">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 text-sm placeholder:text-gray-400" placeholder="Ajouter une observation..." type="text"/>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex size-6 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+<span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
+</span>
+</td>
+</tr>
+<!-- Row 3: Invalid/Warning -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 font-mono text-gray-500 dark:text-gray-400">2023-0089</td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">LB</div>
+<span>Lucas Bernard</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="relative">
+<input class="block w-full rounded-lg border-red-500 text-red-600 pl-3 pr-10 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-900 font-mono font-medium" max="20" min="0" placeholder="0-20" type="number" value="22"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+<span class="material-symbols-outlined text-red-500 text-[18px]">error</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-3">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 text-sm placeholder:text-gray-400" placeholder="Ajouter une observation..." type="text"/>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex size-6 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</span>
+</td>
+</tr>
+<!-- Row 4: Normal -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 font-mono text-gray-500 dark:text-gray-400">2023-0156</td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-xs font-bold">SC</div>
+<span>Sophie Caron</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="relative">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 font-mono font-medium" max="20" min="0" placeholder="0-20" type="number" value="14"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+<span class="material-symbols-outlined text-green-500 text-[18px]">check_circle</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-3">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 text-sm placeholder:text-gray-400" placeholder="Ajouter une observation..." type="text"/>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex size-6 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">done</span>
+</span>
+</td>
+</tr>
+<!-- Row 5: Normal -->
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+<td class="px-6 py-4 font-mono text-gray-500 dark:text-gray-400">2023-0199</td>
+<td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-xs font-bold">MR</div>
+<span>Marc Roy</span>
+</div>
+</td>
+<td class="px-6 py-3">
+<div class="relative">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 font-mono font-medium" max="20" min="0" placeholder="0-20" type="number" value="11"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+<span class="material-symbols-outlined text-green-500 text-[18px]">check_circle</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-3">
+<input class="block w-full rounded-lg border-gray-300 dark:border-gray-600 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-900 text-sm placeholder:text-gray-400" placeholder="Ajouter une observation..." type="text" value="Participation faible"/>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex size-6 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+<span class="material-symbols-outlined text-[16px]">done</span>
+</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="sticky bottom-4 z-40 mt-4 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-4 rounded-xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] border border-gray-200 dark:border-gray-700">
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+                        Importer Excel
+                    </button>
+<div class="flex items-center gap-4 w-full sm:w-auto">
+<span class="hidden sm:inline-block text-sm text-gray-500 dark:text-gray-400">
+                            Dernière sauvegarde: 14:32
+                        </span>
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02]">
+<span class="material-symbols-outlined text-[20px]">save</span>
+                            Enregistrer tout
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

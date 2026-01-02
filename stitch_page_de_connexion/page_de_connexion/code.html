@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Connexion - ISI Academic System</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c41a6",
+                        "primary-hover": "#16348a",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121620",
+                        "surface-dark": "#1e2330",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#0f121a] dark:text-white antialiased">
+<div class="relative flex min-h-screen w-full flex-col justify-center py-12 sm:px-6 lg:px-8 overflow-hidden">
+<!-- Background Gradient Decoration -->
+<div class="absolute inset-0 -z-10 h-full w-full bg-background-light dark:bg-background-dark">
+<div class="absolute top-0 -left-4 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-50"></div>
+<div class="absolute bottom-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl opacity-50"></div>
+</div>
+<!-- Header / Logo Area -->
+<div class="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center mb-8">
+<div class="w-24 h-24 rounded-full bg-white dark:bg-surface-dark shadow-sm flex items-center justify-center mb-6 border border-slate-100 dark:border-slate-700">
+<!-- Logo Placeholder -->
+<img alt="ISI Academic Logo" class="h-16 w-16 object-contain" data-alt="ISI Institution academic logo blue shield" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHJuOzojd7mDAmW3wNWZ0pXOSbnMk6ISgkrLfyXKyOxmR9mVjvMdocgAgkOf4nP8xEBkJWBxUSHkW42Yw9hr-q0LZ7Rl0DmoGjAXJfBzBDVEZafS72apVMcDJUlwGPiNfpVbVeSuNRNYORJ6uQY4Z0UM_ASU8w-plNuAD_XwIfbvQQY_2V42CbpMoydL_aOchsCkCHP8As8LQ-qMN-JxsrrdZFh_XfD1X2EoLdy9wbq6URiOTULB4ZnAqd9CCdLJlvWtAw0-MAE3BD"/>
+</div>
+<h2 class="text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                Connexion
+            </h2>
+<p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                Système d'Information Académique &amp; Analytique
+            </p>
+</div>
+<!-- Login Card -->
+<div class="mt-2 sm:mx-auto sm:w-full sm:max-w-[480px]">
+<div class="bg-white dark:bg-surface-dark py-10 px-6 shadow-xl shadow-slate-200/50 dark:shadow-black/30 rounded-xl sm:px-12 border border-slate-100 dark:border-slate-700">
+<form action="#" class="space-y-6" method="POST">
+<!-- Email Field -->
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200" for="email">
+                            Adresse email
+                        </label>
+<div class="mt-2">
+<input autocomplete="email" class="block w-full rounded-lg border-0 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary dark:bg-background-dark dark:ring-gray-600 dark:text-white sm:text-sm sm:leading-6 bg-[#f8f9fb] dark:bg-opacity-50" id="email" name="email" placeholder="nom@exemple.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div>
+<label class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200" for="password">
+                            Mot de passe
+                        </label>
+<div class="mt-2 relative rounded-lg shadow-sm">
+<input autocomplete="current-password" class="block w-full rounded-lg border-0 py-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary dark:bg-background-dark dark:ring-gray-600 dark:text-white sm:text-sm sm:leading-6 bg-[#f8f9fb] dark:bg-opacity-50" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</div>
+</div>
+</div>
+<!-- Remember Me & Forgot Password -->
+<div class="flex items-center justify-between">
+<div class="flex items-center" style="--checkbox-tick-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(255,255,255)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3cpath d=%27M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z%27/%3e%3c/svg%3e');">
+<input class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary checked:bg-primary checked:bg-[image:--checkbox-tick-svg]" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-2 block text-sm text-gray-900 dark:text-gray-300" for="remember-me">
+                                Se souvenir de moi
+                            </label>
+</div>
+<div class="text-sm leading-6">
+<a class="font-medium text-primary hover:text-primary-hover hover:underline" href="#">
+                                Mot de passe oublié ?
+                            </a>
+</div>
+</div>
+<!-- Submit Button -->
+<div>
+<button class="flex w-full justify-center rounded-lg bg-primary px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors duration-200" type="submit">
+                            Se connecter
+                        </button>
+</div>
+</form>
+<!-- Help/Support Link (Optional but good context) -->
+<div class="mt-6">
+<div class="relative">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+</div>
+<div class="relative flex justify-center text-sm">
+<span class="bg-white dark:bg-surface-dark px-2 text-gray-500 dark:text-gray-400">Besoin d'aide ?</span>
+</div>
+</div>
+<div class="mt-6 flex justify-center gap-4">
+<a class="flex items-center gap-2 text-sm text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-gray-200 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+                           Contacter le support DSI
+                       </a>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+<p class="text-center text-xs text-gray-500 dark:text-gray-500">
+                © 2024 ISI - Institut Supérieur d'Informatique. Tous droits réservés.
+            </p>
+</div>
+</div>
+</body></html>

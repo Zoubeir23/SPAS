@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gestion des Modèles ML - ISI Analytics</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#7c3bed",
+              "background-light": "#f9f8fc",
+              "background-dark": "#171121",
+              "success": "#16A34A",
+              "danger": "#DC2626",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111827] dark:text-white font-display min-h-screen flex flex-col overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-[#ece7f3] bg-background-light dark:bg-background-dark dark:border-[#2d243a]">
+<div class="px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
+<div class="flex items-center gap-8">
+<!-- Logo -->
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-lg bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-tight">ISI Analytics</h2>
+</div>
+<!-- Nav Links -->
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium text-gray-500 hover:text-primary transition-colors" href="#">Tableau de bord</a>
+<a class="text-sm font-medium text-gray-500 hover:text-primary transition-colors" href="#">Étudiants</a>
+<a class="text-sm font-bold text-primary" href="#">Modèles ML</a>
+<a class="text-sm font-medium text-gray-500 hover:text-primary transition-colors" href="#">Paramètres</a>
+</nav>
+</div>
+<!-- Search & Profile -->
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center bg-[#ece7f3] dark:bg-[#2d243a] rounded-lg px-3 py-2 w-64">
+<span class="material-symbols-outlined text-[#694d99] dark:text-[#9ca3af] text-[20px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full text-gray-800 dark:text-gray-200 placeholder-gray-500 ml-2" placeholder="Rechercher..." type="text"/>
+</div>
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border border-[#ece7f3]" data-alt="User profile picture of a data scientist" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAyH21K_uPJcUzXcKBdv6NEsMBXpxMczYOcUlxzAThwx-mGm-VQgYDoxS6W0RgeYt000f42uQ--P6sMwEYEiCLksxFhwRuzFLd0stmDtTRTZtGPwXRkdsOxUiX0c7L1-PeBzGeRO_rcb7Rwrl_FIO5sYMo6sHUeVpoT2EpdUJR0pkg9Xj0_x8EJVJgH65N5QVR24WVobid8IWZOl2QYWRQghMdzmFUTy40Ie_zGFBZKII4F5-MMaFUoKze9-w9qdThaYpJjUmC7Wyek");'>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl md:text-4xl font-black tracking-tight text-[#130e1b] dark:text-white">Gestion des Modèles ML</h1>
+<p class="text-[#694d99] dark:text-[#a8a2b3] text-base font-normal max-w-2xl">
+                    Gérez le cycle de vie des modèles prédictifs, surveillez la dérive des données et déployez de nouvelles versions.
+                </p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center gap-2 h-10 px-4 rounded-lg border border-[#d8d0e7] dark:border-[#4a3b5e] bg-transparent text-[#130e1b] dark:text-white hover:bg-gray-50 dark:hover:bg-[#2d243a] transition-colors font-semibold text-sm">
+<span class="material-symbols-outlined text-[20px]">compare_arrows</span>
+<span>Comparer Versions</span>
+</button>
+<button class="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-primary text-white hover:bg-[#6832c9] transition-colors font-bold text-sm shadow-sm shadow-primary/30">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>Nouvel Entraînement</span>
+</button>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<!-- Active Model Card (Full Width on Mobile, 2/3 on LG if needed, but here taking full top row is better for visibility) -->
+<div class="col-span-1 lg:col-span-3 bg-white dark:bg-[#1f1729] rounded-xl border border-[#ece7f3] dark:border-[#2d243a] shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-[#ece7f3] dark:border-[#2d243a] flex justify-between items-center bg-gray-50/50 dark:bg-[#251c30]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-success filled">check_circle</span>
+<h2 class="text-lg font-bold text-[#130e1b] dark:text-white">Modèle en Production</h2>
+<span class="bg-success/10 text-success text-xs font-bold px-2 py-0.5 rounded-full border border-success/20 ml-2">ACTIF</span>
+</div>
+<div class="flex gap-2">
+<button class="text-gray-500 hover:text-primary p-1 rounded transition-colors" title="Télécharger le modèle">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="text-gray-500 hover:text-primary p-1 rounded transition-colors" title="Paramètres">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+<div class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+<!-- Stat 1 -->
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Version Actuelle</p>
+<p class="text-2xl font-bold text-[#130e1b] dark:text-white">v2.4</p>
+<p class="text-xs text-primary font-medium">Random Forest Classifier</p>
+</div>
+<!-- Stat 2 -->
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">F1-Score</p>
+<div class="flex items-baseline gap-2">
+<p class="text-2xl font-bold text-[#130e1b] dark:text-white">0.89</p>
+<span class="flex items-center text-xs font-bold text-success bg-success/10 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px] mr-0.5">trending_up</span>
+                                +2.4%
+                            </span>
+</div>
+<p class="text-xs text-gray-400">vs v2.3</p>
+</div>
+<!-- Stat 3 -->
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Précision (Accuracy)</p>
+<div class="flex items-baseline gap-2">
+<p class="text-2xl font-bold text-[#130e1b] dark:text-white">92%</p>
+<span class="flex items-center text-xs font-bold text-success bg-success/10 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px] mr-0.5">trending_up</span>
+                                +1.1%
+                            </span>
+</div>
+<p class="text-xs text-gray-400">vs v2.3</p>
+</div>
+<!-- Stat 4 -->
+<div class="flex flex-col gap-1">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Dernier Entraînement</p>
+<p class="text-lg font-bold text-[#130e1b] dark:text-white truncate">24 Oct, 2023</p>
+<p class="text-xs text-gray-500">14,502 échantillons</p>
+</div>
+</div>
+</div>
+<!-- Performance Chart Section -->
+<div class="col-span-1 lg:col-span-2 bg-white dark:bg-[#1f1729] rounded-xl border border-[#ece7f3] dark:border-[#2d243a] shadow-sm flex flex-col">
+<div class="px-6 py-4 border-b border-[#ece7f3] dark:border-[#2d243a] flex justify-between items-center">
+<h2 class="text-lg font-bold text-[#130e1b] dark:text-white">Performance en Production</h2>
+<select class="bg-[#f9f8fc] dark:bg-[#2d243a] border-none text-xs font-medium rounded-lg py-1.5 pl-3 pr-8 focus:ring-1 focus:ring-primary cursor-pointer text-[#130e1b] dark:text-white">
+<option>30 derniers jours</option>
+<option>7 derniers jours</option>
+<option>24 dernières heures</option>
+</select>
+</div>
+<div class="p-6 flex-1 flex flex-col justify-center min-h-[300px]">
+<!-- Drift Alert -->
+<div class="mb-4 flex items-start gap-3 bg-danger/5 border border-danger/20 rounded-lg p-3">
+<span class="material-symbols-outlined text-danger text-[20px] mt-0.5">warning</span>
+<div>
+<p class="text-sm font-bold text-danger">Dérive des données détectée (Drift)</p>
+<p class="text-xs text-gray-600 dark:text-gray-400 mt-1">La distribution de la caractéristique <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">taux_assiduite</code> a changé significativement depuis hier.</p>
+</div>
+</div>
+<!-- Chart Placeholder -->
+<div class="relative w-full h-64 bg-gradient-to-b from-primary/5 to-transparent rounded-lg border border-dashed border-gray-200 dark:border-gray-700 flex items-end justify-between px-4 pb-0 pt-8 overflow-hidden">
+<!-- Simulated Chart Bars/Line -->
+<div class="absolute inset-0 flex items-end justify-between px-6 pb-6 gap-2 opacity-80" data-alt="Line chart showing performance trends over time with a dip at the end">
+<div class="w-full h-full flex items-end gap-1">
+<div class="w-[5%] bg-primary/20 rounded-t-sm h-[60%]"></div>
+<div class="w-[5%] bg-primary/20 rounded-t-sm h-[62%]"></div>
+<div class="w-[5%] bg-primary/30 rounded-t-sm h-[65%]"></div>
+<div class="w-[5%] bg-primary/30 rounded-t-sm h-[63%]"></div>
+<div class="w-[5%] bg-primary/40 rounded-t-sm h-[68%]"></div>
+<div class="w-[5%] bg-primary/40 rounded-t-sm h-[70%]"></div>
+<div class="w-[5%] bg-primary/50 rounded-t-sm h-[72%]"></div>
+<div class="w-[5%] bg-primary/50 rounded-t-sm h-[75%]"></div>
+<div class="w-[5%] bg-primary/60 rounded-t-sm h-[74%]"></div>
+<div class="w-[5%] bg-primary/60 rounded-t-sm h-[78%]"></div>
+<div class="w-[5%] bg-primary/70 rounded-t-sm h-[80%]"></div>
+<div class="w-[5%] bg-primary/70 rounded-t-sm h-[82%]"></div>
+<div class="w-[5%] bg-primary/80 rounded-t-sm h-[85%]"></div>
+<div class="w-[5%] bg-primary/80 rounded-t-sm h-[84%]"></div>
+<div class="w-[5%] bg-primary/90 rounded-t-sm h-[88%]"></div>
+<div class="w-[5%] bg-primary rounded-t-sm h-[90%]"></div>
+<!-- Dip indicating drift -->
+<div class="w-[5%] bg-danger/80 rounded-t-sm h-[75%]"></div>
+<div class="w-[5%] bg-danger rounded-t-sm h-[70%]"></div>
+</div>
+</div>
+<!-- Overlay Trend Line (SVG) -->
+<svg class="absolute inset-0 h-full w-full pointer-events-none p-6" preserveaspectratio="none" viewbox="0 0 100 50">
+<path class="dark:stroke-[#a78bfa]" d="M0 30 C 10 28, 20 25, 30 20 C 40 15, 50 10, 60 12 C 70 14, 80 5, 90 20 L 100 25" fill="none" stroke="#7c3bed" stroke-width="0.5"></path>
+</svg>
+</div>
+<div class="flex justify-between text-xs text-gray-400 mt-2 px-2">
+<span>1 Oct</span>
+<span>10 Oct</span>
+<span>20 Oct</span>
+<span>Aujourd'hui</span>
+</div>
+</div>
+</div>
+<!-- Active Jobs Section -->
+<div class="col-span-1 bg-white dark:bg-[#1f1729] rounded-xl border border-[#ece7f3] dark:border-[#2d243a] shadow-sm flex flex-col">
+<div class="px-6 py-4 border-b border-[#ece7f3] dark:border-[#2d243a] flex justify-between items-center">
+<h2 class="text-lg font-bold text-[#130e1b] dark:text-white">Jobs d'Entraînement</h2>
+<span class="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">2 EN COURS</span>
+</div>
+<div class="p-6 flex flex-col gap-5 overflow-y-auto max-h-[400px]">
+<!-- Job Item 1 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm animate-spin">sync</span>
+<span class="text-sm font-bold text-[#130e1b] dark:text-white">Job #1024 - Retraining</span>
+</div>
+<span class="text-xs font-medium text-gray-500">65%</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 65%"></div>
+</div>
+<p class="text-xs text-gray-500 mt-0.5">Algorithme: XGBoost • Démarré il y a 2h</p>
+</div>
+<!-- Job Item 2 -->
+<div class="flex flex-col gap-2 pt-4 border-t border-dashed border-gray-200 dark:border-gray-800">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-400 text-sm">hourglass_empty</span>
+<span class="text-sm font-bold text-[#130e1b] dark:text-white">Job #1025 - Eval Set B</span>
+</div>
+<span class="text-xs font-medium text-gray-500">En attente</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-gray-400 h-1.5 rounded-full w-0"></div>
+</div>
+</div>
+<!-- Job Item 3 (Failed) -->
+<div class="flex flex-col gap-2 pt-4 border-t border-dashed border-gray-200 dark:border-gray-800 opacity-75">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-danger text-sm">error</span>
+<span class="text-sm font-bold text-danger">Job #1023 - Grid Search</span>
+</div>
+<span class="text-xs font-medium text-danger">Échec</span>
+</div>
+<p class="text-xs text-danger mt-0.5">Erreur mémoire (OOM) détectée.</p>
+</div>
+</div>
+<div class="mt-auto px-6 py-4 border-t border-[#ece7f3] dark:border-[#2d243a] bg-gray-50/50 dark:bg-[#251c30]">
+<button class="w-full text-sm font-semibold text-primary hover:text-[#6832c9] transition-colors flex items-center justify-center gap-2">
+                        Voir tous les jobs
+                        <span class="material-symbols-outlined text-base">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- History Table Section -->
+<div class="bg-white dark:bg-[#1f1729] rounded-xl border border-[#ece7f3] dark:border-[#2d243a] shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-[#ece7f3] dark:border-[#2d243a] flex flex-wrap gap-4 justify-between items-center">
+<h2 class="text-lg font-bold text-[#130e1b] dark:text-white">Historique des Versions</h2>
+<div class="flex gap-2">
+<button class="text-gray-500 hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filtrer
+                    </button>
+<button class="text-gray-500 hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium ml-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Exporter
+                    </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+<thead class="bg-gray-50 dark:bg-[#251c30] text-xs uppercase text-gray-700 dark:text-gray-300 font-bold border-b border-[#ece7f3] dark:border-[#2d243a]">
+<tr>
+<th class="px-6 py-3 w-[100px]" scope="col">Version</th>
+<th class="px-6 py-3" scope="col">Algorithme</th>
+<th class="px-6 py-3" scope="col">Accuracy</th>
+<th class="px-6 py-3" scope="col">F1-Score</th>
+<th class="px-6 py-3" scope="col">Créé le</th>
+<th class="px-6 py-3" scope="col">Créé par</th>
+<th class="px-6 py-3 text-right" scope="col">Statut</th>
+<th class="px-6 py-3 text-right" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#ece7f3] dark:divide-[#2d243a]">
+<!-- Row 1 (Active) -->
+<tr class="bg-primary/5 dark:bg-primary/10 hover:bg-primary/10 transition-colors">
+<td class="px-6 py-4 font-bold text-[#130e1b] dark:text-white">v2.4</td>
+<td class="px-6 py-4">Random Forest</td>
+<td class="px-6 py-4 font-medium text-[#130e1b] dark:text-white">92.0%</td>
+<td class="px-6 py-4 font-medium text-[#130e1b] dark:text-white">0.89</td>
+<td class="px-6 py-4">24 Oct 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<div class="size-6 rounded-full bg-gray-200 bg-cover" data-alt="Avatar of user" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDK7WbYDdpLCvIq4LK8bfC5BgUFOeAQsCHvDQYjw5loOoKsYLGUuaqOkEcwzTmMkYlTvIgMHdXRx4vx37X4mdHugFYTCfVa1eOp3-2jQHowcS15-kRuoKpGGCVKwOLvVEHrjqkCedgGDtZznPeIHTQmgiIeRPpwVuKv5byhSLnoNePNHdfIH5GeQ2Aa0ySgHp5cChwrk-PBXdRcFLjkqElkmtQz_EIJyQUDjhZrJcQuBvTdA6dhIiT5ml-ewdX56xdFqrb4k5tIfbms");'></div>
+<span class="truncate">Sophie M.</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success border border-success/20">
+                                    En Prod
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-[#251c30] transition-colors">
+<td class="px-6 py-4 font-medium">v2.3</td>
+<td class="px-6 py-4">Random Forest</td>
+<td class="px-6 py-4">90.9%</td>
+<td class="px-6 py-4">0.87</td>
+<td class="px-6 py-4">15 Sep 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<div class="size-6 rounded-full bg-gray-200 bg-cover" data-alt="Avatar of user" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4wGgU95OtN3A_UyudI7ExeGv5noWR6DRfyMGg-ahSM5RpiIz6FsH2pqMF8lbU_7aU9TLOAZMbJyrZlPvdf-NboOHCdqHNtoY0lR83aalklj_MoWu728wHULxBi17jfUwdh1wg0I0F7W8mgIg-dEpBcaqxndaHI_SV8vtOY708o3sDZ6ZIyE6Dg-jt3YlTX-2RE_hvfBYBtiFZ1WdOo6KuSuc1mfZ0aTKySCZ0_kBMwUGeE9bGqDy9ZGxekIfy4F5WF7OFKpm8DOiV");'></div>
+<span class="truncate">Marc D.</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                                    Archivé
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-[#251c30] transition-colors">
+<td class="px-6 py-4 font-medium">v2.2</td>
+<td class="px-6 py-4">XGBoost</td>
+<td class="px-6 py-4">88.5%</td>
+<td class="px-6 py-4">0.85</td>
+<td class="px-6 py-4">10 Aug 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<div class="size-6 rounded-full bg-gray-200 bg-cover" data-alt="Avatar of user" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBMx_C9tGQfEK6opABgpO-Mewhnqj93XcQAYrfE5rmvh9eAAF6bMxGqswEqlT3YaX1mOL4l-s42o1FVGmdVDpoCI3wmGMf3w_gioHu4lMZqhjrAJSvouCJSpJlPkJVL6bL593wObpNEXUTlfu0EQwhYkwYcwDsX6A8ljuOLoNQDqRTJxNjGIGJWweRDqP7b6EGM25lRZqZ1_q4SlpoQ1lIn7wNCxtx5w5FxAfqXtBEs4CM1vnIhgfN4VhnqKVSe9iZDu876l_ENQ5VI");'></div>
+<span class="truncate">Sophie M.</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                                    Archivé
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-gray-50 dark:hover:bg-[#251c30] transition-colors">
+<td class="px-6 py-4 font-medium">v2.1-exp</td>
+<td class="px-6 py-4">SVM</td>
+<td class="px-6 py-4 text-danger font-medium">76.2%</td>
+<td class="px-6 py-4 text-danger font-medium">0.68</td>
+<td class="px-6 py-4">05 Aug 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<div class="size-6 rounded-full bg-gray-200 bg-cover" data-alt="Avatar of user" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB_44rWFaClfzin82ekSN1XeWIbwtzroyUKwCtIYioDI5YJ8Cagt1G-Ny4i71xSXEBm0MmFSgy8XM3Rp62Mxd2zmjvT5pbc8u00judBMCkE_8blIw4i4HSb6XcJZ6AvPuQE4BDVc86HdP5og2Bfoz4mfDYnCODHLiLdUY4duy2FwDKF4MNkvKwSl0CO7MJ-5Fp3H0ZDjYsTsX0Faguem8ldKuT7Lf6k-3lNisONakv-FuwEdEUMwQs0DWWxgU27L7Ltug3OKLLqgwf-");'></div>
+<span class="truncate">Alex T.</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger/10 text-danger border border-danger/20">
+                                    Rejeté
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-gray-400 hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-[#ece7f3] dark:border-[#2d243a] flex items-center justify-between">
+<p class="text-sm text-gray-500">Affichage de <span class="font-medium">1</span> à <span class="font-medium">4</span> sur <span class="font-medium">12</span> versions</p>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-[#ece7f3] dark:border-[#4a3b5e] rounded hover:bg-gray-50 dark:hover:bg-[#2d243a] text-gray-600 dark:text-gray-300 text-sm disabled:opacity-50" disabled="">Précédent</button>
+<button class="px-3 py-1 border border-[#ece7f3] dark:border-[#4a3b5e] rounded hover:bg-gray-50 dark:hover:bg-[#2d243a] text-gray-600 dark:text-gray-300 text-sm">Suivant</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

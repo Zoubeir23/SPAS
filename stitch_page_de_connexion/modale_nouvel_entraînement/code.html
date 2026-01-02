@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nouvel Entraînement - ISI Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1e3fae",
+                        "primary-hover": "#16308a",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#121520",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e2230",
+                        "text-main": "#111827",
+                        "text-secondary": "#6b7280",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased h-screen overflow-hidden flex flex-col">
+<!-- Top Navigation (Reused & Adapted) -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark px-10 py-3 z-20 shadow-sm relative">
+<div class="flex items-center gap-4 text-text-main dark:text-white">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-3xl">analytics</span>
+</div>
+<h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">ISI Analytics Platform</h2>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-background-dark">
+<div class="text-slate-500 flex bg-transparent items-center justify-center pl-3">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="w-full bg-transparent border-none text-sm text-text-main dark:text-white placeholder:text-slate-500 focus:ring-0 px-3" placeholder="Rechercher..."/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
+<span class="material-symbols-outlined text-[24px]">help</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-slate-200 dark:ring-slate-700" data-alt="User profile avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCcNjBXSSYL60qo4ef0084ajye3JGNdMOrcZLivRhMKEAaKgNlSdFw8Wr44vgHgemnrcxaNWvzHLL77x12BGq9xjcyUN0-C6Xux47qo1V1HBUkgTG5nE4IZWjpFLK4HOIe4BhObYkNBwCCc0A-aSTJUz5P4hM0Hvk2t3VlVQfH069HDNr_r5-p3wbWo9cTrna4_mT50sUcAVrAoHNCxZxN27UdHUb-tFf8LzVQYiX_8Q62RQU6AvTmGsU96Ux8GOeccKSz0BxIYTVmu");'></div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden relative">
+<!-- Sidebar (Reused & Adapted) -->
+<aside class="hidden lg:flex w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark h-full">
+<div class="p-4 flex flex-col gap-6">
+<div class="flex gap-3 items-center px-2">
+<div class="bg-primary/10 text-primary p-2 rounded-lg">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-text-main dark:text-white text-sm font-bold">ISI System</h1>
+<p class="text-slate-500 text-xs">Admin Console</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm font-medium">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">school</span>
+<span class="text-sm font-medium">Données Académiques</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">model_training</span>
+<span class="text-sm font-medium">Modèles ML</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-semibold" href="#">
+<span class="material-symbols-outlined text-[20px] fill-1">bolt</span>
+<span class="text-sm">Entraînements</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium">Administration</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="bg-gradient-to-br from-primary to-blue-600 rounded-xl p-4 text-white">
+<p class="text-xs font-semibold opacity-80 mb-1">Ressources Système</p>
+<div class="flex items-end justify-between mb-2">
+<span class="text-2xl font-bold">84%</span>
+<span class="text-xs opacity-80 mb-1">GPU Usage</span>
+</div>
+<div class="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
+<div class="bg-white h-full rounded-full" style="width: 84%"></div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area with Backdrop -->
+<main class="flex-1 relative bg-background-light dark:bg-background-dark overflow-hidden flex items-center justify-center p-4">
+<!-- Blurred Background representation of dashboard content -->
+<div class="absolute inset-0 opacity-30 pointer-events-none blur-sm bg-cover bg-center" data-alt="Blurred dashboard background pattern" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDeWflQh9M4wUK3MpQTBQZtjULQZzeVuV4SdZcMJGMnsbDEJrXmAZ9zsT6SwlX80td1xwbkppI9RN5pQuNC22GUyvpIQuBt3DB-nOLJKcdNUaYkzbSKGxAE8crFJMahknqEnLfJsOkS1kURjL2kXrHMm_1bOQb8-L1EATDoUTXRcLlXpzOxeUbFr8joHDJ4H9EL2O9a7WKhwwLOGEzuay8axGa5FKkWfXBw4nTs_g9qR1Ww4kZvOZ6-hlmJKC7fIAECirA4u2W4OD75');"></div>
+<div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-0"></div>
+<!-- Modal -->
+<div class="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-surface-light dark:bg-surface-dark rounded-2xl shadow-2xl z-10 overflow-hidden border border-slate-200 dark:border-slate-700">
+<!-- Modal Header -->
+<div class="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-surface-light dark:bg-surface-dark">
+<div>
+<h3 class="text-xl font-bold text-text-main dark:text-white">Nouvel Entraînement</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Configuration du modèle prédictif de réussite étudiante</p>
+</div>
+<button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto px-6 py-6 space-y-8 custom-scrollbar">
+<!-- Section 1: Configuration -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">tune</span>
+<h4 class="text-base font-semibold text-text-main dark:text-white">Configuration de l'Entraînement</h4>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Date Range -->
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-text-main dark:text-slate-300">Période des données</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">calendar_month</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-background-light dark:bg-background-dark text-sm text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" readonly="" type="text" value="01 Sept 2022 - 30 Juin 2023"/>
+</div>
+</div>
+<!-- Filières Dropdown -->
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-text-main dark:text-slate-300">Filières à inclure</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">school</span>
+</div>
+<select class="block w-full pl-10 pr-8 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-background-light dark:bg-background-dark text-sm text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none appearance-none cursor-pointer">
+<option>Génie Informatique &amp; Logiciel</option>
+<option>Systèmes &amp; Réseaux</option>
+<option>Data Science</option>
+<option>Toutes les filières</option>
+</select>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500">
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Algorithme Radio Cards -->
+<div class="space-y-2">
+<label class="text-sm font-medium text-text-main dark:text-slate-300">Algorithme</label>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<label class="relative flex flex-col p-3 bg-background-light dark:bg-slate-800 border-2 border-primary/40 bg-primary/5 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+<input checked="" class="peer sr-only" name="algo" type="radio"/>
+<div class="flex items-center justify-between mb-1">
+<span class="text-sm font-semibold text-text-main dark:text-white">Random Forest</span>
+<span class="size-4 rounded-full border border-primary flex items-center justify-center peer-checked:bg-primary">
+<div class="size-2 rounded-full bg-primary"></div>
+</span>
+</div>
+<span class="text-xs text-slate-500 dark:text-slate-400">Idéal pour les données tabulaires mixtes.</span>
+<div class="absolute inset-0 border-2 border-primary rounded-xl opacity-100 pointer-events-none"></div>
+</label>
+<label class="relative flex flex-col p-3 bg-background-light dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-primary/50 transition-all">
+<input class="peer sr-only" name="algo" type="radio"/>
+<div class="flex items-center justify-between mb-1">
+<span class="text-sm font-semibold text-text-main dark:text-white">XGBoost</span>
+<div class="size-4 rounded-full border border-slate-300 dark:border-slate-500"></div>
+</div>
+<span class="text-xs text-slate-500 dark:text-slate-400">Haute performance et rapidité.</span>
+</label>
+<label class="relative flex flex-col p-3 bg-background-light dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-primary/50 transition-all">
+<input class="peer sr-only" name="algo" type="radio"/>
+<div class="flex items-center justify-between mb-1">
+<span class="text-sm font-semibold text-text-main dark:text-white">Neural Network</span>
+<div class="size-4 rounded-full border border-slate-300 dark:border-slate-500"></div>
+</div>
+<span class="text-xs text-slate-500 dark:text-slate-400">Pour les relations complexes.</span>
+</label>
+</div>
+</div>
+</section>
+<!-- Section 2: Advanced Params -->
+<section class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">settings_suggest</span>
+<h4 class="text-base font-semibold text-text-main dark:text-white">Hyperparamètres (Avancé)</h4>
+</div>
+<span class="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded font-medium">Expert</span>
+</div>
+<!-- Train/Test Split Slider -->
+<div class="bg-background-light dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+<div class="flex justify-between items-center mb-4">
+<label class="text-sm font-medium text-text-main dark:text-slate-300">Répartition Train / Test</label>
+<span class="text-sm font-bold text-primary">80% / 20%</span>
+</div>
+<input class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary" max="95" min="50" type="range" value="80"/>
+<div class="flex justify-between mt-2 text-xs text-slate-500">
+<span>50/50</span>
+<span>95/5</span>
+</div>
+</div>
+<!-- Checkboxes -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<label class="flex items-start gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+<input class="mt-0.5 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/20 h-5 w-5" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main dark:text-white">Optimisation hyperparamètres</span>
+<span class="text-xs text-slate-500">Recherche automatique (Grid Search)</span>
+</div>
+</label>
+<label class="flex items-start gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+<input checked="" class="mt-0.5 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/20 h-5 w-5" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main dark:text-white">Équilibrage des classes</span>
+<span class="text-xs text-slate-500">Appliquer SMOTE sur les données</span>
+</div>
+</label>
+<label class="flex items-start gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+<input checked="" class="mt-0.5 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/20 h-5 w-5" type="checkbox"/>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main dark:text-white">Validation qualité</span>
+<span class="text-xs text-slate-500">Vérifier les valeurs manquantes</span>
+</div>
+</label>
+</div>
+</section>
+<!-- Estimation Panel -->
+<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4 flex gap-4 items-start">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 mt-0.5">info</span>
+<div class="flex-1">
+<h5 class="text-sm font-bold text-blue-900 dark:text-blue-100 mb-1">Estimation Pré-entraînement</h5>
+<div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-blue-800 dark:text-blue-200">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">schedule</span> Temps estimé: ~45 mins</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">memory</span> Ressources: GPU High</span>
+</div>
+</div>
+</div>
+<!-- Description Field -->
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-text-main dark:text-slate-300">Description / Notes (Optionnel)</label>
+<textarea class="block w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-background-light dark:bg-background-dark text-sm text-text-main dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none placeholder:text-slate-400" placeholder="Ajoutez des détails sur le but de cet entraînement..." rows="2"></textarea>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-900/50 flex justify-end gap-3 items-center">
+<button class="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+                        Annuler
+                    </button>
+<button class="px-5 py-2.5 rounded-lg text-sm font-bold text-white bg-primary hover:bg-primary-hover shadow-lg shadow-primary/25 flex items-center gap-2 transition-all transform hover:scale-[1.02]">
+<span class="material-symbols-outlined text-[20px]">rocket_launch</span>
+                        Lancer l'entraînement
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>
