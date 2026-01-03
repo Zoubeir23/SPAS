@@ -11,6 +11,8 @@ export interface User {
   role: 'admin' | 'teacher' | 'ds' | 'pedagogical';
   is_active?: boolean;
   isActive?: boolean;
+  avatar?: string;
+  avatar_url?: string;
   created_at?: string;
   updated_at?: string;
   last_login?: string;
@@ -70,6 +72,21 @@ export const userService = {
 
   async update(id: string, data: Partial<User>): Promise<User> {
     const response = await apiClient.patch<User>(API_ENDPOINTS.USERS.BY_ID(id), data);
+    return normalizeUser(response.data);
+  },
+
+  async uploadAvatar(id: string, file: File): Promise<User> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await apiClient.patch<User>(
+      API_ENDPOINTS.USERS.BY_ID(id),
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
     return normalizeUser(response.data);
   },
 

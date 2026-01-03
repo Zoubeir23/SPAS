@@ -33,6 +33,8 @@ urlpatterns = [
     path('api/ml/', include('apps.ml.urls')),
     path('api/predictions/', include('apps.predictions.urls')),
     path('api/alerts/', include('apps.alerts.urls')),
+    path('api/analytics/', include('apps.analytics.urls')),
+    path('api/core/', include('apps.core.urls')),
 ]
 
 # Serve media files in development

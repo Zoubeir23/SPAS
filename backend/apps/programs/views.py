@@ -7,8 +7,55 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Program, Subject
-from .serializers import ProgramSerializer, ProgramListSerializer
+from .models import Department, Program, Subject
+from .serializers import (
+    DepartmentSerializer, DepartmentListSerializer,
+    ProgramSerializer, ProgramListSerializer
+)
+
+
+class DepartmentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Department model.
+
+    Provides CRUD operations and custom actions:
+    - GET /departments/ - List all departments
+    - POST /departments/ - Create a department
+    - GET /departments/{id}/ - Retrieve a department
+    - PUT/PATCH /departments/{id}/ - Update a department
+    - DELETE /departments/{id}/ - Delete a department
+    - GET /departments/{id}/programs/ - Get all programs in department
+    """
+    queryset = Department.objects.all()
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['status']
+    search_fields = ['name', 'code']
+    ordering_fields = ['code', 'name', 'created_at']
+    ordering = ['code']
+
+    def get_serializer_class(self):
+        """Return appropriate serializer class."""
+        if self.action == 'list':
+            return DepartmentListSerializer
+        return DepartmentSerializer
+
+    def get_queryset(self):
+        """Optimize queryset with prefetch_related."""
+        queryset = Department.objects.prefetch_related('programs')
+        return queryset
+
+    @action(detail=True, methods=['get'])
+    def programs(self, request, pk=None):
+        """
+        Get all programs in a department.
+
+        GET /departments/{id}/programs/
+        """
+        department = self.get_object()
+        programs = department.programs.all().order_by('code')
+        serializer = ProgramListSerializer(programs, many=True)
+        return Response(serializer.data)
 
 
 class ProgramViewSet(viewsets.ModelViewSet):
@@ -26,7 +73,7 @@ class ProgramViewSet(viewsets.ModelViewSet):
     queryset = Program.objects.all()
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['status']
+    filterset_fields = ['status', 'department']
     search_fields = ['name', 'code']
     ordering_fields = ['code', 'name', 'created_at']
     ordering = ['code']
@@ -39,7 +86,7 @@ class ProgramViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optimize queryset with prefetch_related."""
-        queryset = Program.objects.prefetch_related('subjects', 'students')
+        queryset = Program.objects.select_related('department').prefetch_related('subjects', 'students')
         return queryset
 
     @action(detail=True, methods=['get'])

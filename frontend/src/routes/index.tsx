@@ -13,11 +13,13 @@ import TableauDeBordPredictif from '@/pages/dashboard/TableauDeBordPredictif'
 // Lists
 import ListeEtudiants from '@/pages/students/ListeEtudiants'
 import ListeSessions from '@/pages/sessions/ListeSessions'
+import ListeDepartements from '@/pages/programs/ListeDepartements'
 import ListeFilieres from '@/pages/programs/ListeFilieres'
 import ListeAlertes from '@/pages/alerts/ListeAlertes'
 
 // Import pages
 import DetailEtudiant from '@/pages/students/DetailEtudiant'
+import ListePredictions from '@/pages/predictions/ListePredictions'
 import DetailPrediction from '@/pages/predictions/DetailPrediction'
 import GestionUtilisateurs from '@/pages/users/GestionUtilisateurs'
 import GestionModeles from '@/pages/ml/GestionModeles'
@@ -25,6 +27,7 @@ import DetailModele from '@/pages/ml/DetailModele'
 import GestionAbsences from '@/pages/attendance/GestionAbsences'
 import SaisieNotes from '@/pages/grades/SaisieNotes'
 import ParametresSysteme from '@/pages/settings/ParametresSysteme'
+import MonProfil from '@/pages/profile/MonProfil'
 import AnalysesAvancees from '@/pages/analytics/AnalysesAvancees'
 
 export default function AppRoutes() {
@@ -115,6 +118,16 @@ export default function AppRoutes() {
         }
       />
 
+      {/* Routes protégées - Départements */}
+      <Route
+        path="/departments"
+        element={
+          <RouteProtegee>
+            <ListeDepartements />
+          </RouteProtegee>
+        }
+      />
+
       {/* Routes protégées - Alertes */}
       <Route
         path={ROUTES.ALERTS}
@@ -128,6 +141,14 @@ export default function AppRoutes() {
       {/* Routes protégées - Prédictions */}
       <Route
         path={ROUTES.PREDICTIONS}
+        element={
+          <RouteProtegee>
+            <ListePredictions />
+          </RouteProtegee>
+        }
+      />
+      <Route
+        path="/predictions/:id"
         element={
           <RouteProtegee>
             <DetailPrediction />
@@ -189,6 +210,16 @@ export default function AppRoutes() {
         element={
           <RouteProtegee>
             <ParametresSysteme />
+          </RouteProtegee>
+        }
+      />
+
+      {/* Routes protégées - Profil */}
+      <Route
+        path={ROUTES.PROFILE}
+        element={
+          <RouteProtegee>
+            <MonProfil />
           </RouteProtegee>
         }
       />

@@ -53,7 +53,7 @@ export const sessionService = {
       API_ENDPOINTS.SESSIONS.BASE,
       { params: filters }
     )
-    const sessions = Array.isArray(response.data) ? response.data : response.data.results
+    const sessions = Array.isArray(response.data) ? response.data : (response.data.results || [])
     return sessions.map(normalizeSession)
   },
 

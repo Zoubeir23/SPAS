@@ -18,6 +18,12 @@ export interface MLModel {
   description?: string
   created_at?: string
   updated_at?: string
+  metrics?: {
+    accuracy?: number
+    precision?: number
+    recall?: number
+    f1_score?: number
+  }
 }
 
 export interface MLModelListResponse {
@@ -119,6 +125,15 @@ export const mlService = {
   async getPerformance(): Promise<ModelPerformance[]> {
     const response = await apiClient.get<ModelPerformance[]>(API_ENDPOINTS.ML.PERFORMANCE)
     return response.data
+  },
+
+  async getTrainingJobs(): Promise<any[]> {
+    try {
+      const response = await apiClient.get<any[]>(API_ENDPOINTS.ML.TRAINING_JOBS)
+      return response.data
+    } catch {
+      return []
+    }
   },
 }
 

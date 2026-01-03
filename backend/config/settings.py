@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'apps.ml',
     'apps.predictions',
     'apps.alerts',
+    'apps.analytics',
+    'apps.core',
 ]
 
 # Development tools
@@ -67,6 +69,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'config.middleware.UTF8JSONResponseMiddleware',  # Force UTF-8 encoding for JSON
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -105,7 +108,8 @@ DATABASES = {
         'CONN_HEALTH_CHECKS': True,  # Enable connection health checks
         'OPTIONS': {
             'connect_timeout': 10,
-            'options': '-c statement_timeout=30000'  # 30 seconds query timeout
+            'options': '-c statement_timeout=30000',  # 30 seconds query timeout
+            'client_encoding': 'UTF8',  # Ensure UTF-8 encoding
         },
         # Database engine options for better performance
         'ATOMIC_REQUESTS': True,  # Wrap each request in a transaction
@@ -147,6 +151,9 @@ TIME_ZONE = 'America/Montreal'
 USE_I18N = True
 USE_TZ = True
 
+# Encoding
+DEFAULT_CHARSET = 'utf-8'
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -162,7 +169,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = env.list(
     'CORS_ALLOWED_ORIGINS',
-    default=['http://localhost:5173', 'http://127.0.0.1:5173']
+    default=['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174', 'http://localhost:5175', 'http://127.0.0.1:5175']
 )
 CORS_ALLOW_CREDENTIALS = True
 

@@ -23,11 +23,14 @@ export interface Student {
   session_name?: string
   session?: { id: string; name: string }
   status: 'active' | 'inactive' | 'graduated'
+  level?: 'L1' | 'L2' | 'L3' | 'M1' | 'M2'
+  level_display?: string
   riskLevel?: 'low' | 'medium' | 'high'
   risk_level?: 'low' | 'medium' | 'high'
   riskScore?: number
   risk_score?: number
   photo?: string
+  photo_url?: string
   created_at?: string
   updated_at?: string
 }
@@ -120,6 +123,21 @@ export const studentService = {
     if (updates.status) payload.status = updates.status
 
     const response = await apiClient.patch<Student>(API_ENDPOINTS.STUDENTS.BY_ID(id), payload)
+    return normalizeStudent(response.data)
+  },
+
+  async uploadPhoto(id: string, file: File): Promise<Student> {
+    const formData = new FormData()
+    formData.append('photo', file)
+    const response = await apiClient.patch<Student>(
+      API_ENDPOINTS.STUDENTS.BY_ID(id),
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
     return normalizeStudent(response.data)
   },
 

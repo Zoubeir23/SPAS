@@ -28,6 +28,8 @@ export interface UserProfile {
   last_name: string
   role: 'admin' | 'teacher' | 'ds' | 'pedagogical'
   is_active: boolean
+  avatar?: string
+  avatar_url?: string
 }
 
 export interface ApiError {

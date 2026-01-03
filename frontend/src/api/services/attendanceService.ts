@@ -61,7 +61,7 @@ export const attendanceService = {
       API_ENDPOINTS.ATTENDANCE.BASE,
       { params: filters }
     )
-    const records = Array.isArray(response.data) ? response.data : response.data.results
+    const records = Array.isArray(response.data) ? response.data : (response.data.results || [])
     return records.map(normalizeAttendance)
   },
 

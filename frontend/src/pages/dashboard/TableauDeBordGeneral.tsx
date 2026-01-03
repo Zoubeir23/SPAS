@@ -9,6 +9,7 @@ import { studentService } from '@/api/services/studentService'
 import { programService } from '@/api/services/programService'
 import { sessionService } from '@/api/services/sessionService'
 import { alertService } from '@/api/services/alertService'
+import { analyticsService, type EnrollmentEvolution } from '@/api/services/analyticsService'
 import { exportDashboardToPDF, type ExportColumn } from '@/utils/exportService'
 
 interface DashboardStats {
@@ -16,6 +17,11 @@ interface DashboardStats {
   activePrograms: number
   sessions: number
   successRate: number
+}
+
+interface ProgramDistributionItem {
+  name: string
+  value: number
 }
 
 export default function TableauDeBordGeneral() {
@@ -27,26 +33,65 @@ export default function TableauDeBordGeneral() {
   })
   const [loading, setLoading] = useState(true)
   const [recentAlerts, setRecentAlerts] = useState<any[]>([])
+  const [enrollmentData, setEnrollmentData] = useState<{ name: string; value: number }[]>([])
+  const [programDistribution, setProgramDistribution] = useState<ProgramDistributionItem[]>([])
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true)
       try {
-        const [students, programs, sessions, alerts] = await Promise.all([
+        const [students, programs, sessions, alerts, dashboardStats] = await Promise.all([
           studentService.getAll(),
           programService.getAll(),
           sessionService.getAll(),
           alertService.getAll(),
+          analyticsService.getDashboardStats(),
         ])
 
+        // Utiliser les stats réelles du backend
         setStats({
-          totalStudents: students.length * 100, // Simuler plus d'étudiants
-          activePrograms: programs.filter((p) => p.status === 'active').length,
-          sessions: sessions.length * 10, // Simuler plus de sessions
-          successRate: 88.2,
+          totalStudents: dashboardStats.totalStudents || students.length,
+          activePrograms: dashboardStats.activePrograms || programs.filter((p) => p.status === 'active').length,
+          sessions: dashboardStats.sessionsCount || sessions.length,
+          successRate: dashboardStats.successRate || 0,
         })
 
         setRecentAlerts(alerts.slice(0, 3))
+
+        // Charger données évolution inscriptions depuis API
+        if (dashboardStats.enrollmentEvolution && dashboardStats.enrollmentEvolution.length > 0) {
+          setEnrollmentData(dashboardStats.enrollmentEvolution.map((e: EnrollmentEvolution) => ({
+            name: e.year.toString(),
+            value: e.count
+          })))
+        } else {
+          // Fallback: générer depuis les étudiants groupés par année
+          const yearCounts: Record<number, number> = {}
+          students.forEach((s: any) => {
+            const year = new Date(s.enrollment_date || s.created_at).getFullYear()
+            yearCounts[year] = (yearCounts[year] || 0) + 1
+          })
+          setEnrollmentData(
+            Object.entries(yearCounts)
+              .sort(([a], [b]) => Number(a) - Number(b))
+              .map(([year, count]) => ({ name: year, value: count }))
+          )
+        }
+
+        // Distribution par programme depuis API ou calcul
+        if (dashboardStats.programDistribution && dashboardStats.programDistribution.length > 0) {
+          setProgramDistribution(dashboardStats.programDistribution)
+        } else {
+          // Fallback: calculer depuis les étudiants
+          const progCounts: Record<string, number> = {}
+          students.forEach((s: any) => {
+            const progName = s.program_name || s.program?.name || 'Autre'
+            progCounts[progName] = (progCounts[progName] || 0) + 1
+          })
+          setProgramDistribution(
+            Object.entries(progCounts).map(([name, value]) => ({ name, value }))
+          )
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error)
       } finally {
@@ -56,23 +101,6 @@ export default function TableauDeBordGeneral() {
 
     loadData()
   }, [])
-
-  // Données pour les graphiques
-  const enrollmentData = [
-    { name: '2019', value: 1800 },
-    { name: '2020', value: 1950 },
-    { name: '2021', value: 2100 },
-    { name: '2022', value: 2300 },
-    { name: '2023', value: 2450 },
-    { name: '2024', value: 2650 },
-  ]
-
-  const programDistribution = [
-    { name: 'Informatique', value: 850 },
-    { name: 'Génie Logiciel', value: 650 },
-    { name: 'Réseaux', value: 450 },
-    { name: 'Cybersécurité', value: 300 },
-  ]
 
   const handleExportPDF = () => {
     const kpis = [

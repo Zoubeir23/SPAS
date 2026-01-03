@@ -1,47 +1,59 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import MiseEnPagePrincipale from '@/components/layout/MiseEnPagePrincipale'
 import Carte from '@/components/common/Carte'
 import Bouton from '@/components/common/Bouton'
 import GraphiqueLignes from '@/components/charts/GraphiqueLignes'
 import GraphiqueBarres from '@/components/charts/GraphiqueBarres'
 import { exportToExcel, exportDashboardToPDF, type ExportColumn } from '@/utils/exportService'
+import { analyticsService, type AnalyticsMetrics, type DropoutEvolution, type ProgramPerformance, type InterventionEfficacy, type RiskDistribution } from '@/api/services/analyticsService'
 
 export default function AnalysesAvancees() {
   const [startDate, setStartDate] = useState('2023-09-01')
   const [endDate, setEndDate] = useState('2024-06-30')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const [dropoutData] = useState([
-    { month: 'Sep', predicted: 3.2, real: 3.1 },
-    { month: 'Oct', predicted: 3.5, real: 3.3 },
-    { month: 'Nov', predicted: 3.8, real: 3.6 },
-    { month: 'Déc', predicted: 4.0, real: 3.9 },
-    { month: 'Jan', predicted: 4.2, real: 4.1 },
-    { month: 'Fév', predicted: 4.5, real: 4.3 },
-    { month: 'Mar', predicted: 4.3, real: 4.2 },
-    { month: 'Avr', predicted: 4.1, real: 4.0 },
-    { month: 'Mai', predicted: 3.9, real: 3.8 },
-    { month: 'Juin', predicted: 3.7, real: 3.6 },
-  ])
+  // Données depuis l'API
+  const [metrics, setMetrics] = useState<AnalyticsMetrics | null>(null)
+  const [dropoutData, setDropoutData] = useState<DropoutEvolution[]>([])
+  const [performanceByProgram, setPerformanceByProgram] = useState<ProgramPerformance[]>([])
+  const [interventionEfficacy, setInterventionEfficacy] = useState<InterventionEfficacy[]>([])
+  const [riskDistribution, setRiskDistribution] = useState<RiskDistribution[]>([])
 
-  const [performanceByProgram] = useState([
-    { program: 'Data Science', success: 85, risk: 12, dropout: 3 },
-    { program: 'Informatique', success: 78, risk: 18, dropout: 4 },
-    { program: 'Cybersécurité', success: 82, risk: 15, dropout: 3 },
-    { program: 'IA', success: 88, risk: 10, dropout: 2 },
-  ])
+  const loadData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [metricsData, riskData] = await Promise.all([
+        analyticsService.getMetrics(startDate, endDate),
+        analyticsService.getRiskDistribution()
+      ])
+      setMetrics(metricsData)
+      setDropoutData(metricsData.dropoutEvolution)
+      setPerformanceByProgram(metricsData.performanceByProgram)
+      setInterventionEfficacy(metricsData.interventionEfficacy)
+      setRiskDistribution(riskData)
+    } catch (err) {
+      console.error('Erreur lors du chargement des analytics:', err)
+      setError('Impossible de charger les données analytiques')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const [interventionEfficacy] = useState([
-    { type: 'Soutien Psychologique', students: 45, gpaImpact: '+0.5 pts', retention: '+15%', efficacy: 'Élevée' },
-    { type: 'Tutorat par les pairs', students: 120, gpaImpact: '+0.2 pts', retention: '+8%', efficacy: 'Moyenne' },
-    { type: 'Atelier de Méthodologie', students: 85, gpaImpact: '+0.8 pts', retention: '+12%', efficacy: 'Élevée' },
-    { type: 'Rappel Automatique SMS', students: 350, gpaImpact: '0.0 pts', retention: '+1%', efficacy: 'Faible' },
-  ])
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const handleApplyFilters = () => {
+    loadData()
+  }
 
   const handleExportPDF = () => {
     const kpis = [
-      { label: 'Risque de Décrochage Global', value: '4.2%' },
-      { label: 'Interventions Actives', value: '128' },
-      { label: 'Précision Modèle IA', value: '94.8%' },
+      { label: 'Risque de Décrochage Global', value: metrics?.riskGlobal ? `${metrics.riskGlobal}%` : '0%' },
+      { label: 'Interventions Actives', value: metrics?.interventionsActives?.toString() ?? '0' },
+      { label: 'Précision Modèle IA', value: metrics?.precisionModele ? `${metrics.precisionModele}%` : '0%' },
     ]
 
     const interventionColumns: ExportColumn[] = [
@@ -157,14 +169,31 @@ export default function AnalysesAvancees() {
                 />
               </div>
             </div>
-            <Bouton className="mb-[1px]">
+            <Bouton onClick={handleApplyFilters} disabled={loading} className="mb-[1px]">
               <span className="material-symbols-outlined text-lg">filter_list</span>
-              Appliquer
+              {loading ? 'Chargement...' : 'Appliquer'}
             </Bouton>
           </div>
         </div>
 
+        {/* Erreur */}
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
+            <span className="material-symbols-outlined mr-2 align-middle">error</span>
+            {error}
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Chargement des données...</span>
+          </div>
+        )}
+
         {/* KPI Cartes Row */}
+        {!loading && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* KPI 1 */}
           <Carte>
@@ -177,10 +206,10 @@ export default function AnalysesAvancees() {
               </span>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">4.2%</p>
-              <span className="text-sm font-medium text-red-500">+0.8%</span>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{metrics?.riskGlobal?.toFixed(1) ?? '0'}%</p>
+              <span className="text-sm font-medium text-gray-500">calculé</span>
             </div>
-            <p className="mt-1 text-xs text-gray-600 dark:text-gray-500">vs mois dernier</p>
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-500">basé sur les prédictions actives</p>
           </Carte>
 
           {/* KPI 2 */}
@@ -194,10 +223,10 @@ export default function AnalysesAvancees() {
               </span>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">128</p>
-              <span className="text-sm font-medium text-green-600">+12%</span>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{metrics?.interventionsActives ?? 0}</p>
+              <span className="text-sm font-medium text-green-600">en cours</span>
             </div>
-            <p className="mt-1 text-xs text-gray-600 dark:text-gray-500">vs mois dernier</p>
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-500">interventions pédagogiques</p>
           </Carte>
 
           {/* KPI 3 */}
@@ -211,14 +240,17 @@ export default function AnalysesAvancees() {
               </span>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">94.8%</p>
-              <span className="text-sm font-medium text-green-600">+1.2%</span>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{metrics?.precisionModele?.toFixed(1) ?? '0'}%</p>
+              <span className="text-sm font-medium text-green-600">Score F1</span>
             </div>
-            <p className="mt-1 text-xs text-gray-600 dark:text-gray-500">Score F1</p>
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-500">modèle ML actif</p>
           </Carte>
         </div>
+        )}
 
         {/* Main Chart: Dropout Rate */}
+        {!loading && (
+        <>
         <Carte className="lg:col-span-8">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -240,15 +272,19 @@ export default function AnalysesAvancees() {
               </div>
             </div>
           </div>
-          <GraphiqueLignes
-            data={dropoutData}
-            dataKey="month"
-            lines={[
-              { key: 'predicted', name: 'Prédit (IA)', color: '#7c3bed' },
-              { key: 'real', name: 'Réel', color: '#16A34A' },
-            ]}
-            height={300}
-          />
+          {dropoutData.length > 0 ? (
+            <GraphiqueLignes
+              data={dropoutData}
+              dataKey="month"
+              lines={[
+                { key: 'predicted', name: 'Prédit (IA)', color: '#7c3bed' },
+                { key: 'real', name: 'Réel', color: '#16A34A' },
+              ]}
+              height={300}
+            />
+          ) : (
+            <p className="text-center text-gray-500 py-8">Aucune donnée d'évolution disponible</p>
+          )}
         </Carte>
 
         {/* Performance by Program */}
@@ -261,19 +297,26 @@ export default function AnalysesAvancees() {
               Répartition des taux de réussite, risque et décrochage
             </p>
           </div>
-          <GraphiqueBarres
-            data={performanceByProgram}
-            bars={[
-              { key: 'success', name: 'Réussite', color: '#16A34A' },
-              { key: 'risk', name: 'À risque', color: '#F59E0B' },
-              { key: 'dropout', name: 'Décrochage', color: '#DC2626' },
-            ]}
-            xAxisKey="program"
-            height={300}
-          />
+          {performanceByProgram.length > 0 ? (
+            <GraphiqueBarres
+              data={performanceByProgram}
+              bars={[
+                { key: 'success', name: 'Réussite', color: '#16A34A' },
+                { key: 'risk', name: 'À risque', color: '#F59E0B' },
+                { key: 'dropout', name: 'Décrochage', color: '#DC2626' },
+              ]}
+              xAxisKey="program"
+              height={300}
+            />
+          ) : (
+            <p className="text-center text-gray-500 py-8">Aucune donnée de performance par filière disponible</p>
+          )}
         </Carte>
+        </>
+        )}
 
         {/* Additional Analytics Grid */}
+        {!loading && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Risk Distribution */}
           <Carte>
@@ -281,42 +324,35 @@ export default function AnalysesAvancees() {
               Distribution des Risques
             </h3>
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600 dark:text-gray-400">Faible</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">65%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div className="bg-green-500 h-3 rounded-full" style={{ width: '65%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600 dark:text-gray-400">Moyen</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">25%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div className="bg-amber-500 h-3 rounded-full" style={{ width: '25%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600 dark:text-gray-400">Élevé</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">8%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div className="bg-red-500 h-3 rounded-full" style={{ width: '8%' }}></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600 dark:text-gray-400">Critique</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">2%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div className="bg-red-700 h-3 rounded-full" style={{ width: '2%' }}></div>
-                </div>
-              </div>
+              {riskDistribution.length > 0 ? (
+                riskDistribution.map((risk) => {
+                  const colorMap: Record<string, string> = {
+                    'low': 'bg-green-500',
+                    'medium': 'bg-amber-500',
+                    'high': 'bg-red-500',
+                    'critical': 'bg-red-700'
+                  }
+                  const labelMap: Record<string, string> = {
+                    'low': 'Faible',
+                    'medium': 'Moyen',
+                    'high': 'Élevé',
+                    'critical': 'Critique'
+                  }
+                  return (
+                    <div key={risk.level}>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-600 dark:text-gray-400">{labelMap[risk.level] || risk.level}</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">{risk.percentage.toFixed(0)}% ({risk.count})</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div className={`${colorMap[risk.level] || 'bg-gray-500'} h-3 rounded-full`} style={{ width: `${risk.percentage}%` }}></div>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="text-gray-500 text-sm">Aucune donnée de risque disponible</p>
+              )}
             </div>
           </Carte>
 
@@ -326,30 +362,29 @@ export default function AnalysesAvancees() {
               Efficacité des Interventions
             </h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">Entretien individuel</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Taux de succès: 78%</p>
-                </div>
-                <span className="text-2xl font-bold text-green-600">78%</span>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">Tutorat</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Taux de succès: 65%</p>
-                </div>
-                <span className="text-2xl font-bold text-green-600">65%</span>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">Alerte précoce</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Taux de succès: 52%</p>
-                </div>
-                <span className="text-2xl font-bold text-amber-600">52%</span>
-              </div>
+              {interventionEfficacy.length > 0 ? (
+                interventionEfficacy.map((intervention, index) => {
+                  const retentionValue = parseInt(intervention.retention.replace(/[^0-9]/g, '')) || 0
+                  const colorClass = retentionValue >= 10 ? 'text-green-600' : retentionValue >= 5 ? 'text-amber-600' : 'text-gray-600'
+                  return (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-white">{intervention.type}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {intervention.students} étudiants • Impact: {intervention.gpaImpact}
+                        </p>
+                      </div>
+                      <span className={`text-2xl font-bold ${colorClass}`}>{intervention.retention}</span>
+                    </div>
+                  )
+                })
+              ) : (
+                <p className="text-gray-500 text-sm">Aucune intervention enregistrée</p>
+              )}
             </div>
           </Carte>
         </div>
+        )}
 
         {/* Export Buttons */}
         <div className="sticky bottom-4 z-20 mt-8 flex flex-wrap justify-end gap-4 rounded-xl border border-gray-200 bg-white/80 p-4 shadow-lg backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useAuth } from '@/hooks/useAuth'
@@ -22,10 +22,11 @@ const navItems: NavItem[] = [
   {
     label: 'Gestion',
     icon: 'folder_managed',
-    path: '#',
+    path: '#gestion',
     children: [
       { label: 'Étudiants', icon: 'school', path: '/students' },
       { label: 'Sessions', icon: 'calendar_month', path: '/sessions' },
+      { label: 'Départements', icon: 'business', path: '/departments' },
       { label: 'Filières', icon: 'book_2', path: '/programs' },
       { label: 'Absences', icon: 'event_busy', path: '/attendance' },
     ],
@@ -33,7 +34,7 @@ const navItems: NavItem[] = [
   {
     label: 'Module IA',
     icon: 'psychology',
-    path: '#',
+    path: '#module-ia',
     children: [
       { label: 'Dashboard Prédictif', icon: 'dashboard', path: '/dashboard/predictive' },
       { label: 'Prédictions', icon: 'auto_awesome', path: '/predictions' },
@@ -75,12 +76,12 @@ function NavItemComponent({
 
   if (hasChildren) {
     return (
-      <details
-        className="group/accordion"
-        open={isExpanded}
-        onToggle={onToggle}
-      >
-        <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors list-none">
+      <div className="group/accordion">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="w-full flex cursor-pointer items-center justify-between gap-3 px-3 py-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+        >
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined">{item.icon}</span>
             <span className="text-sm font-medium">{item.label}</span>
@@ -93,13 +94,15 @@ function NavItemComponent({
           >
             expand_more
           </span>
-        </summary>
-        <div className="flex flex-col mt-1 space-y-1 pl-11 pr-2 pb-2">
-          {(item.children ?? []).map((child, childIndex) => (
-            <NavLink key={`${item.label}-${child.label}-${childIndex}`} item={child} />
-          ))}
-        </div>
-      </details>
+        </button>
+        {isExpanded && (
+          <div className="flex flex-col mt-1 space-y-1 pl-11 pr-2 pb-2">
+            {(item.children ?? []).map((child, childIndex) => (
+              <NavLink key={`${item.label}-${child.label}-${childIndex}`} item={child} />
+            ))}
+          </div>
+        )}
+      </div>
     )
   }
 
@@ -134,6 +137,24 @@ export default function BarreLaterale() {
   const { user } = useAuthStore()
   const { logout } = useAuth()
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+
+  // Garder le menu parent ouvert si un enfant est actif
+  useEffect(() => {
+    navItems.forEach((item) => {
+      if (item.children) {
+        const hasActiveChild = item.children.some(
+          (child) => child.path === location.pathname
+        )
+        if (hasActiveChild) {
+          setExpandedItems((prev) => {
+            const next = new Set(prev)
+            next.add(item.path)
+            return next
+          })
+        }
+      }
+    })
+  }, [location.pathname])
 
   const toggleExpanded = (path: string) => {
     setExpandedItems((prev) => {

@@ -326,3 +326,78 @@ class SoftDeleteModel(models.Model):
         self.deleted_at = None
         self.deleted_by = None
         self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
+
+
+class SystemSettings(models.Model):
+    """
+    Singleton model for storing system-wide settings.
+    Only one instance should exist (pk=1).
+    """
+    # ML Settings
+    ml_auto_training = models.BooleanField(default=True, help_text="Enable automatic ML model retraining")
+    ml_training_frequency = models.CharField(
+        max_length=20,
+        default='weekly',
+        choices=[
+            ('daily', 'Quotidien'),
+            ('weekly', 'Hebdomadaire'),
+            ('monthly', 'Mensuel'),
+        ],
+        help_text="Frequency of automatic training"
+    )
+    ml_risk_threshold_low = models.FloatField(default=0.3, help_text="Threshold for low risk (0-1)")
+    ml_risk_threshold_medium = models.FloatField(default=0.6, help_text="Threshold for medium risk (0-1)")
+    ml_risk_threshold_high = models.FloatField(default=0.8, help_text="Threshold for high risk (0-1)")
+    
+    # Alert Settings
+    alert_auto_create = models.BooleanField(default=True, help_text="Automatically create alerts for high-risk students")
+    alert_email_notifications = models.BooleanField(default=True, help_text="Send email notifications for new alerts")
+    alert_sms_notifications = models.BooleanField(default=False, help_text="Send SMS notifications for critical alerts")
+    
+    # Notification Settings
+    notification_email_enabled = models.BooleanField(default=True)
+    notification_sms_enabled = models.BooleanField(default=False)
+    notification_push_enabled = models.BooleanField(default=True)
+    
+    # Academic Settings
+    academic_year_start_month = models.IntegerField(default=9, help_text="Month when academic year starts (1-12)")
+    academic_passing_grade = models.FloatField(default=10.0, help_text="Minimum passing grade (0-20)")
+    academic_attendance_threshold = models.FloatField(default=75.0, help_text="Minimum attendance percentage required")
+    
+    # System Settings
+    system_language = models.CharField(max_length=10, default='fr', choices=[('fr', 'Français'), ('en', 'English')])
+    system_timezone = models.CharField(max_length=50, default='Africa/Dakar')
+    system_date_format = models.CharField(max_length=20, default='DD/MM/YYYY')
+    system_maintenance_mode = models.BooleanField(default=False)
+    
+    # Data Retention
+    data_retention_years = models.IntegerField(default=7, help_text="Number of years to retain student data")
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='settings_updates'
+    )
+    
+    class Meta:
+        verbose_name = "System Settings"
+        verbose_name_plural = "System Settings"
+    
+    def save(self, *args, **kwargs):
+        # Ensure only one instance exists (singleton pattern)
+        self.pk = 1
+        super().save(*args, **kwargs)
+    
+    @classmethod
+    def get_settings(cls):
+        """Get or create the singleton settings instance."""
+        instance, _ = cls.objects.get_or_create(pk=1)
+        return instance
+    
+    def __str__(self):
+        return "System Settings"

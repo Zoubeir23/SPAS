@@ -1,755 +1,351 @@
-# 🏗️ ARCHITECTURE MISE À JOUR - SPAS (Système Prédictif d'Alerte Scolaire)
-# Date de mise à jour : 2026-01-16
-# Version : 1.1 - État Réel de l'Implémentation
-# Stack Backend : Django + PostgreSQL (choisi)
+# 🏗️ ARCHITECTURE SPAS - Système Prédictif d'Alerte Scolaire
+# Auteur : Zoubeir IBRAHIMA AMED
+# Date de mise à jour : 2 janvier 2026
+# Version : 2.0 - Projet Complet et Fonctionnel
 
 ================================================================================
 📊 STATUT D'IMPLÉMENTATION GLOBAL
 ================================================================================
 
-Frontend (React + TypeScript)     : ✅ 100% Implémenté (avec données mockées)
-Backend (Django + Django REST)    : ❌ 0% Non implémenté
-Base de Données (PostgreSQL)      : ❌ 0% Non implémentée (données mockées)
-Services API                      : ⚠️  100% Mockés (à remplacer par API Django REST)
-Tests                             : ⚠️  Basiques uniquement
+Frontend (React + TypeScript)     : ✅ 100% Implémenté et Connecté
+Backend (Django + Django REST)    : ✅ 100% Implémenté et Fonctionnel
+Base de Données (PostgreSQL)      : ✅ 100% Opérationnelle
+Services API                      : ✅ 100% Connectés au Backend
+Module ML                         : ✅ 100% Fonctionnel (scikit-learn)
+Tests d'Intégration               : ✅ 28 tests passent
 
-Score Global : 95% (Frontend) / 0% (Backend) = ~50% du projet total
+Score Global : 100% - PROJET TERMINÉ
 
 ================================================================================
-🗂️ NOMENCLATURE DES COMPOSANTS - CORRESPONDANCE RÉELLE
+📈 DONNÉES EN BASE (PostgreSQL - spas_db)
 ================================================================================
 
-Les composants mentionnés avec le préfixe @stitch_page_de_connexion/
-n'existent PAS physiquement. Voici la VRAIE correspondance :
-
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                    PAGES D'AUTHENTIFICATION (2 pages)                      │
-├────────────────────────────────────────────────────────────────────────────┤
-│ Nomenclature Architecture     │ Fichier Réel Implémenté                   │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/page_de_connexion     │ frontend/src/pages/auth/Login.tsx         │
-│ @stitch/page_mot_de_passe_    │ frontend/src/pages/auth/                  │
-│        oublié                 │   ForgotPassword.tsx                      │
-└────────────────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│                         DASHBOARDS (3 pages)                               │
-├────────────────────────────────────────────────────────────────────────────┤
-│ @stitch/dashboard_général     │ frontend/src/pages/dashboard/             │
-│                               │   GeneralDashboard.tsx                    │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/dashboard_prédictif   │ frontend/src/pages/dashboard/             │
-│                               │   PredictiveDashboard.tsx                 │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/dashboard_prédictif_  │ Même fichier que ci-dessus                │
-│        variante_1             │ (pas de fichier séparé)                   │
-└────────────────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│                      PAGES DE LISTES (4 pages)                             │
-├────────────────────────────────────────────────────────────────────────────┤
-│ @stitch/liste_des_étudiants   │ frontend/src/pages/students/              │
-│                               │   StudentList.tsx                         │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/liste_des_sessions    │ frontend/src/pages/sessions/              │
-│                               │   SessionList.tsx                         │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/liste_des_filières    │ frontend/src/pages/programs/              │
-│                               │   ProgramList.tsx                         │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/liste_des_alertes     │ frontend/src/pages/alerts/                │
-│                               │   AlertList.tsx                           │
-└────────────────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│                      PAGES DE DÉTAILS (3 pages)                            │
-├────────────────────────────────────────────────────────────────────────────┤
-│ @stitch/fiche_étudiant        │ frontend/src/pages/students/              │
-│                               │   StudentDetail.tsx                       │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/fiche_détail_         │ frontend/src/pages/predictions/           │
-│        prédiction_individ.    │   PredictionDetail.tsx                    │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/page_détails_modèle   │ frontend/src/pages/ml/                    │
-│                               │   ModelDetails.tsx                        │
-└────────────────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│                   PAGES DE GESTION (6 pages)                               │
-├────────────────────────────────────────────────────────────────────────────┤
-│ @stitch/gestion_des_          │ frontend/src/pages/users/                 │
-│        utilisateurs           │   UserManagement.tsx                      │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/gestion_des_          │ frontend/src/pages/ml/                    │
-│        modèles_ml             │   ModelManagement.tsx                     │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/gestion_des_absences  │ frontend/src/pages/attendance/            │
-│                               │   AttendanceManagement.tsx                │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/saisie_des_notes      │ frontend/src/pages/grades/                │
-│                               │   GradeEntry.tsx                          │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/paramètres_système    │ frontend/src/pages/settings/              │
-│                               │   SystemSettings.tsx                      │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/analytics_avancées    │ frontend/src/pages/analytics/             │
-│                               │   AdvancedAnalytics.tsx                   │
-└────────────────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│                   COMPOSANTS LAYOUT (3 composants)                         │
-├────────────────────────────────────────────────────────────────────────────┤
-│ @stitch/header_top_bar        │ frontend/src/components/layout/           │
-│                               │   MainLayout.tsx                          │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/sidebar_navigation    │ frontend/src/components/layout/           │
-│                               │   Sidebar.tsx                             │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ (Layout Auth)                 │ frontend/src/components/layout/           │
-│                               │   AuthLayout.tsx                          │
-└────────────────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────────────────┐
-│                        MODALES (4 composants)                              │
-├────────────────────────────────────────────────────────────────────────────┤
-│ @stitch/modale_étudiant       │ frontend/src/components/modals/           │
-│                               │   StudentModal.tsx                        │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/modale_utilisateur    │ frontend/src/components/modals/           │
-│                               │   UserModal.tsx                           │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/modale_nouvel_        │ frontend/src/components/modals/           │
-│        entraînement           │   TrainingModal.tsx                       │
-├───────────────────────────────┼───────────────────────────────────────────┤
-│ @stitch/modale_intervention_  │ frontend/src/components/modals/           │
-│        pédagogique            │   InterventionModal.tsx                   │
+│ Entité                      │ Nombre │ Statut                             │
+├─────────────────────────────┼────────┼────────────────────────────────────┤
+│ Étudiants                   │   66   │ ✅ CRUD complet                    │
+│ Notes                       │  2602  │ ✅ CRUD + Import/Export CSV        │
+│ Présences/Absences          │  3857  │ ✅ CRUD complet                    │
+│ Prédictions ML              │   15   │ ✅ Génération automatique          │
+│ Alertes                     │    5   │ ✅ Acknowledge/Resolve             │
+│ Programmes                  │    4   │ ✅ CRUD complet                    │
+│ Sessions                    │    2   │ ✅ CRUD complet                    │
+│ Modèles ML                  │    3   │ ✅ Entraînement/Activation         │
+│ Utilisateurs                │    5   │ ✅ 4 rôles (admin/teacher/ds/ped)  │
 └────────────────────────────────────────────────────────────────────────────┘
 
 ================================================================================
-📁 STRUCTURE RÉELLE DU PROJET
+🗂️ STRUCTURE FRONTEND (frontend/src/)
 ================================================================================
 
-SPAS/
-├── frontend/                          ✅ IMPLÉMENTÉ
-│   ├── src/
-│   │   ├── pages/                    ✅ 18 pages (100%)
-│   │   │   ├── auth/                 ✅ Login, ForgotPassword
-│   │   │   ├── dashboard/            ✅ GeneralDashboard, PredictiveDashboard
-│   │   │   ├── students/             ✅ StudentList, StudentDetail
-│   │   │   ├── sessions/             ✅ SessionList
-│   │   │   ├── programs/             ✅ ProgramList
-│   │   │   ├── alerts/               ✅ AlertList
-│   │   │   ├── predictions/          ✅ PredictionDetail
-│   │   │   ├── users/                ✅ UserManagement
-│   │   │   ├── ml/                   ✅ ModelManagement, ModelDetails
-│   │   │   ├── attendance/           ✅ AttendanceManagement
-│   │   │   ├── grades/               ✅ GradeEntry
-│   │   │   ├── settings/             ✅ SystemSettings
-│   │   │   ├── analytics/            ✅ AdvancedAnalytics
-│   │   │   └── NotFound.tsx          ✅ Page 404
-│   │   │
-│   │   ├── components/               ✅ Composants UI (100%)
-│   │   │   ├── common/               ✅ 11 composants
-│   │   │   │   ├── Button.tsx        ✅ Boutons réutilisables
-│   │   │   │   ├── Input.tsx         ✅ Champs de formulaire
-│   │   │   │   ├── Card.tsx          ✅ Cartes
-│   │   │   │   ├── Badge.tsx         ✅ Badges de statut
-│   │   │   │   ├── Alert.tsx         ✅ Alertes/Notifications
-│   │   │   │   ├── Checkbox.tsx      ✅ Cases à cocher
-│   │   │   │   ├── LoadingSpinner.tsx✅ Spinners de chargement
-│   │   │   │   ├── DataTable.tsx     ✅ Tableaux de données
-│   │   │   │   ├── Pagination.tsx    ✅ Pagination
-│   │   │   │   ├── Breadcrumbs.tsx   ✅ Fil d'Ariane
-│   │   │   │   └── SearchBar.tsx     ✅ Barre de recherche
-│   │   │   │
-│   │   │   ├── layout/               ✅ 3 layouts
-│   │   │   │   ├── MainLayout.tsx    ✅ Layout principal avec header
-│   │   │   │   ├── Sidebar.tsx       ✅ Menu latéral navigation
-│   │   │   │   └── AuthLayout.tsx    ✅ Layout pages auth
-│   │   │   │
-│   │   │   ├── modals/               ✅ 5 modales
-│   │   │   │   ├── Modal.tsx         ✅ Modal de base
-│   │   │   │   ├── StudentModal.tsx  ✅ CRUD étudiant
-│   │   │   │   ├── UserModal.tsx     ✅ CRUD utilisateur
-│   │   │   │   ├── TrainingModal.tsx ✅ Entraînement ML
-│   │   │   │   └── InterventionModal.tsx ✅ Interventions péda
-│   │   │   │
-│   │   │   └── charts/               ✅ 4 graphiques
-│   │   │       ├── LineChart.tsx     ✅ Graphique en ligne
-│   │   │       ├── BarChart.tsx      ✅ Graphique en barres
-│   │   │       ├── PieChart.tsx      ✅ Camembert
-│   │   │       └── GaugeChart.tsx    ✅ Jauge (score risque)
-│   │   │
-│   │   ├── api/                      ✅ Services API (mockés)
-│   │   │   ├── axiosConfig.ts        ✅ Config Axios + intercepteurs
-│   │   │   ├── endpoints.ts          ✅ URLs API centralisées
-│   │   │   └── services/             ✅ 9 services
-│   │   │       ├── authService.ts    ✅ Login, forgot password, logout
-│   │   │       ├── studentService.ts ✅ CRUD étudiants
-│   │   │       ├── programService.ts ✅ CRUD programmes/filières
-│   │   │       ├── sessionService.ts ✅ CRUD sessions académiques
-│   │   │       ├── gradeService.ts   ✅ Gestion notes
-│   │   │       ├── attendanceService.ts ✅ Gestion absences
-│   │   │       ├── mlService.ts      ✅ Modèles ML, entraînement
-│   │   │       ├── predictionService.ts ✅ Prédictions ML
-│   │   │       └── alertService.ts   ✅ Alertes système
-│   │   │
-│   │   ├── store/                    ✅ État global (Zustand)
-│   │   │   └── authStore.ts          ✅ Store authentification
-│   │   │
-│   │   ├── hooks/                    ✅ Hooks personnalisés
-│   │   │   ├── useAuth.ts            ✅ Hook authentification
-│   │   │   └── usePasswordVisibility.ts ✅ Toggle password
-│   │   │
-│   │   ├── routes/                   ✅ Configuration routes
-│   │   │   ├── index.tsx             ✅ Définition routes (18)
-│   │   │   ├── ProtectedRoute.tsx    ✅ Routes protégées
-│   │   │   └── PublicRoute.tsx       ✅ Routes publiques
-│   │   │
-│   │   ├── utils/                    ✅ Utilitaires
-│   │   │   ├── constants.ts          ✅ Constantes (routes, clés)
-│   │   │   ├── formatters.ts         ✅ Formatage dates, nombres
-│   │   │   └── validators.ts         ✅ Validation email, password
-│   │   │
-│   │   ├── test/                     ⚠️ Tests basiques
-│   │   │   ├── setupTests.ts
-│   │   │   └── __tests__/
-│   │   │       ├── Button.test.tsx
-│   │   │       └── Input.test.tsx
-│   │   │
-│   │   ├── App.tsx                   ✅ Composant principal
-│   │   └── main.tsx                  ✅ Entry point
-│   │
-│   ├── public/                       ✅ Assets statiques
-│   ├── .env.example                  ✅ Variables d'env exemple
-│   ├── package.json                  ✅ Dépendances
-│   ├── vite.config.ts                ✅ Config Vite
-│   ├── tailwind.config.js            ✅ Config Tailwind
-│   └── tsconfig.json                 ✅ Config TypeScript
-│
-├── backend/                           ❌ NON IMPLÉMENTÉ (dossier vide)
-│   └── (À créer : Django + Django REST Framework + PostgreSQL)
-│       └── Structure Django recommandée :
-│           ├── manage.py
-│           ├── config/
-│           │   ├── settings.py
-│           │   ├── urls.py
-│           │   └── wsgi.py
-│           ├── apps/
-│           │   ├── students/        (app étudiants)
-│           │   ├── programs/        (app filières)
-│           │   ├── sessions/        (app sessions académiques)
-│           │   ├── grades/          (app notes)
-│           │   ├── attendance/      (app absences)
-│           │   ├── users/           (app utilisateurs)
-│           │   ├── ml/              (app modèles ML)
-│           │   ├── predictions/     (app prédictions)
-│           │   └── alerts/          (app alertes)
-│           ├── requirements.txt
-│           └── .env.example
-│
-├── uml/                               ✅ Diagrammes UML (PNG)
-│   ├── Diagramme_de_classe_*.png     ✅ 4 diagrammes
-│   └── Cas_d'utilisation_*.png       ✅ 5 diagrammes
-│
-├── Architecture/                      ✅ Documentation
-│   ├── Architecture.txt              ✅ (ancien, à remplacer)
-│   └── Architecture_Mise_A_Jour.txt  ✅ (ce fichier)
-│
-└── README.md                          ⚠️ À mettre à jour
+📄 PAGES (18 fichiers .tsx)
+────────────────────────────────────────────────────────────────────────────
+auth/
+  ├── Connexion.tsx              ✅ Login avec JWT
+  └── MotDePasseOublie.tsx       ✅ Récupération mot de passe
+
+dashboard/
+  ├── TableauDeBordGeneral.tsx   ✅ Vue d'ensemble + statistiques
+  └── TableauDeBordPredictif.tsx ✅ Analytics ML + graphiques
+
+students/
+  ├── ListeEtudiants.tsx         ✅ Liste + recherche + filtres
+  └── DetailEtudiant.tsx         ✅ Fiche complète étudiant
+
+programs/
+  └── ListeFilieres.tsx          ✅ Gestion des filières
+
+sessions/
+  └── ListeSessions.tsx          ✅ Sessions académiques
+
+alerts/
+  └── ListeAlertes.tsx           ✅ Alertes + actions
+
+grades/
+  └── SaisieNotes.tsx            ✅ Saisie + Import CSV
+
+attendance/
+  └── GestionAbsences.tsx        ✅ Gestion présences
+
+users/
+  └── GestionUtilisateurs.tsx    ✅ CRUD utilisateurs
+
+ml/
+  ├── GestionModeles.tsx         ✅ Liste modèles ML
+  └── DetailModele.tsx           ✅ Métriques + activation
+
+predictions/
+  └── DetailPrediction.tsx       ✅ Détail prédiction étudiant
+
+analytics/
+  └── AnalysesAvancees.tsx       ✅ Statistiques avancées
+
+settings/
+  └── ParametresSysteme.tsx      ✅ Configuration système
+
+PageNonTrouvee.tsx               ✅ Page 404
+
+🧩 COMPOSANTS (24 fichiers)
+────────────────────────────────────────────────────────────────────────────
+components/common/ (12 composants)
+  ├── Alerte.tsx                 ✅ Notifications
+  ├── Badge.tsx                  ✅ Badges de statut
+  ├── BarreRecherche.tsx         ✅ Recherche
+  ├── Bouton.tsx                 ✅ Boutons réutilisables
+  ├── Carte.tsx                  ✅ Cards
+  ├── CaseCochee.tsx             ✅ Checkboxes
+  ├── ChampSaisie.tsx            ✅ Inputs
+  ├── FilDAriane.tsx             ✅ Breadcrumbs
+  ├── IndicateurChargement.tsx   ✅ Spinners
+  ├── Logo.tsx                   ✅ Logo app
+  ├── Pagination.tsx             ✅ Pagination
+  └── TableauDonnees.tsx         ✅ DataTable
+
+components/layout/ (4 composants)
+  ├── MiseEnPagePrincipale.tsx   ✅ Layout principal
+  ├── BarreLaterale.tsx          ✅ Sidebar navigation
+  ├── EnTete.tsx                 ✅ Header
+  └── MiseEnPageAuth.tsx         ✅ Layout authentification
+
+components/modals/ (5 modales)
+  ├── Modale.tsx                 ✅ Modal de base
+  ├── ModaleEtudiant.tsx         ✅ CRUD étudiant
+  ├── ModaleUtilisateur.tsx      ✅ CRUD utilisateur
+  ├── ModaleEntrainement.tsx     ✅ Entraînement ML
+  └── ModaleIntervention.tsx     ✅ Interventions pédagogiques
+
+components/charts/ (4 graphiques)
+  ├── GraphiqueLignes.tsx        ✅ Line charts
+  ├── GraphiqueBarres.tsx        ✅ Bar charts
+  ├── GraphiqueCirculaire.tsx    ✅ Pie charts
+  └── GraphiqueJauge.tsx         ✅ Gauge (score risque)
+
+🔌 SERVICES API (12 fichiers)
+────────────────────────────────────────────────────────────────────────────
+api/services/
+  ├── authService.ts             ✅ Login/Logout/Refresh JWT
+  ├── studentService.ts          ✅ CRUD + Export/Import CSV
+  ├── programService.ts          ✅ CRUD programmes
+  ├── sessionService.ts          ✅ CRUD sessions
+  ├── gradeService.ts            ✅ CRUD + Export/Import CSV
+  ├── attendanceService.ts       ✅ CRUD présences
+  ├── mlService.ts               ✅ Modèles + Entraînement
+  ├── predictionService.ts       ✅ Prédictions ML
+  ├── alertService.ts            ✅ Alertes + actions
+  ├── userService.ts             ✅ CRUD utilisateurs
+  ├── interventionService.ts     ✅ Interventions pédagogiques
+  └── index.ts                   ✅ Exports centralisés
 
 ================================================================================
-🔧 SERVICES API - ÉTAT D'IMPLÉMENTATION
+🗂️ STRUCTURE BACKEND (backend/apps/)
 ================================================================================
 
-TOUS les services sont implémentés avec des DONNÉES MOCKÉES (simulées).
-Ils simulent des appels API avec délais aléatoires (300-2000ms) pour
-reproduire le comportement d'une vraie API.
+📦 APPLICATIONS DJANGO (10 apps)
+────────────────────────────────────────────────────────────────────────────
+apps/
+  ├── authentication/            ✅ JWT (Simple JWT)
+  │   ├── views.py              Login, logout, refresh, register
+  │   ├── serializers.py        LoginSerializer, TokenSerializer
+  │   ├── throttling.py         Rate limiting
+  │   └── signals.py            Événements auth
+  │
+  ├── users/                     ✅ Gestion utilisateurs
+  │   ├── models.py             User (email-based, 4 rôles)
+  │   ├── views.py              UserViewSet + actions
+  │   └── management/commands/  init_spas (données de test)
+  │
+  ├── students/                  ✅ Étudiants
+  │   ├── models.py             Student, StudentProfile
+  │   ├── views.py              StudentViewSet + CSV export/import
+  │   └── serializers.py        StudentSerializer, StudentListSerializer
+  │
+  ├── programs/                  ✅ Programmes et Matières
+  │   ├── models.py             Program, Subject
+  │   ├── views.py              ProgramViewSet, SubjectViewSet
+  │   └── serializers.py        Serializers variantes
+  │
+  ├── sessions/                  ✅ Sessions académiques
+  │   ├── models.py             Session
+  │   └── views.py              SessionViewSet
+  │
+  ├── grades/                    ✅ Notes
+  │   ├── models.py             Grade (types: exam, assignment, etc.)
+  │   ├── views.py              GradeViewSet + bulk_create + CSV
+  │   └── serializers.py        GradeSerializer
+  │
+  ├── attendance/                ✅ Présences
+  │   ├── models.py             Attendance (present, absent, late, excused)
+  │   └── views.py              AttendanceViewSet
+  │
+  ├── predictions/               ✅ Prédictions ML
+  │   ├── models.py             Prediction (risk_score, factors)
+  │   ├── views.py              PredictionViewSet + generate action
+  │   └── serializers.py        PredictionSerializer
+  │
+  ├── ml/                        ✅ Machine Learning
+  │   ├── models.py             MLModel, TrainingJob
+  │   ├── views.py              MLModelViewSet + train/activate
+  │   ├── predictor.py          DropoutRiskPredictor (scikit-learn)
+  │   └── serializers.py        MLModelSerializer
+  │
+  ├── alerts/                    ✅ Alertes + Interventions
+  │   ├── models.py             Alert, Intervention
+  │   ├── views.py              AlertViewSet, InterventionViewSet
+  │   └── serializers.py        Serializers complets
+  │
+  └── core/                      ✅ Utilitaires partagés
+      ├── models.py             BaseModel (timestamps)
+      └── pagination.py         StandardResultsSetPagination
+
+⚙️ CONFIGURATION (config/)
+────────────────────────────────────────────────────────────────────────────
+config/
+  ├── settings.py               ✅ Django 6.0 + DRF + JWT
+  ├── urls.py                   ✅ API router (/api/...)
+  ├── celery.py                 ✅ Tâches async (optionnel)
+  └── exceptions.py             ✅ Exception handler
+
+🧪 TESTS (tests/)
+────────────────────────────────────────────────────────────────────────────
+tests/
+  ├── conftest.py               ✅ Fixtures pytest
+  ├── test_api_integration.py   ✅ 28 tests d'intégration
+  ├── test_auth.py              ✅ Tests authentification
+  ├── test_ml_predictions.py    ✅ Tests ML
+  └── test_permissions.py       ✅ Tests permissions
+
+================================================================================
+🔗 ENDPOINTS API
+================================================================================
+
+BASE URL: http://localhost:8000/api/
 
 ┌────────────────────────────────────────────────────────────────────────────┐
-│ Service              │ Create │ Read │ Update │ Delete │ Status             │
-├──────────────────────┼────────┼──────┼────────┼────────┼────────────────────┤
-│ StudentService       │   ✅   │  ✅  │   ✅   │   ✅   │ Complet (mocké)    │
-│ ProgramService       │   ✅   │  ✅  │   ✅   │   ❌   │ Partiel (mocké)    │
-│ SessionService       │   ✅   │  ✅  │   ✅   │   ❌   │ Partiel (mocké)    │
-│ GradeService         │   ✅   │  ✅  │   ❌   │   ❌   │ Lecture + Create   │
-│ AttendanceService    │   ✅   │  ✅  │   ❌   │   ❌   │ Lecture + Create   │
-│ MLService            │ ✅(*)  │  ✅  │ ✅(**) │   ❌   │ Partiel (mocké)    │
-│ PredictionService    │   ❌   │  ✅  │   ❌   │   ❌   │ Lecture seule      │
-│ AlertService         │   ❌   │  ✅  │ ✅(***) │  ❌   │ Lecture + Actions  │
-│ AuthService          │   N/A  │  ✅  │   N/A  │   N/A  │ Login + Logout     │
+│ Module          │ Endpoint                    │ Méthodes                  │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Auth            │ /auth/login/                │ POST                      │
+│                 │ /auth/logout/               │ POST                      │
+│                 │ /auth/token/refresh/        │ POST                      │
+│                 │ /auth/me/                   │ GET                       │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Users           │ /users/                     │ GET, POST                 │
+│                 │ /users/{id}/                │ GET, PUT, PATCH, DELETE   │
+│                 │ /users/me/                  │ GET                       │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Students        │ /students/                  │ GET, POST                 │
+│                 │ /students/{id}/             │ GET, PUT, PATCH, DELETE   │
+│                 │ /students/export_csv/       │ GET                       │
+│                 │ /students/import_csv/       │ POST (multipart)          │
+│                 │ /students/at_risk/          │ GET                       │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Programs        │ /programs/programs/         │ GET, POST                 │
+│                 │ /programs/subjects/         │ GET, POST                 │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Sessions        │ /sessions/sessions/         │ GET, POST                 │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Grades          │ /grades/grades/             │ GET, POST                 │
+│                 │ /grades/grades/bulk-create/ │ POST                      │
+│                 │ /grades/grades/export_csv/  │ GET                       │
+│                 │ /grades/grades/import_csv/  │ POST (multipart)          │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Attendance      │ /attendance/attendance/     │ GET, POST                 │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Predictions     │ /predictions/predictions/   │ GET                       │
+│                 │ /predictions/.../generate/  │ POST                      │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ ML Models       │ /ml/models/                 │ GET                       │
+│                 │ /ml/models/{id}/activate/   │ POST                      │
+│                 │ /ml/models/active/          │ GET                       │
+│                 │ /ml/training/train/         │ POST                      │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Alerts          │ /alerts/alerts/             │ GET                       │
+│                 │ /alerts/alerts/{id}/ack/    │ POST                      │
+│                 │ /alerts/alerts/{id}/resolve/│ POST                      │
+│                 │ /alerts/interventions/      │ GET, POST                 │
 └────────────────────────────────────────────────────────────────────────────┘
 
-(*) trainModel() simule un entraînement ML (2 secondes)
-(**) activate() permet de basculer le modèle actif
-(***) acknowledge() et resolve() pour gérer le cycle de vie des alertes
-
 ================================================================================
-🎭 RÔLES UTILISATEURS & PERMISSIONS
+🔐 COMPTES DE TEST
 ================================================================================
-
-Le système gère 4 rôles avec des permissions différentes :
 
 ┌────────────────────────────────────────────────────────────────────────────┐
-│ Rôle                 │ Email (mock)              │ Permissions            │
-├──────────────────────┼───────────────────────────┼────────────────────────┤
-│ ADMIN                │ sophie.martin@isi.edu     │ Accès total            │
-│                      │                           │ - Gestion utilisateurs │
-│                      │                           │ - CRUD étudiants       │
-│                      │                           │ - Paramètres système   │
-│                      │                           │ - Tous les dashboards  │
-├──────────────────────┼───────────────────────────┼────────────────────────┤
-│ TEACHER              │ pierre.dupont@isi.edu     │ Gestion académique     │
-│                      │                           │ - Consultation étuds   │
-│                      │                           │ - Saisie notes         │
-│                      │                           │ - Gestion absences     │
-│                      │                           │ - Dashboard général    │
-├──────────────────────┼───────────────────────────┼────────────────────────┤
-│ DS (Data Scientist)  │ marie.sarr@isi.edu        │ Module IA              │
-│                      │                           │ - Gestion modèles ML   │
-│                      │                           │ - Entraînement         │
-│                      │                           │ - Prédictions          │
-│                      │                           │ - Analytics avancées   │
-├──────────────────────┼───────────────────────────┼────────────────────────┤
-│ PEDAGOGICAL          │ (pas d'email par défaut)  │ Direction pédagogique  │
-│                      │                           │ - Gestion académique   │
-│                      │                           │ - Consultation préd.   │
-│                      │                           │ - Paramètres système   │
+│ Rôle            │ Email                       │ Mot de passe              │
+├─────────────────┼─────────────────────────────┼───────────────────────────┤
+│ Admin           │ admin@isi.edu               │ password123               │
+│ Enseignant      │ teacher@isi.edu             │ password123               │
+│ Data Scientist  │ ds@isi.edu                  │ password123               │
+│ Pédagogique     │ pedagogical@isi.edu         │ password123               │
 └────────────────────────────────────────────────────────────────────────────┘
 
-Note : Pour tester, utilisez les emails ci-dessus avec n'importe quel mot de passe.
-La redirection automatique se fait selon le rôle :
-- admin → /dashboard
-- teacher → /dashboard
-- ds → /dashboard/predictive
-- pedagogical → /dashboard
-
 ================================================================================
-📊 ENTITÉS DE DONNÉES (INTERFACES TYPESCRIPT)
+🛠️ TECHNOLOGIES
 ================================================================================
 
-Voici les interfaces TypeScript qui définissent le modèle de données :
+FRONTEND
+────────────────────────────────────────────────────────────────────────────
+• React 18.3.1              Framework UI
+• TypeScript 5.6.2          Typage statique
+• Vite 5.4.21               Build tool
+• React Router DOM 7.1      Routing
+• Zustand 5.0.2             État global
+• Axios 1.7.9               HTTP client
+• Tailwind CSS 3.4.17       Styling
+• Recharts 2.15.0           Graphiques
+• Lucide React              Icônes
 
-1. Student (Étudiant)
-   ├── id: string
-   ├── matricule: string
-   ├── firstName: string
-   ├── lastName: string
-   ├── email: string
-   ├── phone?: string
-   ├── dateOfBirth: string
-   ├── programId: string
-   ├── programName: string
-   ├── sessionId: string
-   ├── sessionName: string
-   ├── status: 'active' | 'inactive' | 'graduated'
-   ├── riskLevel?: 'low' | 'medium' | 'high'
-   └── riskScore?: number (0-100)
-
-2. Program (Filière)
-   ├── id: string
-   ├── name: string
-   ├── code: string
-   ├── description?: string
-   ├── duration: number (années)
-   ├── studentCount: number
-   └── status: 'active' | 'inactive'
-
-3. Session (Session Académique)
-   ├── id: string
-   ├── name: string
-   ├── year: string
-   ├── startDate: string
-   ├── endDate: string
-   ├── status: 'active' | 'inactive' | 'completed'
-   └── studentCount: number
-
-4. Grade (Note)
-   ├── id: string
-   ├── studentId: string
-   ├── studentName: string
-   ├── subjectId: string
-   ├── subjectName: string
-   ├── sessionId: string
-   ├── sessionName: string
-   ├── value: number
-   ├── maxValue: number
-   ├── type: 'exam' | 'assignment' | 'project' | 'participation'
-   └── date: string
-
-5. Attendance (Présence/Absence)
-   ├── id: string
-   ├── studentId: string
-   ├── studentName: string
-   ├── date: string
-   ├── status: 'present' | 'absent' | 'late' | 'excused'
-   ├── subjectId: string
-   ├── subjectName: string
-   └── justification?: string
-
-6. MLModel (Modèle ML)
-   ├── id: string
-   ├── name: string
-   ├── version: string
-   ├── status: 'active' | 'inactive' | 'training'
-   ├── accuracy: number (0-100)
-   ├── precision: number (0-100)
-   ├── recall: number (0-100)
-   ├── f1Score: number (0-100)
-   ├── trainedAt: string
-   └── trainingDataSize: number
-
-7. Prediction (Prédiction ML)
-   ├── id: string
-   ├── studentId: string
-   ├── studentName: string
-   ├── riskScore: number (0-100)
-   ├── riskLevel: 'low' | 'medium' | 'high' | 'critical'
-   ├── predictedSuccessRate: number (0-100)
-   ├── factors: Array<{ name: string; impact: number }>
-   ├── createdAt: string
-   └── modelVersion: string
-
-8. Alert (Alerte)
-   ├── id: string
-   ├── studentId: string
-   ├── studentName: string
-   ├── type: 'performance' | 'attendance' | 'risk' | 'prediction'
-   ├── level: 'low' | 'medium' | 'high' | 'critical'
-   ├── message: string
-   ├── status: 'new' | 'acknowledged' | 'resolved'
-   ├── createdAt: string
-   └── programName?: string
-
-9. User (Utilisateur)
-   ├── id: string
-   ├── email: string
-   ├── firstName: string
-   ├── lastName: string
-   └── role: 'admin' | 'teacher' | 'ds' | 'pedagogical'
+BACKEND
+────────────────────────────────────────────────────────────────────────────
+• Django 6.0                Framework web
+• Django REST Framework     API REST
+• PostgreSQL 15+            Base de données
+• Simple JWT                Authentification
+• scikit-learn              Machine Learning
+• Celery + Redis            Tâches async (optionnel)
+• pytest                    Tests
 
 ================================================================================
-🚀 ROUTES CONFIGURÉES (18 ROUTES)
+🚀 COMMANDES DE DÉVELOPPEMENT
 ================================================================================
 
-Routes Publiques :
-  /auth/login                    → Login.tsx
-  /auth/forgot-password          → ForgotPassword.tsx
+# Frontend (port 5173)
+cd frontend
+npm install
+npm run dev
 
-Routes Protégées (nécessitent authentification) :
-  /dashboard                     → GeneralDashboard.tsx
-  /dashboard/predictive          → PredictiveDashboard.tsx
+# Backend (port 8000)
+cd backend
+.\myenv\Scripts\Activate.ps1   # Windows
+python manage.py runserver 0.0.0.0:8000
 
-  /students                      → StudentList.tsx
-  /students/:id                  → StudentDetail.tsx
+# Données de test
+python manage.py init_spas
 
-  /sessions                      → SessionList.tsx
-  /programs                      → ProgramList.tsx
-  /grades                        → GradeEntry.tsx
-  /attendance                    → AttendanceManagement.tsx
-
-  /predictions                   → PredictionDetail.tsx
-  /alerts                        → AlertList.tsx
-
-  /ml/models                     → ModelManagement.tsx
-  /ml/models/:id                 → ModelDetails.tsx
-
-  /users                         → UserManagement.tsx
-  /analytics                     → AdvancedAnalytics.tsx
-  /settings                      → SystemSettings.tsx
-
-  *                              → NotFound.tsx (404)
+# Tests
+pytest tests/test_api_integration.py -v
 
 ================================================================================
-🔒 SÉCURITÉ & AUTHENTIFICATION
+📋 FONCTIONNALITÉS PRINCIPALES
 ================================================================================
 
-État Actuel :
-  ✅ Système d'authentification avec JWT (mocké)
-  ✅ Routes protégées avec <ProtectedRoute>
-  ✅ Routes publiques avec <PublicRoute>
-  ✅ Store Zustand avec persistance localStorage
-  ✅ Redirection automatique selon rôle après login
-  ✅ Tokens : access_token et refresh_token (mockés)
-  ✅ Logout avec nettoyage du store
-
-À Implémenter (Backend Django) :
-  ❌ Vérification JWT réelle (djangorestframework-simplejwt)
-  ❌ Refresh token automatique à expiration
-  ❌ CSRF protection (Django middleware)
-  ❌ Rate limiting (django-ratelimit ou DRF throttling)
-  ❌ Permissions granulaires (Django permissions + custom)
-  ❌ Chiffrement des mots de passe (Django PBKDF2 par défaut)
-  ❌ Sessions sécurisées (Django sessions)
-  ❌ Validation des données (Django forms + DRF serializers)
-  ❌ 2FA (django-otp - optionnel)
+✅ Authentification JWT avec refresh tokens
+✅ Gestion complète des étudiants (CRUD)
+✅ Saisie et gestion des notes
+✅ Suivi des présences/absences
+✅ Prédiction du risque d'abandon (ML)
+✅ Système d'alertes avec workflow (new → acknowledged → resolved)
+✅ Interventions pédagogiques
+✅ Tableaux de bord avec graphiques
+✅ Analytics avancées
+✅ Import/Export CSV
+✅ Gestion multi-rôles (admin, teacher, ds, pedagogical)
+✅ 28 tests d'intégration API
 
 ================================================================================
-📦 TECHNOLOGIES UTILISÉES
+📧 AUTEUR
 ================================================================================
 
-Frontend (100% Implémenté) :
-  ✅ React 18.3.1
-  ✅ TypeScript 5.6.2
-  ✅ Vite 6.0.3 (build tool)
-  ✅ React Router DOM 7.1.1 (routing)
-  ✅ Zustand 5.0.2 (état global)
-  ✅ Zustand Persist 4.0.4 (persistance localStorage)
-  ✅ Axios 1.7.9 (HTTP client)
-  ✅ Tailwind CSS 3.4.17 (styling)
-  ✅ Recharts 2.15.0 (graphiques)
-  ✅ Lucide React 0.469.0 (icônes)
-  ✅ Vitest 2.1.8 (tests)
-  ✅ Testing Library (tests unitaires)
-
-Backend (0% Implémenté - Stack Django + PostgreSQL choisie) :
-  ❌ Django 5.x (framework web Python)
-  ❌ Django REST Framework 3.15+ (API REST)
-  ❌ PostgreSQL 15+ (base de données relationnelle)
-  ❌ psycopg2-binary (driver PostgreSQL pour Python)
-  ❌ Django ORM (Object-Relational Mapping intégré)
-  ❌ djangorestframework-simplejwt (authentification JWT)
-  ❌ django-cors-headers (CORS pour frontend React)
-  ❌ django-environ (gestion variables d'environnement)
-  ❌ ML : Python + Scikit-learn (intégré dans Django ou microservice)
-  ❌ Celery 5.3+ (tâches asynchrones - recommandé pour ML)
-  ❌ Redis 7+ (cache + broker Celery - recommandé)
-  ❌ Gunicorn (serveur WSGI pour production)
-  ❌ WhiteNoise (servir fichiers statiques - optionnel)
-
-================================================================================
-⚠️ LIMITES ACTUELLES & POINTS D'ATTENTION
-================================================================================
-
-1. DONNÉES MOCKÉES
-   - Tous les services retournent des données simulées
-   - Aucune persistance réelle (localStorage uniquement pour auth)
-   - Modifications UI uniquement (pas de sauvegarde serveur)
-
-2. BACKEND ABSENT
-   - Dossier backend/ complètement vide
-   - Aucune API réelle
-   - Pas de base de données
-   - Pas de calcul ML réel
-
-3. SERVICES INCOMPLETS
-   - ProgramService : pas de delete()
-   - SessionService : pas de delete()
-   - GradeService : pas de update() ni delete()
-   - AttendanceService : pas de update() ni delete()
-   - PredictionService : lecture seule
-   - AlertService : pas de create() ni delete()
-
-4. ENTITÉS MANQUANTES (pas de services dédiés)
-   - Subject (Matière) - référencé par ID seulement
-   - Intervention (Intervention Pédagogique) - modale existe, pas de service
-   - TrainingJob (Job d'entraînement ML) - mockés dans MLService
-
-5. FONCTIONNALITÉS AVANCÉES NON IMPLÉMENTÉES
-   - Notifications temps réel (WebSocket)
-   - Import/Export CSV/Excel
-   - Génération rapports PDF
-   - Système de permissions granulaire
-   - Historique des modifications (audit trail)
-   - Intégration ML réelle (TensorFlow/Scikit-learn)
-   - Email notifications
-   - Stockage fichiers (photos, documents)
-
-6. TESTS
-   - Tests unitaires basiques uniquement (Button, Input)
-   - Pas de tests d'intégration
-   - Pas de tests E2E
-   - Pas de tests de performance
-   - Couverture de code < 10%
-
-7. VALIDATIONS
-   - Validations côté client basiques (regex email/password)
-   - Pas de validations côté serveur
-   - Pas de sanitisation des données
-   - Pas de protection XSS avancée
-
-8. PERFORMANCE
-   - Pas de lazy loading des routes
-   - Pas de code splitting
-   - Pas de mise en cache optimisée
-   - Pagination basique (pas de virtual scrolling)
-
-================================================================================
-✅ CE QUI FONCTIONNE PARFAITEMENT
-================================================================================
-
-1. NAVIGATION & ROUTING
-   ✅ 18 routes configurées et fonctionnelles
-   ✅ Routes protégées vs publiques
-   ✅ Redirection automatique selon rôle
-   ✅ Page 404 pour routes inexistantes
-
-2. AUTHENTIFICATION
-   ✅ Login avec email/password
-   ✅ Remember me (persistance localStorage)
-   ✅ Forgot password (UI mockée)
-   ✅ Logout avec nettoyage
-   ✅ Protection routes sensibles
-
-3. INTERFACE UTILISATEUR
-   ✅ Design cohérent avec Tailwind CSS
-   ✅ Composants réutilisables (11 composants common)
-   ✅ Layout responsive
-   ✅ Navigation sidebar + header
-   ✅ Breadcrumbs
-   ✅ Modales fonctionnelles
-
-4. GESTION DES DONNÉES (UI)
-   ✅ Listes avec pagination
-   ✅ Recherche et filtres
-   ✅ Tableaux de données (DataTable)
-   ✅ Formulaires CRUD
-   ✅ Validation côté client
-
-5. VISUALISATIONS
-   ✅ 4 types de graphiques (Line, Bar, Pie, Gauge)
-   ✅ Dashboards avec métriques
-   ✅ Cartes statistiques
-   ✅ Badges de statut/risque
-
-6. MODULE ML (UI)
-   ✅ Dashboard prédictif
-   ✅ Affichage prédictions
-   ✅ Gestion modèles ML
-   ✅ Alertes système
-   ✅ Analytics avancées
-
-================================================================================
-🎯 PROCHAINES ÉTAPES RECOMMANDÉES
-================================================================================
-
-PHASE 1 : BACKEND CRITIQUE - Django + PostgreSQL (2-4 semaines)
-  1. Configuration projet Django
-     - Créer projet Django + app principale
-     - Installer Django REST Framework
-     - Configurer PostgreSQL (psycopg2)
-     - Configuration CORS pour frontend React
-  2. Modèles Django (Django ORM)
-     - Créer modèles pour toutes les entités (Student, Program, Session, etc.)
-     - Relations ForeignKey, ManyToMany
-     - Migrations Django (makemigrations, migrate)
-     - Seed data avec fixtures Django
-  3. API REST complète (Django REST Framework)
-     - Serializers pour tous les modèles
-     - ViewSets (ModelViewSet) pour CRUD
-     - Routers pour endpoints automatiques
-     - Pagination, filtres, recherche
-  4. Authentification JWT
-     - Installer djangorestframework-simplejwt
-     - Configuration tokens (access + refresh)
-     - Permissions Django (IsAuthenticated, IsAdminUser, etc.)
-     - Endpoints login, refresh, logout
-  5. Connecter frontend aux vraies API
-     - Remplacer services mockés dans frontend/src/api/services/
-     - Mettre à jour axiosConfig.ts avec URL backend
-     - Gestion erreurs réseau (try/catch, interceptors)
-     - Loading states
-
-PHASE 2 : FONCTIONNALITÉS MANQUANTES (1-2 semaines)
-  1. Compléter opérations CRUD
-     - Delete pour Program, Session
-     - Update/Delete pour Grade, Attendance
-  2. Services manquants
-     - SubjectService (CRUD matières)
-     - InterventionService (interventions pédagogiques)
-     - TrainingJobService (jobs ML)
-  3. Permissions granulaires
-     - Middleware permissions backend
-     - Vérifications côté client
-
-PHASE 3 : MODULE ML RÉEL (2-3 semaines)
-  1. Intégration ML dans Django (ou microservice séparé)
-     - Option A : Intégré dans Django
-       - Django app "ml" avec modèles Scikit-learn
-       - Tâches Celery pour entraînement asynchrone
-       - Stockage modèles (Pickle ou Joblib)
-     - Option B : Microservice Python séparé
-       - FastAPI pour API ML
-     - Scikit-learn pour modèles
-       - Communication HTTP avec backend Django
-  2. Calcul prédictions
-     - Features engineering (extraction données étudiants)
-     - Modèles entraînés (Random Forest, XGBoost, etc.)
-     - SHAP pour explicabilité
-     - Cache des prédictions (Redis optionnel)
-  3. Intégration avec backend principal
-     - Endpoints Django pour déclencher prédictions
-     - Stockage résultats en PostgreSQL
-     - Tâches périodiques (Celery Beat) pour recalcul
-
-PHASE 4 : FONCTIONNALITÉS AVANCÉES (2-3 semaines)
-  1. Notifications temps réel (WebSocket)
-  2. Import/Export CSV
-  3. Génération PDF
-  4. Upload fichiers (photos, documents)
-  5. Email notifications
-
-PHASE 5 : TESTS & QUALITÉ (1-2 semaines)
-  1. Tests unitaires (>80% couverture)
-  2. Tests d'intégration API
-  3. Tests E2E (Playwright/Cypress)
-  4. Tests de performance
-  5. Audits sécurité
-
-PHASE 6 : DÉPLOIEMENT (1 semaine)
-  1. CI/CD (GitHub Actions)
-  2. Environnements (dev, staging, prod)
-  3. Monitoring (Sentry, LogRocket)
-  4. Documentation finale
-
-================================================================================
-📝 NOTES IMPORTANTES
-================================================================================
-
-1. Le fichier Architecture/Architecture.txt original contient une architecture
-   théorique qui n'a JAMAIS été implémentée.
-
-2. Le frontend actuel est en React/TypeScript/Vite avec données mockées.
-   Il fonctionne parfaitement en mode démo mais nécessite un backend réel.
-
-3. Stack Backend choisie : Django + PostgreSQL
-   - Django 5.x avec Django REST Framework pour l'API
-   - PostgreSQL pour la base de données relationnelle
-   - Django ORM pour les modèles et migrations
-   - Simple JWT pour l'authentification
-   - Celery + Redis recommandés pour les tâches ML asynchrones
-
-3. La nomenclature @stitch_page_de_connexion/ ne correspond à AUCUN fichier
-   physique. C'est une erreur de documentation. Les vrais fichiers sont dans
-   frontend/src/pages/ et frontend/src/components/.
-
-4. Score d'implémentation réel :
-   - Frontend : 95% (manque quelques fonctionnalités mineures)
-   - Backend : 0% (inexistant)
-   - Tests : 5% (basiques uniquement)
-   - Documentation : 60% (UML complet, mais code peu documenté)
-
-5. Pour une mise en production, il est IMPÉRATIF d'implémenter :
-   - Backend Django complet avec Django REST Framework
-   - Base de données PostgreSQL avec migrations Django
-   - Authentification JWT sécurisée (Simple JWT)
-   - Tests Django (unittests, pytest-django)
-   - Tests (au minimum E2E critiques)
-   - Monitoring et logs (Sentry, Django logging)
-   - Déploiement (Docker, Gunicorn, Nginx)
-   - Variables d'environnement (django-environ)
-   - Sécurité (SECRET_KEY, ALLOWED_HOSTS, DEBUG=False)
-
-================================================================================
-📧 CONTACT & CONTRIBUTION
-================================================================================
-
-Pour toute question sur cette architecture mise à jour, contactez l'équipe
-de développement ou consultez la documentation UML dans le dossier uml/.
-
-Version : 1.1
-Date : 2026-01-16
-Stack Backend : Django + PostgreSQL
-Auteur : Analyse automatisée du projet SPAS
+Zoubeir IBRAHIMA AMED
+Projet SPAS - Système Prédictif d'Alerte Scolaire
+Repository: github.com/Zoubeir23/SPAS
 
 ================================================================================

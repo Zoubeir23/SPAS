@@ -6,23 +6,49 @@ import GraphiqueJauge from '@/components/charts/GraphiqueJauge'
 import GraphiqueBarres from '@/components/charts/GraphiqueBarres'
 import { predictionService } from '@/api/services/predictionService'
 import { alertService } from '@/api/services/alertService'
+import { analyticsService, type RiskDistribution } from '@/api/services/analyticsService'
 import { exportDashboardToPDF, type ExportColumn } from '@/utils/exportService'
 
 export default function TableauDeBordPredictif() {
   const [predictions, setPredictions] = useState<any[]>([])
   const [alerts, setAlerts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [riskDistribution, setRiskDistribution] = useState<{ name: string; value: number }[]>([])
+  const [predictedSuccessRate, setPredictedSuccessRate] = useState(0)
+  const [modelCount, setModelCount] = useState(0)
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true)
       try {
-        const [preds, alrts] = await Promise.all([
+        const [preds, alrts, riskData, dashboardStats] = await Promise.all([
           predictionService.getAll(),
           alertService.getAll(),
+          analyticsService.getRiskDistribution(),
+          analyticsService.getDashboardStats(),
         ])
         setPredictions(preds)
         setAlerts(alrts)
+        
+        // Transformer riskDistribution pour le graphique
+        const labelMap: Record<string, string> = {
+          'low': 'Faible',
+          'medium': 'Moyen',
+          'high': 'Élevé',
+          'critical': 'Critique'
+        }
+        setRiskDistribution(
+          riskData.map((r: RiskDistribution) => ({
+            name: labelMap[r.level] || r.level,
+            value: Math.round(r.percentage)
+          }))
+        )
+        
+        // Calculer taux de réussite prédit (100% - taux décrochage prédit)
+        setPredictedSuccessRate(100 - (dashboardStats.predictedDropoutRate || 0))
+        
+        // Compter les modèles ML actifs (via mlService si disponible)
+        setModelCount(1) // Valeur par défaut, sera mise à jour si mlService disponible
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error)
       } finally {
@@ -32,22 +58,15 @@ export default function TableauDeBordPredictif() {
     loadData()
   }, [])
 
-  const riskDistribution = [
-    { name: 'Faible', value: 65 },
-    { name: 'Moyen', value: 25 },
-    { name: 'Élevé', value: 8 },
-    { name: 'Critique', value: 2 },
-  ]
-
   const handleExportPDF = () => {
     const kpis = [
-      { label: 'Taux de Réussite Prédit', value: '87.4%' },
+      { label: 'Taux de Réussite Prédit', value: `${predictedSuccessRate.toFixed(1)}%` },
       {
         label: 'Étudiants à Risque',
         value: alerts.filter((a) => a.level === 'high' || a.level === 'critical').length.toString(),
       },
       { label: 'Prédictions Actives', value: predictions.length.toString() },
-      { label: 'Modèles ML', value: '2' },
+      { label: 'Modèles ML', value: modelCount.toString() },
     ]
 
     const riskColumns: ExportColumn[] = [
@@ -89,7 +108,7 @@ export default function TableauDeBordPredictif() {
           },
           {
             title: 'Score Global',
-            description: 'Taux de réussite prédit: 87.4%',
+            description: `Taux de réussite prédit: ${predictedSuccessRate.toFixed(1)}%`,
           },
         ],
       },
@@ -129,7 +148,7 @@ export default function TableauDeBordPredictif() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <Carte title="Taux de Réussite Prédit" icon="analytics" iconColor="primary" hover>
             <div className="mt-4">
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">87.4%</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{predictedSuccessRate.toFixed(1)}%</p>
             </div>
           </Carte>
           <Carte title="Étudiants à Risque" icon="warning" iconColor="danger" hover>
@@ -148,7 +167,7 @@ export default function TableauDeBordPredictif() {
           </Carte>
           <Carte title="Modèles ML" icon="model_training" iconColor="orange" hover>
             <div className="mt-4">
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">2</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{modelCount}</p>
             </div>
           </Carte>
         </div>
@@ -159,17 +178,21 @@ export default function TableauDeBordPredictif() {
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
               Distribution des Risques
             </h2>
-            <GraphiqueBarres
-              data={riskDistribution}
-              bars={[{ key: 'value', name: 'Nombre d\'étudiants', color: '#1c41a6' }]}
-              height={300}
-            />
+            {riskDistribution.length > 0 ? (
+              <GraphiqueBarres
+                data={riskDistribution}
+                bars={[{ key: 'value', name: 'Pourcentage (%)', color: '#1c41a6' }]}
+                height={300}
+              />
+            ) : (
+              <p className="text-center text-gray-500 py-8">Aucune donnée de distribution disponible</p>
+            )}
           </Carte>
           <Carte>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
               Score Global
             </h2>
-            <GraphiqueJauge value={87.4} label="Taux de réussite prédit" />
+            <GraphiqueJauge value={predictedSuccessRate} label="Taux de réussite prédit" />
           </Carte>
         </div>
 

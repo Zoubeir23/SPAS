@@ -5,47 +5,7 @@ import BarreRecherche from '@/components/common/BarreRecherche'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
 import ModaleUtilisateur from '@/components/modals/ModaleUtilisateur'
-
-interface User {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  role: 'admin' | 'teacher' | 'ds' | 'pedagogical'
-  status: 'active' | 'inactive'
-  createdAt: string
-}
-
-// Mock data
-const mockUsers: User[] = [
-  {
-    id: '1',
-    firstName: 'Sophie',
-    lastName: 'Martin',
-    email: 'sophie.martin@isi.edu',
-    role: 'admin',
-    status: 'active',
-    createdAt: '2023-01-15',
-  },
-  {
-    id: '2',
-    firstName: 'Pierre',
-    lastName: 'Dupont',
-    email: 'pierre.dupont@isi.edu',
-    role: 'teacher',
-    status: 'active',
-    createdAt: '2023-02-20',
-  },
-  {
-    id: '3',
-    firstName: 'Marie',
-    lastName: 'Sarr',
-    email: 'marie.sarr@isi.edu',
-    role: 'ds',
-    status: 'active',
-    createdAt: '2023-03-10',
-  },
-]
+import { userService, User } from '@/api/services/userService'
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrateur',
@@ -58,18 +18,28 @@ export default function GestionUtilisateurs() {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRole, setSelectedRole] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      setLoading(true)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      setUsers(mockUsers)
-      setFilteredUsers(mockUsers)
+  const loadUsers = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await userService.getAll()
+      setUsers(response.results)
+      setFilteredUsers(response.results)
+    } catch (err) {
+      console.error('Erreur lors du chargement des utilisateurs:', err)
+      setError('Impossible de charger les utilisateurs')
+    } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
     loadUsers()
   }, [])
 
@@ -79,8 +49,8 @@ export default function GestionUtilisateurs() {
     if (searchQuery) {
       filtered = filtered.filter(
         (u) =>
-          u.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          u.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (u.firstName || u.first_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (u.lastName || u.last_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
           u.email.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
@@ -93,11 +63,23 @@ export default function GestionUtilisateurs() {
   }, [searchQuery, selectedRole, users])
 
   const handleUserCreated = async () => {
-    // Recharger la liste des utilisateurs
-    setLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    // En production, faire un vrai appel API ici
-    setLoading(false)
+    // Recharger la liste des utilisateurs depuis l'API
+    await loadUsers()
+    setIsModalOpen(false)
+    setEditingUser(null)
+  }
+
+  const handleDeleteUser = async (user: User) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstName || user.first_name} ${user.lastName || user.last_name} ?`)) {
+      return
+    }
+    try {
+      await userService.delete(user.id)
+      await loadUsers()
+    } catch (err) {
+      console.error('Erreur lors de la suppression:', err)
+      alert('Erreur lors de la suppression de l\'utilisateur')
+    }
   }
 
   const columns: Column<User>[] = [
@@ -107,12 +89,12 @@ export default function GestionUtilisateurs() {
       render: (user) => (
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
-            {user.firstName[0]}
-            {user.lastName[0]}
+            {(user.firstName || user.first_name || '?')[0]}
+            {(user.lastName || user.last_name || '?')[0]}
           </div>
           <div>
             <div className="text-sm font-semibold text-gray-900 dark:text-white">
-              {user.firstName} {user.lastName}
+              {user.firstName || user.first_name} {user.lastName || user.last_name}
             </div>
             <div className="text-xs text-gray-500">{user.email}</div>
           </div>
@@ -132,24 +114,25 @@ export default function GestionUtilisateurs() {
       key: 'status',
       label: 'Statut',
       render: (user) => (
-        <Badge variant={user.status === 'active' ? 'success' : 'warning'}>
-          {user.status === 'active' ? 'Actif' : 'Inactif'}
+        <Badge variant={(user.is_active ?? user.isActive) ? 'success' : 'warning'}>
+          {(user.is_active ?? user.isActive) ? 'Actif' : 'Inactif'}
         </Badge>
       ),
     },
     {
-      key: 'createdAt',
+      key: 'created_at',
       label: 'Date de création',
-      render: (user) => new Date(user.createdAt).toLocaleDateString('fr-FR'),
+      render: (user) => user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR') : '-',
       sortable: true,
     },
   ]
 
-  const handleActions = (_user: User) => (
+  const handleActions = (user: User) => (
     <div className="flex items-center gap-2">
       <button
         onClick={() => {
-          // TODO: Ouvrir modale d'édition
+          setEditingUser(user)
+          setIsModalOpen(true)
         }}
         className="text-gray-400 hover:text-primary p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         title="Modifier"
@@ -157,9 +140,7 @@ export default function GestionUtilisateurs() {
         <span className="material-symbols-outlined text-[20px]">edit</span>
       </button>
       <button
-        onClick={() => {
-          // TODO: Supprimer
-        }}
+        onClick={() => handleDeleteUser(user)}
         className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         title="Supprimer"
       >
@@ -173,6 +154,22 @@ export default function GestionUtilisateurs() {
       <MiseEnPagePrincipale>
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-500 dark:text-gray-400">Chargement...</div>
+        </div>
+      </MiseEnPagePrincipale>
+    )
+  }
+
+  if (error) {
+    return (
+      <MiseEnPagePrincipale>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <div className="text-red-500 dark:text-red-400">{error}</div>
+          <button
+            onClick={loadUsers}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+          >
+            Réessayer
+          </button>
         </div>
       </MiseEnPagePrincipale>
     )
@@ -225,7 +222,7 @@ export default function GestionUtilisateurs() {
               </span>
             </div>
           </div>
-          <Bouton onClick={() => setIsModalOpen(true)}>
+          <Bouton onClick={() => { setEditingUser(null); setIsModalOpen(true); }}>
             <span className="material-symbols-outlined text-[20px]">add</span>
             Nouvel utilisateur
           </Bouton>
@@ -242,8 +239,9 @@ export default function GestionUtilisateurs() {
         {/* User Modal */}
         <ModaleUtilisateur
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => { setIsModalOpen(false); setEditingUser(null); }}
           onSuccess={handleUserCreated}
+          userId={editingUser?.id}
         />
       </div>
     </MiseEnPagePrincipale>

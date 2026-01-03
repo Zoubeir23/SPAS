@@ -3,20 +3,24 @@ import MiseEnPagePrincipale from '@/components/layout/MiseEnPagePrincipale'
 import TableauDonnees, { Column } from '@/components/common/TableauDonnees'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
+import Alerte from '@/components/common/Alerte'
 import { sessionService, Session } from '@/api/services/sessionService'
 
 export default function ListeSessions() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadSessions = async () => {
       setLoading(true)
+      setError(null)
       try {
         const data = await sessionService.getAll()
         setSessions(data)
-      } catch (error) {
-        console.error('Erreur lors du chargement des sessions:', error)
+      } catch (err: any) {
+        console.error('Erreur lors du chargement des sessions:', err)
+        setError(err.response?.data?.detail || err.message || 'Erreur lors du chargement des sessions')
       } finally {
         setLoading(false)
       }
@@ -85,6 +89,12 @@ export default function ListeSessions() {
           </div>
           <Bouton>Nouvelle session</Bouton>
         </div>
+
+        {error && (
+          <Alerte type="error" onClose={() => setError(null)}>
+            {error}
+          </Alerte>
+        )}
 
         <TableauDonnees data={sessions} columns={columns} emptyMessage="Aucune session trouvée" />
       </div>

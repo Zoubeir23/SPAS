@@ -61,6 +61,13 @@ class User(AbstractUser):
         blank=True,
         null=True
     )
+    avatar = models.ImageField(
+        _('avatar'),
+        upload_to='avatars/',
+        blank=True,
+        null=True,
+        help_text=_('User profile picture')
+    )
 
     # Metadata
     is_active = models.BooleanField(_('active'), default=True)

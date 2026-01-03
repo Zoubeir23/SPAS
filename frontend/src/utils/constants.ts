@@ -27,6 +27,7 @@ export const ROUTES = {
   ATTENDANCE: '/attendance',
   GRADES: '/grades',
   SETTINGS: '/settings',
+  PROFILE: '/profile',
   ANALYTICS: '/analytics',
 } as const
 

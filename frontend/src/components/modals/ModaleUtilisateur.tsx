@@ -13,6 +13,8 @@ interface UserModalProps {
 
 export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }: UserModalProps) {
   const [loading, setLoading] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     firstName: '',
@@ -22,6 +24,47 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
     role: 'teacher',
     password: '',
   })
+
+  // Handle avatar upload
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('La taille du fichier ne doit pas dépasser 2MB')
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Seuls les fichiers image sont acceptés')
+      return
+    }
+
+    setUploadingAvatar(true)
+    try {
+      // Create preview
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+      
+      // Note: In a real implementation, you would upload to the server here
+      // await userService.uploadAvatar(userId, file)
+    } catch (err) {
+      console.error('Erreur upload avatar:', err)
+      setError('Erreur lors du téléchargement de la photo')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
+  // Handle avatar removal
+  const handleAvatarRemove = () => {
+    setAvatarPreview(null)
+  }
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -42,14 +85,18 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
   useEffect(() => {
     if (isOpen && userId) {
       userService.getById(userId).then(user => {
-        setFormData({
-          firstName: user.firstName || user.first_name || '',
-          lastName: user.lastName || user.last_name || '',
-          email: user.email,
-          phone: '',
-          role: user.role,
-          password: '',
-        })
+      setFormData({
+        firstName: user.firstName || user.first_name || '',
+        lastName: user.lastName || user.last_name || '',
+        email: user.email,
+        phone: '',
+        role: user.role,
+        password: '',
+      })
+      // Charger l'avatar si disponible
+      if (user.avatar_url) {
+        setAvatarPreview(user.avatar_url)
+      }
       }).catch(err => {
         console.error('Erreur chargement utilisateur:', err)
         setError('Impossible de charger les données utilisateur')
@@ -120,16 +167,48 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Profile Picture */}
           <div className="lg:col-span-4 flex flex-col items-center text-center space-y-4 pt-2">
-            <div className="relative group cursor-pointer">
-              <div className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 border-4 border-white dark:border-gray-800 shadow-lg flex items-center justify-center">
-                <span className="material-symbols-outlined text-6xl text-gray-400">person</span>
-              </div>
-              <button
-                type="button"
-                className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-md hover:bg-primary-dark transition-colors flex items-center justify-center w-9 h-9 border-2 border-white dark:border-gray-800"
+            <div className="relative group">
+              {avatarPreview ? (
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
+                  <img
+                    src={avatarPreview}
+                    alt={`${formData.firstName} ${formData.lastName}`}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 border-4 border-white dark:border-gray-800 shadow-lg flex items-center justify-center">
+                  <span className="material-symbols-outlined text-6xl text-gray-400">person</span>
+                </div>
+              )}
+              <label
+                className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-md hover:bg-primary-dark transition-colors flex items-center justify-center w-9 h-9 border-2 border-white dark:border-gray-800 cursor-pointer"
+                title="Changer la photo"
               >
-                <span className="material-symbols-outlined text-sm">edit</span>
-              </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  disabled={uploadingAvatar}
+                />
+                {uploadingAvatar ? (
+                  <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                ) : (
+                  <span className="material-symbols-outlined text-sm">edit</span>
+                )}
+              </label>
+              {avatarPreview && (
+                <button
+                  type="button"
+                  onClick={handleAvatarRemove}
+                  className="absolute top-0 right-0 p-1.5 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors text-xs"
+                  title="Supprimer la photo"
+                  disabled={uploadingAvatar}
+                >
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              )}
             </div>
             <div>
               <h4 className="text-gray-900 dark:text-white font-semibold text-lg">Photo de profil</h4>

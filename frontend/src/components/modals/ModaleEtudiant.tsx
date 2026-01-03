@@ -3,6 +3,7 @@ import Modale from './Modale'
 import Bouton from '@/components/common/Bouton'
 import ChampSaisie from '@/components/common/ChampSaisie'
 import { studentService } from '@/api/services/studentService'
+import { departmentService, programService, type Department, type Program } from '@/api/services/programService'
 import type { Student as _StudentType } from '@/api/services/studentService'
 
 interface StudentModalProps {
@@ -19,7 +20,25 @@ export default function ModaleEtudiant({
   onSuccess,
 }: StudentModalProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
+  const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([])
+  const [formData, setFormData] = useState<{
+    matricule: string
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    dateOfBirth: string
+    address: string
+    departmentId: string
+    programId: string
+    programName: string
+    level: 'L1' | 'L2' | 'L3' | 'M1' | 'M2'
+    scholarship: boolean
+  }>({
     matricule: '',
     firstName: '',
     lastName: '',
@@ -27,17 +46,68 @@ export default function ModaleEtudiant({
     phone: '',
     dateOfBirth: '',
     address: '',
-    programId: '1',
+    departmentId: '',
+    programId: '',
     programName: '',
     level: 'L1',
     scholarship: false,
   })
+
+  // Charger les départements et filières
+  useEffect(() => {
+    if (isOpen) {
+      const loadData = async () => {
+        try {
+          const [depts, progs] = await Promise.all([
+            departmentService.getAll({ status: 'active' }),
+            programService.getAll({ status: 'active' }),
+          ])
+          // S'assurer que les données sont des tableaux
+          setDepartments(Array.isArray(depts) ? depts : [])
+          setPrograms(Array.isArray(progs) ? progs : [])
+        } catch (error) {
+          console.error('Erreur lors du chargement des départements/filières:', error)
+          // Initialiser avec des tableaux vides en cas d'erreur
+          setDepartments([])
+          setPrograms([])
+        }
+      }
+      loadData()
+    } else {
+      // Réinitialiser les données quand le modal se ferme
+      setDepartments([])
+      setPrograms([])
+      setFilteredPrograms([])
+    }
+  }, [isOpen])
+
+  // Filtrer les filières selon le département sélectionné
+  useEffect(() => {
+    if (formData.departmentId) {
+      const filtered = programs.filter(p => p.department_id === formData.departmentId)
+      setFilteredPrograms(filtered)
+      // Réinitialiser la filière si elle n'appartient pas au nouveau département
+      if (formData.programId && !filtered.find(p => p.id === formData.programId)) {
+        setFormData(prev => ({ ...prev, programId: '', programName: '' }))
+      }
+    } else {
+      setFilteredPrograms(programs)
+    }
+  }, [formData.departmentId, programs])
 
   useEffect(() => {
     if (isOpen && studentId) {
       const loadStudent = async () => {
         const student = await studentService.getById(studentId)
         if (student) {
+          // Charger le programme pour obtenir le département
+          let departmentId = ''
+          if (student.programId) {
+            const program = await programService.getById(student.programId)
+            if (program?.department_id) {
+              departmentId = program.department_id
+            }
+          }
           setFormData({
             matricule: student.matricule || '',
             firstName: student.firstName || '',
@@ -46,15 +116,21 @@ export default function ModaleEtudiant({
             phone: student.phone || '',
             dateOfBirth: student.dateOfBirth || '',
             address: '',
+            departmentId,
             programId: student.programId || '',
             programName: student.programName || '',
             level: 'L1',
             scholarship: false,
           })
+          // Charger la photo si disponible
+          if (student.photo_url) {
+            setPhotoPreview(student.photo_url)
+          }
         }
       }
       loadStudent()
     } else if (isOpen) {
+      setPhotoPreview(null)
       setFormData({
         matricule: '',
         firstName: '',
@@ -63,13 +139,65 @@ export default function ModaleEtudiant({
         phone: '',
         dateOfBirth: '',
         address: '',
-        programId: '1',
+        departmentId: '',
+        programId: '',
         programName: '',
         level: 'L1',
         scholarship: false,
       })
+      setPhotoPreview(null)
     }
   }, [isOpen, studentId])
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validation du fichier
+    if (!file.type.startsWith('image/')) {
+      alert('Veuillez sélectionner un fichier image valide')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB max
+      alert('L\'image ne doit pas dépasser 5 Mo')
+      return
+    }
+
+    setUploadingPhoto(true)
+
+    try {
+      // Prévisualisation
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+
+      // Si c'est un étudiant existant, uploader immédiatement
+      if (studentId) {
+        await studentService.uploadPhoto(studentId, file)
+      }
+      // Sinon, on garde le fichier pour l'upload lors de la création
+    } catch (err: any) {
+      console.error('Erreur lors de l\'upload de la photo:', err)
+      alert('Erreur lors de l\'upload de la photo')
+      setPhotoPreview(null)
+    } finally {
+      setUploadingPhoto(false)
+      event.target.value = ''
+    }
+  }
+
+  const handlePhotoRemove = () => {
+    setPhotoPreview(null)
+    // Si c'est un étudiant existant, supprimer la photo
+    if (studentId) {
+      studentService.update(studentId, { photo: null as any }).catch(err => {
+        console.error('Erreur lors de la suppression de la photo:', err)
+      })
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,10 +229,20 @@ export default function ModaleEtudiant({
         {/* Profile Header Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-6 border border-gray-100 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-            <div className="relative group cursor-pointer">
-              <div className="h-28 w-28 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <span className="material-symbols-outlined text-5xl text-gray-400">person</span>
-              </div>
+            <div className="relative group">
+              {photoPreview ? (
+                <div className="h-28 w-28 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-md">
+                  <img
+                    src={photoPreview}
+                    alt={`${formData.firstName} ${formData.lastName}`}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="h-28 w-28 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-5xl text-gray-400">person</span>
+                </div>
+              )}
             </div>
             <div className="flex flex-col justify-center text-center sm:text-left flex-1">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Photo de profil</h3>
@@ -113,13 +251,40 @@ export default function ModaleEtudiant({
                 l'identification.
               </p>
               <div className="flex gap-3 justify-center sm:justify-start">
-                <Bouton type="button" variant="outline" size="sm">
-                  <span className="material-symbols-outlined text-[18px] mr-2">upload</span>
-                  Télécharger
-                </Bouton>
-                <Bouton type="button" variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">
-                  Supprimer
-                </Bouton>
+                <label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    disabled={uploadingPhoto}
+                  />
+                  <Bouton type="button" variant="outline" size="sm" disabled={uploadingPhoto}>
+                    {uploadingPhoto ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full mr-2"></span>
+                        Upload...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-[18px] mr-2">upload</span>
+                        Télécharger
+                      </>
+                    )}
+                  </Bouton>
+                </label>
+                {photoPreview && (
+                  <Bouton
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                    onClick={handlePhotoRemove}
+                    disabled={uploadingPhoto}
+                  >
+                    Supprimer
+                  </Bouton>
+                )}
               </div>
             </div>
           </div>
@@ -261,18 +426,47 @@ export default function ModaleEtudiant({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Filière <span className="text-red-600">*</span>
+                Département <span className="text-red-600">*</span>
               </label>
               <select
                 required
                 className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm"
-                value={formData.programId}
-                onChange={(e) => setFormData({ ...formData, programId: e.target.value, programName: e.target.options[e.target.selectedIndex].text })}
+                value={formData.departmentId}
+                onChange={(e) => setFormData({ ...formData, departmentId: e.target.value, programId: '', programName: '' })}
               >
-                <option value="1">Informatique & Systèmes</option>
-                <option value="2">Génie Civil</option>
-                <option value="3">Management & Économie</option>
-                <option value="4">Droit</option>
+                <option value="">Sélectionner un département</option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.id}>
+                    {dept.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Filière <span className="text-red-600">*</span>
+              </label>
+              <select
+                required
+                disabled={!formData.departmentId}
+                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                value={formData.programId}
+                onChange={(e) => {
+                  const selectedProgram = filteredPrograms.find(p => p.id === e.target.value)
+                  setFormData({ 
+                    ...formData, 
+                    programId: e.target.value, 
+                    programName: selectedProgram?.name || '' 
+                  })
+                }}
+              >
+                <option value="">{formData.departmentId ? 'Sélectionner une filière' : 'Sélectionnez d\'abord un département'}</option>
+                {filteredPrograms.map((program) => (
+                  <option key={program.id} value={program.id}>
+                    {program.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -284,13 +478,13 @@ export default function ModaleEtudiant({
                 required
                 className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm"
                 value={formData.level}
-                onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, level: e.target.value as 'L1' | 'L2' | 'L3' | 'M1' | 'M2' })}
               >
-                <option>Licence 1</option>
-                <option>Licence 2</option>
-                <option>Licence 3</option>
-                <option>Master 1</option>
-                <option>Master 2</option>
+                <option value="L1">Licence 1</option>
+                <option value="L2">Licence 2</option>
+                <option value="L3">Licence 3</option>
+                <option value="M1">Master 1</option>
+                <option value="M2">Master 2</option>
               </select>
             </div>
 

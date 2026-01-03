@@ -34,6 +34,7 @@ export default function MiseEnPagePrincipale({
       [ROUTES.ATTENDANCE]: 'Absences',
       [ROUTES.GRADES]: 'Notes',
       [ROUTES.SETTINGS]: 'Paramètres',
+      [ROUTES.PROFILE]: 'Mon Profil',
       [ROUTES.ANALYTICS]: 'Analytics',
     }
 

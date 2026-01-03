@@ -4,6 +4,7 @@ import TableauDonnees, { Column } from '@/components/common/TableauDonnees'
 import BarreRecherche from '@/components/common/BarreRecherche'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
+import Alerte from '@/components/common/Alerte'
 import { attendanceService, Attendance } from '@/api/services/attendanceService'
 
 export default function GestionAbsences() {
@@ -11,16 +12,19 @@ export default function GestionAbsences() {
   const [filteredAttendances, setFilteredAttendances] = useState<Attendance[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadAttendances = async () => {
       setLoading(true)
+      setError(null)
       try {
         const data = await attendanceService.getAll()
         setAttendances(data)
         setFilteredAttendances(data)
-      } catch (error) {
-        console.error('Erreur lors du chargement des absences:', error)
+      } catch (err: any) {
+        console.error('Erreur lors du chargement des absences:', err)
+        setError(err.response?.data?.detail || err.message || 'Erreur lors du chargement des absences')
       } finally {
         setLoading(false)
       }
@@ -111,6 +115,12 @@ export default function GestionAbsences() {
             Saisir une absence
           </Bouton>
         </div>
+
+        {error && (
+          <Alerte type="error" onClose={() => setError(null)}>
+            {error}
+          </Alerte>
+        )}
 
         <div className="bg-white dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4">
           <div className="flex flex-col sm:flex-row gap-3">

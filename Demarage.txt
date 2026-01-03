@@ -1,0 +1,24 @@
+# Terminal 1 - Backend
+cd backend
+.\myenv\Scripts\Activate.ps1
+python manage.py runserver 0.0.0.0:8000
+
+# Terminal 2 - Frontend
+cd frontend
+npm run dev
+
+# Accès Application
+URL : http://localhost:5173
+
+# Comptes Utilisateurs (PostgreSQL - spas_db)
+# Tous les mots de passe : password123
+
+| Email                  | Nom           | Rôle                  |
+|------------------------|---------------|-----------------------|
+| admin@isi.edu          | Admin SPAS    | Administrateur        |
+| teacher@isi.edu        | Jean Dupont   | Enseignant            |
+| ds@isi.edu             | Marie Sarr    | Data Scientist        |
+| pedagogical@isi.edu    | Fatou Diallo  | Direction Pédagogique |
+
+# Connexion rapide
+Login : admin@isi.edu / password123

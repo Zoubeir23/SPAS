@@ -44,6 +44,13 @@ export const API_ENDPOINTS = {
     IMPORT_CSV: '/students/import_csv/',
   },
 
+  // Departments endpoints (apps/programs)
+  DEPARTMENTS: {
+    BASE: '/programs/departments/',
+    BY_ID: (id: string) => `/programs/departments/${id}/`,
+    PROGRAMS: (id: string) => `/programs/departments/${id}/programs/`,
+  },
+
   // Programs endpoints (apps/programs)
   PROGRAMS: {
     BASE: '/programs/programs/',
@@ -89,6 +96,7 @@ export const API_ENDPOINTS = {
     TRAIN: (id: string) => `/ml/models/${id}/train/`,
     ACTIVE: '/ml/models/active/',
     PERFORMANCE: '/ml/models/performance/',
+    TRAINING_JOBS: '/ml/training-jobs/',
   },
 
   // Predictions endpoints (apps/predictions)
@@ -99,6 +107,7 @@ export const API_ENDPOINTS = {
     HIGH_RISK: '/predictions/predictions/high_risk/',
     STATISTICS: '/predictions/predictions/statistics/',
     DISTRIBUTION: '/predictions/predictions/distribution/',
+    GENERATE: '/predictions/predictions/generate/',
   },
 
   // Alerts endpoints (apps/alerts)
@@ -122,6 +131,19 @@ export const API_ENDPOINTS = {
     BY_STUDENT: (studentId: string) => `/alerts/interventions/student/${studentId}/`,
     PENDING: '/alerts/interventions/pending/',
     STATISTICS: '/alerts/interventions/statistics/',
+  },
+
+  // Analytics endpoints (apps/analytics)
+  ANALYTICS: {
+    DASHBOARD: '/analytics/dashboard/',
+    METRICS: '/analytics/metrics/',
+    RISK_DISTRIBUTION: '/analytics/risk-distribution/',
+    DROPOUT_EVOLUTION: '/analytics/dropout-evolution/',
+    PROGRAM_PERFORMANCE: '/analytics/program-performance/',
+    INTERVENTION_EFFICACY: '/analytics/intervention-efficacy/',
+    MODEL_PERFORMANCE: '/analytics/model-performance/',
+    PREDICTION_FACTORS: (studentId: string) => `/analytics/prediction-factors/${studentId}/`,
+    RISK_EVOLUTION: (studentId: string) => `/analytics/risk-evolution/${studentId}/`,
   },
 } as const
 

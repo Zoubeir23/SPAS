@@ -1,6 +1,17 @@
 import apiClient from '../axiosConfig'
 import { API_ENDPOINTS } from '../endpoints'
 
+export interface Department {
+  id: string
+  name: string
+  code: string
+  description?: string
+  status: 'active' | 'inactive'
+  program_count?: number
+  created_at?: string
+  updated_at?: string
+}
+
 export interface Program {
   id: string
   name: string
@@ -10,6 +21,8 @@ export interface Program {
   studentCount?: number
   student_count?: number
   status: 'active' | 'inactive'
+  department?: Department
+  department_id?: string
   created_at?: string
   updated_at?: string
 }
@@ -24,6 +37,7 @@ export interface ProgramListResponse {
 export interface ProgramFilters {
   search?: string
   status?: string
+  department?: string
   ordering?: string
   page?: number
   page_size?: number
@@ -36,7 +50,59 @@ function normalizeProgram(program: Program): Program {
   return {
     ...program,
     studentCount: program.studentCount || program.student_count || 0,
+    // Extraire department_id de l'objet department si non présent
+    department_id: program.department_id || (program.department ? String(program.department.id) : undefined),
   }
+}
+
+/**
+ * Department Service - Connected to Django REST Framework API
+ */
+export const departmentService = {
+  async getAll(filters?: { status?: string }): Promise<Department[]> {
+    const response = await apiClient.get<Department[] | { results: Department[] }>(
+      API_ENDPOINTS.DEPARTMENTS.BASE,
+      { params: filters }
+    )
+    // Gérer les réponses paginées (DRF) ou directes
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+    if (response.data && typeof response.data === 'object' && 'results' in response.data) {
+      return (response.data as { results: Department[] }).results
+    }
+    return []
+  },
+
+  async getById(id: string): Promise<Department | null> {
+    try {
+      const response = await apiClient.get<Department>(API_ENDPOINTS.DEPARTMENTS.BY_ID(id))
+      return response.data
+    } catch {
+      return null
+    }
+  },
+
+  async getPrograms(departmentId: string): Promise<Program[]> {
+    const response = await apiClient.get<Program[]>(
+      API_ENDPOINTS.DEPARTMENTS.PROGRAMS(departmentId)
+    )
+    return Array.isArray(response.data) ? response.data : response.data
+  },
+
+  async create(department: Omit<Department, 'id'>): Promise<Department> {
+    const response = await apiClient.post<Department>(API_ENDPOINTS.DEPARTMENTS.BASE, department)
+    return response.data
+  },
+
+  async update(id: string, updates: Partial<Department>): Promise<Department> {
+    const response = await apiClient.patch<Department>(API_ENDPOINTS.DEPARTMENTS.BY_ID(id), updates)
+    return response.data
+  },
+
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(API_ENDPOINTS.DEPARTMENTS.BY_ID(id))
+  },
 }
 
 /**

@@ -21,6 +21,14 @@ class Student(models.Model):
         MEDIUM = 'medium', _('Moyen')
         HIGH = 'high', _('Élevé')
 
+    class Level(models.TextChoices):
+        """Student academic level choices."""
+        L1 = 'L1', _('Licence 1')
+        L2 = 'L2', _('Licence 2')
+        L3 = 'L3', _('Licence 3')
+        M1 = 'M1', _('Master 1')
+        M2 = 'M2', _('Master 2')
+
     # Personal Information
     matricule = models.CharField(
         _('matricule'),
@@ -34,6 +42,13 @@ class Student(models.Model):
     email = models.EmailField(_('email'), unique=True, db_index=True)
     phone = models.CharField(_('phone'), max_length=20, blank=True, null=True)
     date_of_birth = models.DateField(_('date of birth'))
+    photo = models.ImageField(
+        _('photo'),
+        upload_to='student_photos/',
+        blank=True,
+        null=True,
+        help_text=_('Student profile picture')
+    )
 
     # Academic Information
     program = models.ForeignKey(
@@ -56,6 +71,14 @@ class Student(models.Model):
         choices=Status.choices,
         default=Status.ACTIVE,
         db_index=True
+    )
+    level = models.CharField(
+        _('level'),
+        max_length=5,
+        choices=Level.choices,
+        default=Level.L1,
+        db_index=True,
+        help_text=_('Academic level (L1, L2, L3, M1, M2)')
     )
 
     # Risk Assessment (from ML predictions)

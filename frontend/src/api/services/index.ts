@@ -48,3 +48,17 @@ export type {
 
 export { userService } from './userService'
 export type { User, UserListResponse, UserFilters, CreateUserData } from './userService'
+
+export { analyticsService } from './analyticsService'
+export type {
+  AnalyticsMetrics,
+  DropoutEvolution,
+  ProgramPerformance,
+  InterventionEfficacy,
+  RiskDistribution as AnalyticsRiskDistribution,
+  EnrollmentEvolution,
+  DashboardStats,
+} from './analyticsService'
+
+export { settingsService } from './settingsService'
+export type { SystemSettings, UpdateSettingsData } from './settingsService'

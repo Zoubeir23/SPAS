@@ -12,7 +12,9 @@ export interface Prediction {
   student_id?: string
   studentName?: string
   student_name?: string
-  student?: { id: string; first_name: string; last_name: string }
+  studentMatricule?: string
+  student_matricule?: string
+  student?: { id: string; first_name: string; last_name: string; matricule?: string }
   riskScore?: number
   risk_score?: number
   riskLevel?: 'low' | 'medium' | 'high' | 'critical'
@@ -66,6 +68,7 @@ function normalizePrediction(prediction: Prediction): Prediction {
     studentId: prediction.studentId || prediction.student_id || prediction.student?.id,
     studentName: prediction.studentName || prediction.student_name ||
       (prediction.student ? `${prediction.student.first_name} ${prediction.student.last_name}` : undefined),
+    studentMatricule: prediction.studentMatricule || prediction.student_matricule || prediction.student?.matricule,
     riskScore: prediction.riskScore || prediction.risk_score,
     riskLevel: prediction.riskLevel || prediction.risk_level,
     predictedSuccessRate: prediction.predictedSuccessRate || prediction.predicted_success_rate,
@@ -118,6 +121,14 @@ export const predictionService = {
   async getDistribution(): Promise<RiskDistribution> {
     const response = await apiClient.get<RiskDistribution>(API_ENDPOINTS.PREDICTIONS.DISTRIBUTION)
     return response.data
+  },
+
+  async generatePredictions(): Promise<Prediction[]> {
+    const response = await apiClient.post<{ predictions: Prediction[] } | Prediction[]>(
+      API_ENDPOINTS.PREDICTIONS.GENERATE
+    )
+    const predictions = Array.isArray(response.data) ? response.data : response.data.predictions || []
+    return predictions.map(normalizePrediction)
   },
 }
 
