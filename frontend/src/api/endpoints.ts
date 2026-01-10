@@ -107,7 +107,7 @@ export const API_ENDPOINTS = {
     HIGH_RISK: '/predictions/predictions/high_risk/',
     STATISTICS: '/predictions/predictions/statistics/',
     DISTRIBUTION: '/predictions/predictions/distribution/',
-    GENERATE: '/predictions/predictions/generate/',
+    GENERATE: '/predictions/predictions/predict-bulk/',
   },
 
   // Alerts endpoints (apps/alerts)

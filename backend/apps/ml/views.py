@@ -1,7 +1,7 @@
 """
 Views for ML app.
 """
-import threading
+import logging
 from django.db import models
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
@@ -15,7 +15,10 @@ from .serializers import (
     TrainingJobSerializer, TrainingJobListSerializer, TrainingJobCreateSerializer,
     RiskPredictionRequestSerializer, BulkRiskPredictionRequestSerializer
 )
-from .services import DropoutRiskPredictor, generate_synthetic_training_data
+from .services import DropoutRiskPredictor, calculate_student_features_from_db
+from .tasks import run_training_job
+
+logger = logging.getLogger(__name__)
 
 
 class MLModelViewSet(viewsets.ModelViewSet):
@@ -167,70 +170,8 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
         """Create training job and start training in background."""
         job = serializer.save(created_by=self.request.user)
 
-        # Start training in background thread
-        thread = threading.Thread(target=self._run_training, args=(job.id,))
-        thread.daemon = True
-        thread.start()
-
-    def _run_training(self, job_id):
-        """Run training job in background."""
-        import django
-        django.setup()
-
-        from django.utils import timezone
-        from .models import TrainingJob, MLModel
-
-        try:
-            job = TrainingJob.objects.get(id=job_id)
-            job.start()
-
-            # Initialize predictor
-            predictor = DropoutRiskPredictor()
-
-            # Progress callback
-            def progress_callback(progress, step):
-                job.update_progress(progress, step)
-
-            # Generate synthetic data and train
-            job.update_progress(5, "Génération des données d'entraînement...")
-            X, y = generate_synthetic_training_data(n_samples=1000)
-
-            job.update_progress(10, "Démarrage de l'entraînement...")
-            metrics = predictor.train(X, y, progress_callback=progress_callback)
-
-            # Save the trained model
-            job.update_progress(95, "Sauvegarde du modèle...")
-            model_path = predictor.save_model()
-
-            # Determine next version
-            existing_versions = MLModel.objects.filter(
-                name='DropoutRiskPredictor'
-            ).values_list('version', flat=True)
-
-            if existing_versions:
-                max_version = max(int(v.split('.')[-1]) for v in existing_versions if v)
-                new_version = f"1.0.{max_version + 1}"
-            else:
-                new_version = "1.0.0"
-
-            # Create MLModel record
-            ml_model = MLModel.objects.create(
-                name='DropoutRiskPredictor',
-                version=new_version,
-                status=MLModel.Status.INACTIVE,
-                accuracy=metrics['accuracy'] * 100,
-                precision=metrics['precision'] * 100,
-                recall=metrics['recall'] * 100,
-                f1_score=metrics['f1_score'] * 100,
-                trained_at=timezone.now(),
-                training_data_size=1000
-            )
-
-            job.complete(ml_model)
-
-        except Exception as e:
-            job = TrainingJob.objects.get(id=job_id)
-            job.fail(str(e))
+        # Start training in background task
+        run_training_job.delay(job.id)
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
@@ -300,7 +241,11 @@ class PredictionViewSet(viewsets.ViewSet):
                 try:
                     self._predictor.load_model()
                 except FileNotFoundError:
+                    logger.warning("Active model file not found. Using heuristics.")
                     pass  # Use untrained predictor (will use heuristics)
+                except Exception as e:
+                    logger.error(f"Error loading model: {e}. Using heuristics.")
+                    pass
 
         return self._predictor
 
@@ -428,39 +373,5 @@ class PredictionViewSet(viewsets.ViewSet):
         """
         Gather features for a student from various sources.
         """
-        from django.db.models import Avg, Count
-        from apps.grades.models import Grade
-        from apps.attendance.models import Attendance
-
-        features = {}
-
-        # Grades
-        grade_stats = Grade.objects.filter(student=student).aggregate(
-            avg_grade=Avg('value'),
-            total_grades=Count('id')
-        )
-        features['average_grade'] = float(grade_stats['avg_grade'] or 50)
-
-        # Attendance
-        attendance_stats = Attendance.objects.filter(student=student).aggregate(
-            total=Count('id'),
-            present=Count('id', filter=models.Q(status='present')),
-            absent=Count('id', filter=models.Q(status='absent')),
-            late=Count('id', filter=models.Q(status='late'))
-        )
-
-        total = attendance_stats['total'] or 1
-        features['attendance_rate'] = (attendance_stats['present'] or 0) / total * 100
-        features['late_count'] = attendance_stats['late'] or 0
-
-        # Default values for features we can't calculate
-        features['assignments_completed'] = 80  # Placeholder
-        features['participation_score'] = 70  # Placeholder
-        features['study_hours'] = 20  # Placeholder
-        features['failed_courses'] = 0  # Placeholder
-        features['social_engagement'] = 60  # Placeholder
-        features['financial_aid'] = 1  # Placeholder
-        features['first_generation'] = 0  # Placeholder
-        features['distance_to_campus'] = 10  # Placeholder
-
-        return features
+        # Use the service function to calculate real features from DB
+        return calculate_student_features_from_db(student)
