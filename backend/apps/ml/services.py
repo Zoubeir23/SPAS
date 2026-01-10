@@ -36,6 +36,11 @@ try:
 except ImportError:
     shap = None
 
+try:
+    from imblearn.over_sampling import SMOTE
+except ImportError:
+    SMOTE = None
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -206,6 +211,17 @@ class DropoutRiskPredictor:
         X_train_scaled = self.scaler.fit_transform(X_train)
         X_test_scaled = self.scaler.transform(X_test)
         
+        # Apply SMOTE if available (and if we have enough samples)
+        if SMOTE and len(X_train) > 10:
+            try:
+                if progress_callback:
+                    progress_callback(35, 'SMOTE', 'Équilibrage des classes...')
+                smote = SMOTE(random_state=42)
+                X_train_scaled, y_train = smote.fit_resample(X_train_scaled, y_train)
+                logger.info(f"SMOTE applied. Training samples: {len(X_train_scaled)}")
+            except Exception as e:
+                logger.warning(f"SMOTE failed: {e}")
+
         if progress_callback:
             progress_callback(40, 'Entraînement', f'Entraînement {algorithm}...')
         
@@ -400,7 +416,7 @@ class DropoutRiskPredictor:
                             'value': student_data.get(feature_name, 0),
                             'impact': float(impact)
                         })
-                
+
                 # Sort by absolute impact
                 factors.sort(key=lambda x: abs(x['impact']), reverse=True)
                 return factors[:5]
