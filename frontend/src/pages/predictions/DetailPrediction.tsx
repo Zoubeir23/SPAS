@@ -150,12 +150,18 @@ export default function DetailPrediction() {
   const riskInfo = getRiskLevel()
 
   // Préparer les facteurs SHAP (mélange de facteurs positifs et négatifs)
-  const shapFactors = [
-    { name: 'Absences (Cours Mag.)', impact: 0.18, color: 'danger' },
-    { name: 'Retard Rendu Projets', impact: 0.12, color: 'danger' },
-    { name: 'Note Moyenne Maths', impact: 0.08, color: 'danger' },
-    { name: 'Participation Forum', impact: -0.05, color: 'success' },
-  ]
+  const shapFactors = prediction.factors && prediction.factors.length > 0
+    ? prediction.factors.map(f => ({
+        name: f.name,
+        impact: f.impact,
+        color: f.impact > 0 ? 'danger' : 'success'
+      }))
+    : [
+        { name: 'Absences (Cours Mag.)', impact: 0.18, color: 'danger' },
+        { name: 'Retard Rendu Projets', impact: 0.12, color: 'danger' },
+        { name: 'Note Moyenne Maths', impact: 0.08, color: 'danger' },
+        { name: 'Participation Forum', impact: -0.05, color: 'success' },
+      ]
 
   return (
     <MiseEnPagePrincipale title="Détail Prédiction">

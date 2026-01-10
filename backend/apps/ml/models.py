@@ -141,8 +141,8 @@ class TrainingJob(models.Model):
     algorithm = models.CharField(
         _('algorithm'),
         max_length=50,
-        default='random_forest',
-        help_text=_('ML algorithm: random_forest, gradient_boosting, logistic_regression')
+        default='xgboost',
+        help_text=_('ML algorithm: xgboost, random_forest, gradient_boosting, logistic_regression')
     )
     hyperparameters = models.JSONField(
         _('hyperparameters'),

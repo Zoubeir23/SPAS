@@ -46,14 +46,10 @@ class StudentViewSet(viewsets.ModelViewSet):
         return StudentSerializer
 
     def get_queryset(self):
-        """Optimize queryset with select_related and prefetch_related."""
+        """Optimize queryset with select_related."""
         queryset = Student.objects.select_related(
             'program',
             'session'
-        ).prefetch_related(
-            'predictions',
-            'grades',
-            'attendances'
         )
         return queryset
 
