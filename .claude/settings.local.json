@@ -3,7 +3,15 @@
     "allow": [
       "Bash(python manage.py:*)",
       "Bash(ls:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(wc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: resolve merge conflicts in ML services and requirements\n\n- Clean up merge conflict markers in backend/requirements.txt\n- Resolve conflicts in backend/apps/ml/services.py\n- Update SHAP to >=0.45,<1.0 and imbalanced-learn to >=0.12,<1.0\n- Consolidate ML service with full SHAP and SMOTE support\n- Add ROC curve calculation and feature importance tracking\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(python -c:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(xargs:*)"
     ]
   }
 }
