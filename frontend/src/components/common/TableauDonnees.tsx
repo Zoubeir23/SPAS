@@ -18,6 +18,7 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void
   actions?: (item: T) => ReactNode
   emptyMessage?: string
+  caption?: string
   className?: string
 }
 
@@ -28,6 +29,7 @@ export default function TableauDonnees<T extends Record<string, any>>({
   onRowClick,
   actions,
   emptyMessage = 'Aucune donnée disponible',
+  caption,
   className,
 }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1)
@@ -72,34 +74,52 @@ export default function TableauDonnees<T extends Record<string, any>>({
     <div className={clsx('bg-white dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden', className)}>
       <div className="overflow-x-auto">
         <table className="w-full">
+          {caption && <caption className="sr-only">{caption}</caption>}
           <thead className="bg-gray-50 dark:bg-gray-800/50">
             <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className={clsx(
-                    'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider',
-                    column.sortable && 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700',
-                    column.className
-                  )}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
-                  <div className="flex items-center gap-2">
-                    {column.label}
-                    {column.sortable && (
-                      <span className="material-symbols-outlined text-[16px]">
-                        {sortConfig?.key === column.key
-                          ? sortConfig.direction === 'asc'
-                            ? 'arrow_upward'
-                            : 'arrow_downward'
-                          : 'unfold_more'}
-                      </span>
+              {columns.map((column) => {
+                 const isSorted = sortConfig?.key === column.key
+                 const sortDirection = isSorted ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : 'none'
+
+                 return (
+                  <th
+                    key={column.key}
+                    scope="col"
+                    aria-sort={column.sortable ? sortDirection : undefined}
+                    className={clsx(
+                      'px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider',
+                      column.className
                     )}
-                  </div>
-                </th>
-              ))}
+                  >
+                    {column.sortable ? (
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 group focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                        onClick={() => handleSort(column.key)}
+                        aria-label={`Trier par ${column.label}`}
+                      >
+                        {column.label}
+                        <span className={clsx(
+                          "material-symbols-outlined text-[16px] transition-colors",
+                          isSorted ? "text-primary" : "text-gray-400 group-hover:text-gray-600"
+                        )}>
+                          {isSorted
+                            ? sortConfig.direction === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'}
+                        </span>
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {column.label}
+                      </div>
+                    )}
+                  </th>
+                )
+              })}
               {actions && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               )}
@@ -124,6 +144,14 @@ export default function TableauDonnees<T extends Record<string, any>>({
                     onRowClick && 'cursor-pointer'
                   )}
                   onClick={() => onRowClick?.(item)}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  role={onRowClick ? "button" : undefined}
+                  onKeyDown={(e) => {
+                    if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      onRowClick(item);
+                    }
+                  }}
                 >
                   {columns.map((column) => (
                     <td
@@ -165,4 +193,3 @@ export default function TableauDonnees<T extends Record<string, any>>({
     </div>
   )
 }
-

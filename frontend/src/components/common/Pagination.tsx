@@ -49,13 +49,17 @@ export default function Pagination({
   }
 
   return (
-    <div className={clsx('flex items-center justify-between', className)}>
+    <nav
+      className={clsx('flex items-center justify-between', className)}
+      aria-label="Pagination"
+    >
       <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
+          aria-label="Page précédente"
           className={clsx(
-            'px-3 py-2 text-sm font-medium rounded-lg border',
+            'px-3 py-2 text-sm font-medium rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
             currentPage === 1
               ? 'text-gray-400 border-gray-200 cursor-not-allowed dark:border-gray-700'
               : 'text-gray-700 border-gray-300 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800'
@@ -70,8 +74,10 @@ export default function Pagination({
               key={index}
               onClick={() => typeof page === 'number' && onPageChange(page)}
               disabled={page === '...'}
+              aria-current={page === currentPage ? 'page' : undefined}
+              aria-label={typeof page === 'number' ? `Page ${page}` : undefined}
               className={clsx(
-                'px-3 py-2 text-sm font-medium rounded-lg border',
+                'px-3 py-2 text-sm font-medium rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
                 page === '...'
                   ? 'border-transparent cursor-default'
                   : page === currentPage
@@ -87,8 +93,9 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
+          aria-label="Page suivante"
           className={clsx(
-            'px-3 py-2 text-sm font-medium rounded-lg border',
+            'px-3 py-2 text-sm font-medium rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
             currentPage === totalPages
               ? 'text-gray-400 border-gray-200 cursor-not-allowed dark:border-gray-700'
               : 'text-gray-700 border-gray-300 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800'
@@ -98,10 +105,9 @@ export default function Pagination({
         </button>
       </div>
 
-      <div className="text-sm text-gray-600 dark:text-gray-400">
-        Page {currentPage} sur {totalPages}
+      <div className="text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
+        Page <span className="font-medium">{currentPage}</span> sur <span className="font-medium">{totalPages}</span>
       </div>
-    </div>
+    </nav>
   )
 }
-
