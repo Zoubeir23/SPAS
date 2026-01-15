@@ -208,22 +208,7 @@ export default function DetailPrediction() {
 
   const riskInfo = getRiskLevel()
 
-<<<<<<< Updated upstream
-  // Préparer les facteurs SHAP (mélange de facteurs positifs et négatifs)
-  const shapFactors = prediction.factors && prediction.factors.length > 0
-    ? prediction.factors.map(f => ({
-        name: f.name,
-        impact: f.impact,
-        color: f.impact > 0 ? 'danger' : 'success'
-      }))
-    : [
-        { name: 'Absences (Cours Mag.)', impact: 0.18, color: 'danger' },
-        { name: 'Retard Rendu Projets', impact: 0.12, color: 'danger' },
-        { name: 'Note Moyenne Maths', impact: 0.08, color: 'danger' },
-        { name: 'Participation Forum', impact: -0.05, color: 'success' },
-      ]
-=======
-  // Préparer les facteurs SHAP depuis les données API ou fallback
+// Préparer les facteurs SHAP depuis les données API ou fallback
   const shapFactors = prediction?.factors?.map((f: PredictionFactor) => ({
     feature: f.name || f.feature || 'Facteur',
     value: f.value ?? 0,
@@ -236,10 +221,9 @@ export default function DetailPrediction() {
     { feature: 'Participation Forum', value: 'Active', contribution: -0.05, direction: 'negative' as const },
     { feature: 'Assiduité TD', value: '92%', contribution: -0.03, direction: 'negative' as const },
   ]
-  
+
   // Est-ce que l'explication vient de SHAP ?
   const isShapExplained = prediction?.shap_explained ?? true
->>>>>>> Stashed changes
 
   return (
     <MiseEnPagePrincipale title="Détail Prédiction">

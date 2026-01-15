@@ -63,7 +63,6 @@ const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
             )}
             {...props}
           />
-<<<<<<< Updated upstream
           {rightIcon &&
             (onRightIconClick ? (
               <button
@@ -71,23 +70,6 @@ const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
                 className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer bg-transparent border-0 p-0"
                 onClick={onRightIconClick}
                 aria-label={rightIconLabel || 'Toggle input action'}
-=======
-          {rightIcon && (
-            <div
-              className={clsx(
-                'absolute inset-y-0 right-0 flex items-center pr-4',
-                onRightIconClick && 'cursor-pointer'
-              )}
-              onClick={onRightIconClick}
-            >
-              <span
-                className={clsx(
-                  'material-symbols-outlined text-[20px]',
-                  onRightIconClick
-                    ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                    : 'text-gray-400'
-                )}
->>>>>>> Stashed changes
               >
                 <span className="material-symbols-outlined text-[20px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                   {rightIcon}
