@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import ChampSaisie from '../ChampSaisie'
 
@@ -13,9 +13,14 @@ describe('Input Component', () => {
     expect(screen.getByPlaceholderText('Enter text')).toBeInTheDocument()
   })
 
-  it('should display error message', () => {
+  it('should display error message and link with aria-describedby', () => {
     render(<ChampSaisie error="This field is required" />)
-    expect(screen.getByText('This field is required')).toBeInTheDocument()
+    const errorMessage = screen.getByText('This field is required')
+    expect(errorMessage).toBeInTheDocument()
+
+    const input = screen.getByRole('textbox')
+    expect(input).toHaveAttribute('aria-invalid', 'true')
+    expect(input).toHaveAttribute('aria-describedby', errorMessage.id)
   })
 
   it('should apply error styling when error is present', () => {
@@ -30,10 +35,29 @@ describe('Input Component', () => {
     expect(icon).toBeInTheDocument()
   })
 
-  it('should render with right icon', () => {
-    const { container } = render(<ChampSaisie rightIcon="visibility" />)
-    const icons = container.querySelectorAll('.material-symbols-outlined')
-    expect(icons.length).toBeGreaterThan(0)
+  it('should render with right icon as button when interactive', () => {
+    const onRightIconClick = vi.fn()
+    render(
+      <ChampSaisie
+        rightIcon="visibility"
+        onRightIconClick={onRightIconClick}
+        rightIconLabel="Toggle visibility"
+      />
+    )
+
+    const button = screen.getByRole('button', { name: 'Toggle visibility' })
+    expect(button).toBeInTheDocument()
+
+    // Check if icon is inside
+    expect(button.querySelector('.material-symbols-outlined')).toHaveTextContent(
+      'visibility'
+    )
+  })
+
+  it('should render with right icon as div when not interactive', () => {
+    const { container } = render(<ChampSaisie rightIcon="check" />)
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    const icon = container.querySelector('.material-symbols-outlined')
+    expect(icon).toHaveTextContent('check')
   })
 })
-

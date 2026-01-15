@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef } from 'react'
+import { InputHTMLAttributes, forwardRef, useId } from 'react'
 import { clsx } from 'clsx'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -7,6 +7,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   leftIcon?: string
   rightIcon?: string
   onRightIconClick?: () => void
+  rightIconLabel?: string
 }
 
 const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
@@ -17,13 +18,16 @@ const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
       leftIcon,
       rightIcon,
       onRightIconClick,
+      rightIconLabel,
       className,
       id,
       ...props
     },
     ref
   ) => {
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
+    const generatedId = useId()
+    const inputId = id || generatedId
+    const errorId = `${inputId}-error`
 
     return (
       <div className="w-full">
@@ -46,6 +50,8 @@ const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
             className={clsx(
               'block w-full rounded-lg border-0 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary dark:bg-background-dark dark:ring-gray-600 dark:text-white sm:text-sm sm:leading-6 bg-[#f8f9fb] dark:bg-opacity-50 transition-all',
               leftIcon && 'pl-10',
@@ -56,29 +62,31 @@ const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
             )}
             {...props}
           />
-          {rightIcon && (
-            <div
-              className={clsx(
-                'absolute inset-y-0 right-0 flex items-center pr-3',
-                onRightIconClick && 'cursor-pointer'
-              )}
-              onClick={onRightIconClick}
-            >
-              <span
-                className={clsx(
-                  'material-symbols-outlined text-[20px]',
-                  onRightIconClick
-                    ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                    : 'text-gray-400'
-                )}
+          {rightIcon &&
+            (onRightIconClick ? (
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer bg-transparent border-0 p-0"
+                onClick={onRightIconClick}
+                aria-label={rightIconLabel || 'Toggle input action'}
               >
-                {rightIcon}
-              </span>
-            </div>
-          )}
+                <span className="material-symbols-outlined text-[20px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  {rightIcon}
+                </span>
+              </button>
+            ) : (
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <span className="material-symbols-outlined text-[20px] text-gray-400">
+                  {rightIcon}
+                </span>
+              </div>
+            ))}
         </div>
         {error && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+          <p
+            id={errorId}
+            className="mt-1 text-sm text-red-600 dark:text-red-400"
+          >
             {error}
           </p>
         )}
@@ -90,4 +98,3 @@ const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
 ChampSaisie.displayName = 'ChampSaisie'
 
 export default ChampSaisie
-
