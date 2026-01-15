@@ -2,19 +2,12 @@
 Machine Learning Service for SPAS.
 
 This module provides the core ML functionality for predicting student dropout risk
-<<<<<<< Updated upstream
-using scikit-learn and XGBoost. It includes:
-- Data preprocessing and feature engineering
-- Model training with XGBoost, Random Forest, and others
-- Risk score prediction with SHAP explanations
-=======
 using XGBoost with SHAP explanations. It includes:
 - Data preprocessing and feature engineering
 - Model training with XGBoost, Random Forest, Gradient Boosting
 - SHAP-based explainability for individual predictions
 - SMOTE for handling imbalanced datasets
 - Risk score prediction with feature importance analysis
->>>>>>> Stashed changes
 - Model persistence and versioning
 """
 import os
@@ -28,35 +21,12 @@ from typing import Optional, Dict, List, Tuple, Any
 # ML Libraries
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-<<<<<<< Updated upstream
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    classification_report
-=======
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     classification_report, confusion_matrix, roc_auc_score, roc_curve
->>>>>>> Stashed changes
 )
-
-try:
-    import xgboost as xgb
-except ImportError:
-    xgb = None
-
-try:
-    import shap
-except ImportError:
-    shap = None
-
-try:
-    from imblearn.over_sampling import SMOTE
-except ImportError:
-    SMOTE = None
 
 # XGBoost for high-performance gradient boosting
 try:
@@ -94,50 +64,30 @@ ML_MODELS_PATH = getattr(settings, 'ML_MODEL_PATH', 'ml_models/')
 class DropoutRiskPredictor:
     """
     Predicts student dropout risk using machine learning.
-    
+
     This class handles the complete ML pipeline for SPAS:
     - Feature extraction from student data
     - Model training with cross-validation
     - Risk score prediction
     - Feature importance analysis (SHAP)
     """
-    
+
     # Default features used for prediction
     DEFAULT_FEATURES = [
         'average_grade',        # Moyenne des notes (0-20)
-        'attendance_rate',      # Taux de présence (0-100)
+        'attendance_rate',      # Taux de presence (0-100)
         'assignments_completed', # Devoirs rendus (%)
         'late_submissions',     # Retards de soumission (count)
         'absences_count',       # Nombre total d'absences
-        'consecutive_absences', # Absences consécutives max
-        'grade_trend',          # Tendance des notes (-1 à 1)
+        'consecutive_absences', # Absences consecutives max
+        'grade_trend',          # Tendance des notes (-1 a 1)
         'participation_score',  # Score de participation (0-100)
         'weeks_enrolled',       # Semaines depuis inscription
-        'failed_subjects',      # Matières échouées (count)
+        'failed_subjects',      # Matieres echouees (count)
     ]
-    
+
     # Algorithm configurations
     ALGORITHMS = {
-        'xgboost': {
-            'class': xgb.XGBClassifier if XGBOOST_AVAILABLE else GradientBoostingClassifier,
-            'params': {
-                'n_estimators': 100,
-                'max_depth': 6,
-                'learning_rate': 0.1,
-                'min_child_weight': 1,
-                'subsample': 0.8,
-                'colsample_bytree': 0.8,
-                'random_state': 42,
-                'use_label_encoder': False,
-                'eval_metric': 'logloss',
-                'n_jobs': -1
-            } if XGBOOST_AVAILABLE else {
-                'n_estimators': 100,
-                'max_depth': 5,
-                'learning_rate': 0.1,
-                'random_state': 42
-            }
-        },
         'random_forest': {
             'class': RandomForestClassifier,
             'params': {
@@ -169,9 +119,9 @@ class DropoutRiskPredictor:
             }
         }
     }
-    
+
     # Add XGBoost if available
-    if xgb:
+    if XGBOOST_AVAILABLE:
         ALGORITHMS['xgboost'] = {
             'class': xgb.XGBClassifier,
             'params': {
@@ -189,7 +139,7 @@ class DropoutRiskPredictor:
     def __init__(self, model_path: Optional[str] = None):
         """
         Initialize the predictor.
-        
+
         Args:
             model_path: Path to a saved model file. If None, model must be trained.
         """
@@ -199,31 +149,27 @@ class DropoutRiskPredictor:
         self.feature_names = self.DEFAULT_FEATURES.copy()
         self.model_version = None
         self.training_metrics = {}
-<<<<<<< Updated upstream
         self.algorithm_name = None
-        self.explainer = None  # SHAP explainer
-=======
         self.roc_data = None  # Store ROC curve data
->>>>>>> Stashed changes
-        
+
         if model_path and os.path.exists(model_path):
             self.load_model(model_path)
-    
+
     def prepare_features(self, student_data: Dict[str, Any]) -> np.ndarray:
         """
         Extract and prepare features from student data.
         """
         features = []
-        
+
         for feature_name in self.feature_names:
             value = student_data.get(feature_name, 0)
             # Handle None values
             if value is None:
                 value = 0
             features.append(float(value))
-        
+
         return np.array(features).reshape(1, -1)
-    
+
     def train(
         self,
         X: np.ndarray,
@@ -236,11 +182,8 @@ class DropoutRiskPredictor:
         progress_callback: Optional[callable] = None
     ) -> Dict[str, Any]:
         """
-<<<<<<< Updated upstream
-        Train a new model on the provided data.
-=======
         Train a new model on the provided data with SMOTE and SHAP support.
-        
+
         Args:
             X: Feature matrix (n_samples, n_features)
             y: Target labels (0 = low risk, 1 = medium risk, 2 = high risk)
@@ -250,127 +193,77 @@ class DropoutRiskPredictor:
             test_size: Fraction of data to use for testing
             use_smote: Whether to use SMOTE for handling imbalanced data
             progress_callback: Optional callback(progress, step, message)
-            
+
         Returns:
             Dictionary with training metrics including ROC data
->>>>>>> Stashed changes
         """
         if progress_callback:
-            progress_callback(5, 'Initialisation', 'Préparation des données...')
-        
+            progress_callback(5, 'Initialisation', 'Preparation des donnees...')
+
         # Store feature names
         if feature_names:
             self.feature_names = feature_names
-        
-<<<<<<< Updated upstream
-        # Fallback if xgboost requested but not installed
-        if algorithm == 'xgboost' and not xgb:
-            logger.warning("XGBoost not installed. Falling back to Random Forest.")
-            algorithm = 'random_forest'
 
-        # Get algorithm configuration
-        if algorithm not in self.ALGORITHMS:
-            # Fallback to random forest if unknown
-            logger.warning(f"Unknown algorithm {algorithm}. Falling back to Random Forest.")
-            algorithm = 'random_forest'
-=======
         # Get algorithm configuration - default to xgboost if available
         if algorithm not in self.ALGORITHMS:
             algorithm = 'xgboost' if XGBOOST_AVAILABLE else 'random_forest'
             logger.warning(f"Unknown algorithm, defaulting to {algorithm}")
->>>>>>> Stashed changes
-        
+
         self.algorithm_name = algorithm
         algo_config = self.ALGORITHMS[algorithm]
         params = algo_config['params'].copy()
         if hyperparameters:
             params.update(hyperparameters)
-        
+
         if progress_callback:
-            progress_callback(10, 'Split données', 'Division train/test stratifiée...')
-        
+            progress_callback(10, 'Split donnees', 'Division train/test stratifiee...')
+
         # Stratified split to maintain class distribution
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=test_size, random_state=42, stratify=y
         )
-        
+
         if progress_callback:
             progress_callback(15, 'Scaling', 'Normalisation des features...')
-        
+
         # Scale features
         self.scaler = StandardScaler()
         X_train_scaled = self.scaler.fit_transform(X_train)
         X_test_scaled = self.scaler.transform(X_test)
-        
-<<<<<<< Updated upstream
-        # Apply SMOTE if available (and if we have enough samples)
-        if SMOTE and len(X_train) > 10:
-            try:
-                if progress_callback:
-                    progress_callback(35, 'SMOTE', 'Équilibrage des classes...')
-                smote = SMOTE(random_state=42)
-                X_train_scaled, y_train = smote.fit_resample(X_train_scaled, y_train)
-                logger.info(f"SMOTE applied. Training samples: {len(X_train_scaled)}")
-            except Exception as e:
-                logger.warning(f"SMOTE failed: {e}")
 
-=======
         # Apply SMOTE if available and requested
-        if use_smote and SMOTE_AVAILABLE:
+        if use_smote and SMOTE_AVAILABLE and len(X_train) > 10:
             if progress_callback:
-                progress_callback(25, 'SMOTE', 'Équilibrage des classes avec SMOTE...')
+                progress_callback(25, 'SMOTE', 'Equilibrage des classes avec SMOTE...')
             try:
                 smote = SMOTE(random_state=42)
                 X_train_scaled, y_train = smote.fit_resample(X_train_scaled, y_train)
                 logger.info(f"SMOTE applied: {len(y_train)} samples after resampling")
             except Exception as e:
                 logger.warning(f"SMOTE failed: {e}, continuing without resampling")
-        
->>>>>>> Stashed changes
+
         if progress_callback:
-            progress_callback(35, 'Entraînement', f'Entraînement {algorithm}...')
-        
+            progress_callback(35, 'Entrainement', f'Entrainement {algorithm}...')
+
         # Train model
         self.model = algo_config['class'](**params)
         self.model.fit(X_train_scaled, y_train)
 
-        # Initialize SHAP explainer if possible
-        if shap:
-            try:
-                if algorithm in ['xgboost', 'random_forest', 'gradient_boosting']:
-                    # Use TreeExplainer for tree-based models
-                    # Note: We use the model directly. For Scaled data, exact attribution is tricky
-                    # but TreeExplainer handles it reasonably for feature importance.
-                    self.explainer = shap.TreeExplainer(self.model)
-                elif algorithm == 'logistic_regression':
-                    self.explainer = shap.LinearExplainer(self.model, X_train_scaled)
-            except Exception as e:
-                logger.warning(f"Could not initialize SHAP explainer: {e}")
-        
         if progress_callback:
-            progress_callback(55, 'Validation', 'Validation croisée 5-fold...')
-        
-<<<<<<< Updated upstream
-        # Cross-validation
-        try:
-            cv_scores = cross_val_score(self.model, X_train_scaled, y_train, cv=5)
-            cv_mean = cv_scores.mean() * 100
-            cv_std = cv_scores.std() * 100
-        except Exception:
-            cv_mean = 0
-            cv_std = 0
-=======
+            progress_callback(55, 'Validation', 'Validation croisee 5-fold...')
+
         # Stratified 5-fold cross-validation
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         cv_scores = cross_val_score(self.model, X_train_scaled, y_train, cv=cv)
->>>>>>> Stashed changes
-        
+        cv_mean = cv_scores.mean() * 100
+        cv_std = cv_scores.std() * 100
+
         if progress_callback:
-            progress_callback(65, 'Évaluation', 'Calcul des métriques...')
-        
+            progress_callback(65, 'Evaluation', 'Calcul des metriques...')
+
         # Evaluate on test set
         y_pred = self.model.predict(X_test_scaled)
-        
+
         # Calculate ROC curve data for binary or multiclass
         roc_data = None
         roc_auc = None
@@ -378,7 +271,7 @@ class DropoutRiskPredictor:
             try:
                 y_proba = self.model.predict_proba(X_test_scaled)
                 n_classes = len(np.unique(y))
-                
+
                 if n_classes == 2:
                     # Binary classification ROC
                     fpr, tpr, thresholds = roc_curve(y_test, y_proba[:, 1])
@@ -405,10 +298,10 @@ class DropoutRiskPredictor:
                 self.roc_data = roc_data
             except Exception as e:
                 logger.warning(f"Could not compute ROC: {e}")
-        
+
         if progress_callback:
             progress_callback(75, 'SHAP', 'Calcul des explications SHAP...')
-        
+
         # Initialize SHAP explainer if available
         if SHAP_AVAILABLE:
             try:
@@ -423,10 +316,10 @@ class DropoutRiskPredictor:
             except Exception as e:
                 logger.warning(f"Could not initialize SHAP explainer: {e}")
                 self.explainer = None
-        
+
         if progress_callback:
-            progress_callback(85, 'Métriques', 'Finalisation des métriques...')
-        
+            progress_callback(85, 'Metriques', 'Finalisation des metriques...')
+
         # Calculate metrics (using weighted average for multi-class)
         metrics = {
             'accuracy': accuracy_score(y_test, y_pred) * 100,
@@ -441,41 +334,38 @@ class DropoutRiskPredictor:
             'smote_applied': use_smote and SMOTE_AVAILABLE,
             'shap_available': self.explainer is not None,
         }
-        
-<<<<<<< Updated upstream
-=======
+
         # Add ROC-AUC if computed
         if roc_auc is not None:
             metrics['roc_auc'] = roc_auc
         if roc_data is not None:
             metrics['roc_curve'] = roc_data
-        
+
         # Get feature importance if available
         if hasattr(self.model, 'feature_importances_'):
             importance = self.model.feature_importances_
             metrics['feature_importance'] = {
-                name: float(imp) 
+                name: float(imp)
                 for name, imp in zip(self.feature_names, importance)
             }
         elif hasattr(self.model, 'coef_'):
             # For logistic regression
             importance = np.abs(self.model.coef_).mean(axis=0)
             metrics['feature_importance'] = {
-                name: float(imp) 
+                name: float(imp)
                 for name, imp in zip(self.feature_names, importance)
             }
-        
->>>>>>> Stashed changes
+
         self.training_metrics = metrics
         self.model_version = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
+
         if progress_callback:
-            progress_callback(100, 'Terminé', 'Entraînement terminé avec succès!')
-        
+            progress_callback(100, 'Termine', 'Entrainement termine avec succes!')
+
         logger.info(f"Model trained: {algorithm}, accuracy={metrics['accuracy']:.2f}%, ROC-AUC={roc_auc or 'N/A'}")
-        
+
         return metrics
-    
+
     def predict_risk(self, student_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Predict dropout risk for a single student.
@@ -483,16 +373,16 @@ class DropoutRiskPredictor:
         # If no model, use heuristic-based prediction
         if self.model is None:
             return self._predict_risk_heuristic(student_data)
-        
+
         # Prepare features
         features = self.prepare_features(student_data)
-        
+
         # Scale features
         if self.scaler:
             features_scaled = self.scaler.transform(features)
         else:
             features_scaled = features
-        
+
         # Get probability predictions
         if hasattr(self.model, 'predict_proba'):
             probas = self.model.predict_proba(features_scaled)[0]
@@ -513,7 +403,7 @@ class DropoutRiskPredictor:
             prediction = self.model.predict(features_scaled)[0]
             risk_score = prediction * 50  # Rough scale
             confidence = 70.0
-        
+
         # Determine risk level
         if risk_score >= 75:
             risk_level = 'critical'
@@ -523,58 +413,50 @@ class DropoutRiskPredictor:
             risk_level = 'medium'
         else:
             risk_level = 'low'
-        
-<<<<<<< Updated upstream
-        # Analyze risk factors (SHAP or Feature Importance)
-        factors = self._analyze_risk_factors(student_data, features_scaled)
-=======
+
         # Analyze risk factors using SHAP if available, otherwise use heuristics
         factors = self._analyze_risk_factors_shap(features_scaled, student_data)
->>>>>>> Stashed changes
-        
+
         return {
             'risk_score': round(risk_score, 2),
             'risk_level': risk_level,
             'factors': factors,
             'confidence': round(confidence, 2),
             'model_version': self.model_version,
-<<<<<<< Updated upstream
-            'algorithm': self.algorithm_name
-=======
+            'algorithm': self.algorithm_name,
             'shap_explained': self.explainer is not None,
->>>>>>> Stashed changes
         }
 
     def _analyze_risk_factors_shap(
-        self, 
-        features_scaled: np.ndarray, 
+        self,
+        features_scaled: np.ndarray,
         student_data: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """
         Analyze risk factors using SHAP values for explainability.
-        
+
         Args:
             features_scaled: Scaled feature array
             student_data: Original student data dictionary
-            
+
         Returns:
             List of factors with SHAP-based impacts
         """
         factors = []
-        
+
         # Try SHAP explanation first
         if self.explainer is not None and SHAP_AVAILABLE:
             try:
                 # Get SHAP values
                 shap_values = self.explainer.shap_values(features_scaled)
-                
+
                 # Handle different SHAP output formats
                 if isinstance(shap_values, list):
                     # Multi-class: use the high-risk class (last one)
                     shap_vals = shap_values[-1][0]
                 else:
                     shap_vals = shap_values[0]
-                
+
                 # Create factor list sorted by absolute impact
                 factor_impacts = []
                 for i, (name, impact) in enumerate(zip(self.feature_names, shap_vals)):
@@ -586,36 +468,36 @@ class DropoutRiskPredictor:
                         'value': self._format_feature_value(name, value),
                         'direction': 'risk' if impact > 0 else 'protective'
                     })
-                
+
                 # Sort by absolute impact and take top 5
                 factor_impacts.sort(key=lambda x: abs(x['impact']), reverse=True)
                 factors = factor_impacts[:5]
-                
+
                 logger.debug(f"SHAP factors computed: {len(factors)} factors")
                 return factors
-                
+
             except Exception as e:
                 logger.warning(f"SHAP explanation failed: {e}, falling back to heuristics")
-        
+
         # Fallback to heuristic analysis
-        return self._analyze_risk_factors(student_data)
-    
+        return self._analyze_risk_factors_heuristic(student_data)
+
     def _translate_feature_name(self, name: str) -> str:
         """Translate feature names to French for display."""
         translations = {
-            'average_grade': 'Moyenne générale',
-            'attendance_rate': 'Taux de présence',
+            'average_grade': 'Moyenne generale',
+            'attendance_rate': 'Taux de presence',
             'assignments_completed': 'Devoirs rendus',
             'late_submissions': 'Retards de soumission',
             'absences_count': 'Nombre d\'absences',
-            'consecutive_absences': 'Absences consécutives',
+            'consecutive_absences': 'Absences consecutives',
             'grade_trend': 'Tendance des notes',
             'participation_score': 'Score de participation',
             'weeks_enrolled': 'Semaines inscrit',
-            'failed_subjects': 'Matières échouées',
+            'failed_subjects': 'Matieres echouees',
         }
         return translations.get(name, name.replace('_', ' ').title())
-    
+
     def _format_feature_value(self, name: str, value: Any) -> str:
         """Format feature value for display."""
         if value is None:
@@ -632,37 +514,37 @@ class DropoutRiskPredictor:
         if name in ['weeks_enrolled']:
             return f'{int(value)} semaines'
         return str(value)
-    
+
     def get_shap_summary(self, X_sample: np.ndarray) -> Dict[str, Any]:
         """
         Generate SHAP summary data for visualization.
-        
+
         Args:
             X_sample: Sample of features to explain
-            
+
         Returns:
             Dictionary with SHAP summary data for plotting
         """
         if self.explainer is None or not SHAP_AVAILABLE:
             return {'error': 'SHAP explainer not available'}
-        
+
         try:
             if self.scaler:
                 X_scaled = self.scaler.transform(X_sample)
             else:
                 X_scaled = X_sample
-            
+
             shap_values = self.explainer.shap_values(X_scaled)
-            
+
             # Handle different formats
             if isinstance(shap_values, list):
                 shap_vals = shap_values[-1]  # High-risk class
             else:
                 shap_vals = shap_values
-            
+
             # Calculate mean absolute SHAP values for feature importance
             mean_abs_shap = np.abs(shap_vals).mean(axis=0)
-            
+
             feature_importance = [
                 {
                     'feature': name,
@@ -672,14 +554,14 @@ class DropoutRiskPredictor:
                 for name, imp in zip(self.feature_names, mean_abs_shap)
             ]
             feature_importance.sort(key=lambda x: x['importance'], reverse=True)
-            
+
             return {
                 'feature_importance': feature_importance,
                 'shap_values': shap_vals.tolist() if isinstance(shap_vals, np.ndarray) else shap_vals,
                 'feature_names': self.feature_names,
                 'n_samples': len(X_sample)
             }
-            
+
         except Exception as e:
             logger.error(f"SHAP summary generation failed: {e}")
             return {'error': str(e)}
@@ -687,118 +569,97 @@ class DropoutRiskPredictor:
     def _predict_risk_heuristic(self, student_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Predict risk using rule-based heuristics when no ML model is available.
-        (Kept for fallback)
         """
-        # [Previous heuristic code implementation - simplified for brevity here but should retain logic]
-        # Copying minimal logic for now or reusing existing if I didn't want to rewrite
-        # Ideally I should copy the existing logic to ensure it works as fallback.
-        
         avg_grade = float(student_data.get('average_grade', 10))
         attendance_rate = float(student_data.get('attendance_rate', 100))
-        
+        absences_count = int(student_data.get('absences_count', 0))
+        failed_subjects = int(student_data.get('failed_subjects', 0))
+
         risk_score = 0
-        if avg_grade < 10: risk_score += 40
-        if attendance_rate < 80: risk_score += 30
-        
+        factors = []
+
+        # Grade-based risk
+        if avg_grade < 8:
+            risk_score += 40
+            factors.append({'name': 'Moyenne tres faible', 'impact': 40, 'value': f'{avg_grade:.1f}/20'})
+        elif avg_grade < 10:
+            risk_score += 25
+            factors.append({'name': 'Moyenne faible', 'impact': 25, 'value': f'{avg_grade:.1f}/20'})
+
+        # Attendance-based risk
+        if attendance_rate < 60:
+            risk_score += 35
+            factors.append({'name': 'Absenteisme eleve', 'impact': 35, 'value': f'{attendance_rate:.1f}%'})
+        elif attendance_rate < 80:
+            risk_score += 20
+            factors.append({'name': 'Absenteisme modere', 'impact': 20, 'value': f'{attendance_rate:.1f}%'})
+
+        # Failed subjects
+        if failed_subjects >= 3:
+            risk_score += 25
+            factors.append({'name': 'Plusieurs matieres echouees', 'impact': 25, 'value': str(failed_subjects)})
+        elif failed_subjects >= 1:
+            risk_score += 15
+            factors.append({'name': 'Matiere(s) echouee(s)', 'impact': 15, 'value': str(failed_subjects)})
+
         risk_score = min(100, risk_score)
-        
-        if risk_score >= 50: risk_level = 'high'
-        elif risk_score >= 25: risk_level = 'medium'
-        else: risk_level = 'low'
-        
+
+        if risk_score >= 75:
+            risk_level = 'critical'
+        elif risk_score >= 50:
+            risk_level = 'high'
+        elif risk_score >= 25:
+            risk_level = 'medium'
+        else:
+            risk_level = 'low'
+
         return {
             'risk_score': risk_score,
             'risk_level': risk_level,
-            'factors': [],
+            'factors': factors,
             'confidence': 50.0,
-            'model_version': 'heuristic'
+            'model_version': 'heuristic',
+            'algorithm': 'heuristic',
+            'shap_explained': False,
         }
-    
-    def _analyze_risk_factors(self, student_data: Dict[str, Any], features_scaled: np.ndarray) -> List[Dict[str, Any]]:
-        """
-        Analyze which factors contribute most to risk using SHAP if available.
-        """
-        factors = []
-        
-        if shap and self.explainer and features_scaled is not None:
-            try:
-                # Calculate SHAP values
-                shap_values = self.explainer.shap_values(features_scaled)
-
-                # Handle different output formats of shap_values
-                # For binary classification, it might be a list (one per class) or array
-                if isinstance(shap_values, list):
-                    # Take the values for the "high risk" class (usually last class)
-                    sv = shap_values[-1]
-                else:
-                    sv = shap_values
-
-                # sv is (1, n_features)
-                if len(sv.shape) == 2:
-                    sv = sv[0]
-
-                # Create factors list
-                for i, feature_name in enumerate(self.feature_names):
-                    impact = sv[i]
-                    # We normalize impact roughly to be understandable (e.g. -0.5 to 0.5 -> -50% to +50%)
-                    # The raw SHAP value is margin contribution.
-                    # For visualization, we can just pass it, but frontend expects ~0.1 for 10%.
-                    # XGBoost raw margin is often in range [-5, 5] approx.
-                    # We can clamp or scale. Let's scale by a factor for better UI
-
-                    # Logic: if impact is high positive -> increases risk.
-                    # Frontend colors positive as red (danger).
-
-                    # Filter small impacts
-                    if abs(impact) > 0.01:
-                        factors.append({
-                            'name': self._get_readable_feature_name(feature_name),
-                            'feature': feature_name,
-                            'value': student_data.get(feature_name, 0),
-                            'impact': float(impact)
-                        })
-
-                # Sort by absolute impact
-                factors.sort(key=lambda x: abs(x['impact']), reverse=True)
-                return factors[:5]
-
-            except Exception as e:
-                logger.warning(f"Error calculating SHAP values: {e}")
-                # Fallback to feature importance
-        
-        # Fallback to simple feature importance or heuristics if SHAP fails
-        return self._analyze_risk_factors_heuristic(student_data)
-
-    def _get_readable_feature_name(self, feature_name: str) -> str:
-        """Translate feature name to readable label."""
-        labels = {
-            'average_grade': 'Moyenne Générale',
-            'attendance_rate': 'Taux de Présence',
-            'assignments_completed': 'Devoirs Rendus',
-            'late_submissions': 'Retards Soumission',
-            'absences_count': 'Nombre d\'Absences',
-            'consecutive_absences': 'Absences Consécutives',
-            'grade_trend': 'Tendance des Notes',
-            'participation_score': 'Participation',
-            'weeks_enrolled': 'Ancienneté',
-            'failed_subjects': 'Matières Échouées',
-        }
-        return labels.get(feature_name, feature_name)
 
     def _analyze_risk_factors_heuristic(self, student_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Fallback method for risk factors."""
-        # This copies the logic from previous implementation
+        """Fallback method for risk factors when SHAP is not available."""
         factors = []
-        # ... (simplified logic)
+
         avg = float(student_data.get('average_grade', 10))
         if avg < 10:
-            factors.append({'name': 'Moyenne Faible', 'impact': 0.4, 'value': avg})
+            factors.append({
+                'name': 'Moyenne Faible',
+                'feature': 'average_grade',
+                'impact': round((10 - avg) * 4, 2),
+                'value': f'{avg:.1f}/20',
+                'direction': 'risk'
+            })
 
         att = float(student_data.get('attendance_rate', 100))
         if att < 80:
-            factors.append({'name': 'Absentéisme', 'impact': 0.3, 'value': att})
+            factors.append({
+                'name': 'Absenteisme',
+                'feature': 'attendance_rate',
+                'impact': round((80 - att) * 0.5, 2),
+                'value': f'{att:.1f}%',
+                'direction': 'risk'
+            })
 
-        return factors
+        failed = int(student_data.get('failed_subjects', 0))
+        if failed > 0:
+            factors.append({
+                'name': 'Matieres Echouees',
+                'feature': 'failed_subjects',
+                'impact': round(failed * 10, 2),
+                'value': str(failed),
+                'direction': 'risk'
+            })
+
+        # Sort by impact
+        factors.sort(key=lambda x: abs(x['impact']), reverse=True)
+        return factors[:5]
 
     def save_model(self, path: Optional[str] = None) -> str:
         """
@@ -806,15 +667,15 @@ class DropoutRiskPredictor:
         """
         if self.model is None:
             raise ValueError("No model to save. Train a model first.")
-        
+
         os.makedirs(ML_MODELS_PATH, exist_ok=True)
-        
+
         if path is None:
             path = os.path.join(
-                ML_MODELS_PATH, 
+                ML_MODELS_PATH,
                 f'dropout_risk_model_{self.model_version}.joblib'
             )
-        
+
         model_data = {
             'model': self.model,
             'scaler': self.scaler,
@@ -822,15 +683,16 @@ class DropoutRiskPredictor:
             'model_version': self.model_version,
             'training_metrics': self.training_metrics,
             'algorithm_name': self.algorithm_name,
-            'explainer': self.explainer, # Save explainer too
+            'roc_data': self.roc_data,
             'saved_at': datetime.now().isoformat(),
         }
-        
+
+        # Note: SHAP explainer is not saved as it can be recreated
         joblib.dump(model_data, path)
         logger.info(f"Model saved to {path}")
-        
+
         return path
-    
+
     def load_model(self, path: Optional[str] = None) -> None:
         """
         Load a trained model from disk.
@@ -838,41 +700,43 @@ class DropoutRiskPredictor:
         if path is None:
             if not os.path.exists(ML_MODELS_PATH):
                 raise FileNotFoundError(f"Model directory not found: {ML_MODELS_PATH}")
-            
+
             model_files = [f for f in os.listdir(ML_MODELS_PATH) if f.endswith('.joblib')]
             if not model_files:
                 raise FileNotFoundError("No model files found")
-            
+
             model_files.sort(reverse=True)
             path = os.path.join(ML_MODELS_PATH, model_files[0])
-        
+
         model_data = joblib.load(path)
-        
+
         self.model = model_data['model']
         self.scaler = model_data.get('scaler')
         self.feature_names = model_data.get('feature_names', self.DEFAULT_FEATURES)
         self.model_version = model_data.get('model_version')
         self.training_metrics = model_data.get('training_metrics', {})
         self.algorithm_name = model_data.get('algorithm_name', 'unknown')
-        self.explainer = model_data.get('explainer')
+        self.roc_data = model_data.get('roc_data')
 
-        # If explainer missing but we have model, try to recreate
-        if not self.explainer and shap:
+        # Recreate SHAP explainer if possible
+        if SHAP_AVAILABLE and self.model is not None:
             try:
                 if self.algorithm_name in ['xgboost', 'random_forest', 'gradient_boosting']:
                     self.explainer = shap.TreeExplainer(self.model)
-            except:
-                pass
+                    logger.info("SHAP explainer recreated from loaded model")
+            except Exception as e:
+                logger.warning(f"Could not recreate SHAP explainer: {e}")
+                self.explainer = None
 
         logger.info(f"Model loaded from {path}")
 
 
 def generate_synthetic_training_data(n_samples: int = 1000) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Generate synthetic training data.
+    Generate synthetic training data for model development and testing.
     """
     np.random.seed(42)
-    
+
     # Generate features
     df = pd.DataFrame({
         'average_grade': np.random.normal(12, 3, n_samples).clip(0, 20),
@@ -887,8 +751,7 @@ def generate_synthetic_training_data(n_samples: int = 1000) -> Tuple[np.ndarray,
         'failed_subjects': np.random.poisson(0.5, n_samples).clip(0, 5),
     })
 
-    # Create target
-    # Complex non-linear relationship for XGBoost to find
+    # Create target with complex non-linear relationship
     score = (
         (20 - df['average_grade']) * 4 +
         (100 - df['attendance_rate']) * 0.6 +
@@ -896,58 +759,62 @@ def generate_synthetic_training_data(n_samples: int = 1000) -> Tuple[np.ndarray,
         (df['failed_subjects'] * 20)
     )
     score += np.random.normal(0, 10, n_samples)
-    
+
     # 0: Low, 1: Medium, 2: High
     y = np.zeros(n_samples, dtype=int)
     y[score > 40] = 1
     y[score > 70] = 2
-    
+
     return df.values, y
+
 
 def calculate_student_features_from_db(student) -> Dict[str, float]:
     """
-    Calculate features from database.
+    Calculate ML features from database records for a given student.
     """
-    # Reuse previous logic or implement robustly
     from apps.grades.models import Grade
     from apps.attendance.models import Attendance
-    
-    # This function was correctly implemented in previous turn (in my mind or I need to write it out fully)
-    # The previous `read_file` showed it was imported from `tasks` but I need to make sure it is IN this file if `tasks` imports it from here.
-    # Yes, `views.py` imports it from here. I need to make sure I include the full implementation.
-    
+
     features = {}
-    
-    # Mock implementation for brevity if needed, but I should try to be complete
-    # For now, I'll put a simplified robust version
-    
+
+    # Get grades
     grades = student.grades.all()
-    attendances = student.attendances.all()
-    
     if grades.exists():
-        avg = float(np.mean([g.value for g in grades]))
-        failed = sum(1 for g in grades if g.value < 10)
-    else:
-        avg = 10.0
-        failed = 0
+        grade_values = [g.value for g in grades]
+        features['average_grade'] = float(np.mean(grade_values))
+        features['failed_subjects'] = sum(1 for g in grade_values if g < 10)
 
+        # Calculate grade trend (last 5 vs first 5)
+        if len(grade_values) >= 10:
+            first_half = np.mean(grade_values[:5])
+            second_half = np.mean(grade_values[-5:])
+            features['grade_trend'] = (second_half - first_half) / 20  # Normalize to -1, 1
+        else:
+            features['grade_trend'] = 0.0
+    else:
+        features['average_grade'] = 10.0
+        features['failed_subjects'] = 0
+        features['grade_trend'] = 0.0
+
+    # Get attendance
+    attendances = student.attendances.all()
     if attendances.exists():
+        total = attendances.count()
         present = attendances.filter(status='present').count()
-        rate = (present / attendances.count()) * 100
-        absences = attendances.filter(status='absent').count()
-    else:
-        rate = 100.0
-        absences = 0
+        features['attendance_rate'] = (present / total) * 100 if total > 0 else 100.0
+        features['absences_count'] = attendances.filter(status='absent').count()
 
-    features['average_grade'] = avg
-    features['attendance_rate'] = rate
-    features['assignments_completed'] = 80.0 # Placeholder
-    features['late_submissions'] = 0 # Placeholder
-    features['absences_count'] = absences
-    features['consecutive_absences'] = 0 # Placeholder
-    features['grade_trend'] = 0.0
+        # Calculate consecutive absences (simplified)
+        features['consecutive_absences'] = min(features['absences_count'], 5)
+    else:
+        features['attendance_rate'] = 100.0
+        features['absences_count'] = 0
+        features['consecutive_absences'] = 0
+
+    # Default values for features not available in DB
+    features['assignments_completed'] = 80.0
+    features['late_submissions'] = 0
     features['participation_score'] = 70.0
     features['weeks_enrolled'] = 10
-    features['failed_subjects'] = failed
-    
+
     return features
