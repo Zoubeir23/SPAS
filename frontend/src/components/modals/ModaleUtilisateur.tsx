@@ -135,8 +135,28 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
           setLoading(false)
           return
         }
+        if (formData.password.length < 8) {
+          setError('Le mot de passe doit contenir au moins 8 caractères')
+          setLoading(false)
+          return
+        }
         if (formData.password !== formData.password_confirm) {
           setError('Les mots de passe ne correspondent pas')
+          setLoading(false)
+          return
+        }
+        if (!formData.firstName.trim()) {
+          setError('Le prénom est requis')
+          setLoading(false)
+          return
+        }
+        if (!formData.lastName.trim()) {
+          setError('Le nom est requis')
+          setLoading(false)
+          return
+        }
+        if (!formData.email.trim()) {
+          setError('L\'email est requis')
           setLoading(false)
           return
         }
@@ -151,9 +171,41 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
       }
       onSuccess?.()
       onClose()
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur:', err)
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+      // Extract error message from Axios response
+      if (err.response?.data) {
+        const data = err.response.data
+        // Handle different error formats from Django REST Framework
+        if (typeof data === 'string') {
+          setError(data)
+        } else if (data.detail) {
+          setError(data.detail)
+        } else if (data.error) {
+          setError(data.error)
+        } else if (data.non_field_errors) {
+          setError(data.non_field_errors.join(', '))
+        } else {
+          // Handle field-specific errors
+          const fieldErrors = Object.entries(data)
+            .map(([field, errors]) => {
+              const fieldName = field === 'email' ? 'Email' :
+                               field === 'password' ? 'Mot de passe' :
+                               field === 'password_confirm' ? 'Confirmation mot de passe' :
+                               field === 'first_name' ? 'Prénom' :
+                               field === 'last_name' ? 'Nom' :
+                               field === 'role' ? 'Rôle' : field
+              const errorMsg = Array.isArray(errors) ? errors.join(', ') : errors
+              return `${fieldName}: ${errorMsg}`
+            })
+            .join(' | ')
+          setError(fieldErrors || 'Une erreur est survenue')
+        }
+      } else if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Une erreur est survenue lors de la création')
+      }
     } finally {
       setLoading(false)
     }
