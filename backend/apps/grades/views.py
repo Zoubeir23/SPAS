@@ -1,5 +1,11 @@
 """
 Views for Grades app.
+
+Permissions par rôle:
+- ADMIN: Full CRUD access
+- DS: Full CRUD access
+- TEACHER: Create/Update own grades, Read all
+- PEDAGOGICAL: Read-only access
 """
 import csv
 import io
@@ -7,7 +13,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg, Count
 from django.db import transaction
@@ -16,24 +22,43 @@ from decimal import Decimal, InvalidOperation
 
 from .models import Grade
 from .serializers import GradeSerializer
+from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
+from apps.core.permissions import (
+    IsAdmin, IsDSOrAdmin, IsTeacherOrAdmin, IsPedagogicalOrAbove
+)
 
 
-class GradeViewSet(viewsets.ModelViewSet):
+class GradeViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSet):
     """
     ViewSet for Grade model.
 
     Provides CRUD operations and custom actions:
     - GET /grades/ - List all grades
-    - POST /grades/ - Create a grade
+    - POST /grades/ - Create a grade (Teacher/DS/Admin)
     - GET /grades/{id}/ - Retrieve a grade
-    - PUT/PATCH /grades/{id}/ - Update a grade
-    - DELETE /grades/{id}/ - Delete a grade
+    - PUT/PATCH /grades/{id}/ - Update a grade (Teacher/DS/Admin)
+    - DELETE /grades/{id}/ - Delete a grade (Admin only)
     - GET /grades/student/{student_id}/ - Get grades for a student
-    - POST /grades/bulk-create/ - Create multiple grades at once
+    - POST /grades/bulk-create/ - Create multiple grades at once (Teacher/DS/Admin)
     """
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser]
+
+    # Role-based permissions per action
+    permission_classes_by_action = {
+        'list': [IsAuthenticated],
+        'retrieve': [IsAuthenticated],
+        'create': [IsAuthenticated, IsTeacherOrAdmin],
+        'update': [IsAuthenticated, IsTeacherOrAdmin],
+        'partial_update': [IsAuthenticated, IsTeacherOrAdmin],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'bulk_create': [IsAuthenticated, IsTeacherOrAdmin],
+        'import_csv': [IsAuthenticated, IsDSOrAdmin],
+        'export_csv': [IsAuthenticated, IsPedagogicalOrAbove],
+        'statistics': [IsAuthenticated],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'subject', 'session', 'type']
     search_fields = ['student__first_name', 'student__last_name', 'student__matricule']

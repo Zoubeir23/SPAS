@@ -1,5 +1,11 @@
 """
 Views for Prediction app.
+
+Permissions par rôle:
+- ADMIN: Full access including generate
+- DS: Full access including generate
+- PEDAGOGICAL: Read-only access, can view predictions
+- TEACHER: Read-only access to their students' predictions
 """
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
@@ -12,24 +18,43 @@ from .models import Prediction
 from .serializers import PredictionSerializer, PredictionListSerializer
 from apps.ml.services import DropoutRiskPredictor, calculate_student_features_from_db
 from apps.ml.models import MLModel
+from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
+from apps.core.permissions import (
+    IsAdmin, IsDSOrAdmin, CanViewPredictions, CanRunMLPredictions, IsPedagogicalOrAbove
+)
 
 
-class PredictionViewSet(viewsets.ModelViewSet):
+class PredictionViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSet):
     """
     ViewSet for Prediction model.
 
     Provides CRUD operations and custom actions:
-    - GET /predictions/ - List all predictions
-    - POST /predictions/ - Create a prediction
+    - GET /predictions/ - List all predictions (filtered by role)
+    - POST /predictions/ - Create a prediction (DS/Admin only)
     - GET /predictions/{id}/ - Retrieve a prediction
-    - PUT/PATCH /predictions/{id}/ - Update a prediction
-    - DELETE /predictions/{id}/ - Delete a prediction
+    - PUT/PATCH /predictions/{id}/ - Update a prediction (DS/Admin only)
+    - DELETE /predictions/{id}/ - Delete a prediction (Admin only)
     - GET /predictions/student/{student_id}/ - Get predictions for a student
     - GET /predictions/statistics/ - Get prediction statistics
-    - GET /predictions/at_risk/ - Get high-risk predictions
+    - GET /predictions/at_risk/ - Get high-risk predictions (Pedagogical+)
+    - POST /predictions/generate/ - Generate ML predictions (DS/Admin only)
     """
     queryset = Prediction.objects.all()
     permission_classes = [IsAuthenticated]
+
+    # Role-based permissions per action
+    permission_classes_by_action = {
+        'list': [IsAuthenticated, CanViewPredictions],
+        'retrieve': [IsAuthenticated, CanViewPredictions],
+        'create': [IsAuthenticated, IsDSOrAdmin],
+        'update': [IsAuthenticated, IsDSOrAdmin],
+        'partial_update': [IsAuthenticated, IsDSOrAdmin],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'generate': [IsAuthenticated, CanRunMLPredictions],
+        'at_risk': [IsAuthenticated, IsPedagogicalOrAbove],
+        'statistics': [IsAuthenticated, IsPedagogicalOrAbove],
+        'latest': [IsAuthenticated, CanViewPredictions],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'risk_level', 'model_version']
     search_fields = ['student__first_name', 'student__last_name', 'student__matricule']
@@ -170,17 +195,33 @@ class PredictionViewSet(viewsets.ModelViewSet):
         # Initialize predictor
         predictor = DropoutRiskPredictor()
 
-        # Try to load active model
+        # Try to load active model - REQUIRED (no heuristics fallback)
         active_model = MLModel.objects.filter(status=MLModel.Status.ACTIVE).first()
-        model_loaded = False
-        if active_model:
-            try:
-                predictor.load_model()
-                model_loaded = True
-            except FileNotFoundError:
-                pass  # Will use heuristics
+
+        if not active_model:
+            return Response(
+                {
+                    'error': 'NO_ACTIVE_MODEL',
+                    'message': 'Aucun modèle ML actif. Veuillez d\'abord entraîner et activer un modèle.',
+                    'hint': 'Utilisez: python manage.py train_from_database && python manage.py activate_model --version <version>'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            predictor.load_model()
+        except FileNotFoundError:
+            return Response(
+                {
+                    'error': 'MODEL_FILE_NOT_FOUND',
+                    'message': f'Fichier du modèle non trouvé pour la version {active_model.version}.',
+                    'hint': 'Le modèle doit être ré-entraîné.'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         predictions_created = []
+        predictions_skipped = []
         alerts_created_count = 0
 
         for student in students:
@@ -188,8 +229,19 @@ class PredictionViewSet(viewsets.ModelViewSet):
                 # Gather student features using centralized function
                 features = calculate_student_features_from_db(student)
 
-                # Get prediction
+                # Get prediction (will return error if insufficient data)
                 result = predictor.predict_risk(features)
+
+                # Check if prediction failed due to insufficient data
+                if result.get('error'):
+                    predictions_skipped.append({
+                        'student_id': str(student.id),
+                        'student_name': f"{student.first_name} {student.last_name}",
+                        'error': result['error'],
+                        'message': result.get('error_message', ''),
+                        'missing_features': result.get('missing_features', [])
+                    })
+                    continue
 
                 # Create prediction record
                 risk_level_map = {
@@ -208,7 +260,7 @@ class PredictionViewSet(viewsets.ModelViewSet):
                     risk_level=risk_level_map.get(result['risk_level'], Prediction.RiskLevel.MEDIUM),
                     predicted_success_rate=int(100 - risk_score),
                     factors=result.get('factors', []),
-                    model_version=active_model if model_loaded else None
+                    model_version=active_model  # Always set - model is required now
                 )
 
                 # Update student risk fields
@@ -271,8 +323,11 @@ class PredictionViewSet(viewsets.ModelViewSet):
 
         return Response({
             'success': True,
-            'model_used': active_model.name if (model_loaded and active_model) else 'heuristics',
+            'model_used': f"{active_model.name} v{active_model.version}",
+            'model_accuracy': float(active_model.accuracy) if active_model.accuracy else None,
             'total_predictions': len(predictions_created),
+            'predictions_skipped': len(predictions_skipped),
+            'skipped_details': predictions_skipped[:10],  # First 10 skipped for debugging
             'alerts_created': alerts_created_count,
             'predictions': predictions_created
         })

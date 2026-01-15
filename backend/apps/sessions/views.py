@@ -109,20 +109,32 @@ class SessionViewSet(viewsets.ModelViewSet):
         # Get student IDs
         student_ids = list(students.values_list('id', flat=True))
 
-        # Initialize predictor
-        predictor = DropoutRiskPredictor()
-
-        # Try to load active model
+        # REQUIRE an active model - no heuristics fallback
         active_model = MLModel.objects.filter(status=MLModel.Status.ACTIVE).first()
-        model_loaded = False
-        if active_model:
-            try:
-                predictor.load_model()
-                model_loaded = True
-            except FileNotFoundError:
-                pass  # Will use heuristics
+        if not active_model:
+            return Response(
+                {
+                    'error': 'NO_ACTIVE_MODEL',
+                    'message': 'Aucun modèle ML actif. Veuillez d\'abord entraîner et activer un modèle.'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Initialize predictor and load model
+        predictor = DropoutRiskPredictor()
+        try:
+            predictor.load_model()
+        except FileNotFoundError:
+            return Response(
+                {
+                    'error': 'MODEL_FILE_NOT_FOUND',
+                    'message': f'Fichier du modèle non trouvé pour {active_model.name}. Ré-entraînez le modèle.'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         predictions_created = []
+        predictions_skipped = []
         alerts_created = 0
 
         for student in students:
@@ -131,6 +143,15 @@ class SessionViewSet(viewsets.ModelViewSet):
 
             # Get prediction
             result = predictor.predict_risk(features)
+
+            # Skip if prediction failed (insufficient data)
+            if result.get('error'):
+                predictions_skipped.append({
+                    'student_id': str(student.id),
+                    'student_name': f"{student.first_name} {student.last_name}",
+                    'error': result.get('error_message')
+                })
+                continue
 
             # Create prediction record
             risk_level_map = {
@@ -146,7 +167,7 @@ class SessionViewSet(viewsets.ModelViewSet):
                 risk_level=risk_level_map.get(result['risk_level'], Prediction.RiskLevel.MEDIUM),
                 predicted_success_rate=100 - float(result['risk_score']),
                 factors=result.get('factors', []),
-                model_version=active_model if model_loaded else None
+                model_version=active_model
             )
 
             # Update student risk fields
@@ -198,8 +219,10 @@ class SessionViewSet(viewsets.ModelViewSet):
             'message': f'Prédictions générées pour {len(predictions_created)} étudiants de la session {session.name}.',
             'session_id': str(session.id),
             'session_name': session.name,
-            'model_used': active_model.name if model_loaded else 'heuristics',
+            'model_used': f"{active_model.name} v{active_model.version}",
             'total_predictions': len(predictions_created),
+            'predictions_skipped': len(predictions_skipped),
+            'skipped_details': predictions_skipped[:5],
             'alerts_created': alerts_created,
             'predictions': predictions_created
         })

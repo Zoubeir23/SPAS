@@ -1,5 +1,11 @@
 """
 Views for Students app.
+
+Permissions par rôle:
+- ADMIN: Full CRUD access
+- DS: Full CRUD access
+- PEDAGOGICAL: Read-only access
+- TEACHER: Read access to their own students only
 """
 import csv
 import io
@@ -7,32 +13,56 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
 
 from .models import Student
 from .serializers import StudentSerializer, StudentListSerializer
+from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin
+from apps.core.permissions import (
+    IsAdmin, IsDSOrAdmin, IsPedagogicalOrAbove,
+    CanManageStudents, IsTeacherOrAdmin
+)
 
 
-class StudentViewSet(viewsets.ModelViewSet):
+class StudentViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin, viewsets.ModelViewSet):
     """
     ViewSet for Student model.
 
     Provides CRUD operations and custom actions:
     - GET /students/ - List all students
-    - POST /students/ - Create a student
+    - POST /students/ - Create a student (Admin/DS only)
     - GET /students/{id}/ - Retrieve a student
-    - PUT/PATCH /students/{id}/ - Update a student
-    - DELETE /students/{id}/ - Delete a student
+    - PUT/PATCH /students/{id}/ - Update a student (Admin/DS only)
+    - DELETE /students/{id}/ - Delete a student (Admin only)
     - GET /students/{id}/predictions/ - Get student predictions
     - GET /students/{id}/grades/ - Get student grades
     - GET /students/{id}/attendance/ - Get student attendance
     - GET /students/at-risk/ - Get at-risk students
+
+    Permissions by role:
+    - Admin: Full CRUD
+    - DS: Full CRUD
+    - Pedagogical: Read-only
+    - Teacher: Read-only (filtered to their students)
     """
     queryset = Student.objects.all()
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    # Role-based permissions per action
+    permission_classes_by_action = {
+        'list': [IsAuthenticated],
+        'retrieve': [IsAuthenticated],
+        'create': [IsAuthenticated, IsDSOrAdmin],
+        'update': [IsAuthenticated, IsDSOrAdmin],
+        'partial_update': [IsAuthenticated, IsDSOrAdmin],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'import_csv': [IsAuthenticated, IsDSOrAdmin],
+        'export_csv': [IsAuthenticated, IsPedagogicalOrAbove],
+        'at_risk': [IsAuthenticated, IsPedagogicalOrAbove],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['program', 'session', 'risk_level', 'status']
     search_fields = ['matricule', 'first_name', 'last_name', 'email']

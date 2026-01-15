@@ -262,21 +262,26 @@ class PredictionViewSet(viewsets.ViewSet):
         self._predictor = None
 
     def get_predictor(self):
-        """Get or initialize the predictor with active model."""
+        """
+        Get or initialize the predictor with active model.
+
+        Raises RuntimeError if no model is available.
+        NO HEURISTICS FALLBACK.
+        """
         if self._predictor is None:
+            # Check for active model first
+            active_model = MLModel.objects.filter(status=MLModel.Status.ACTIVE).first()
+            if not active_model:
+                raise RuntimeError("NO_ACTIVE_MODEL: Aucun modèle ML actif. Entraînez et activez un modèle d'abord.")
+
             self._predictor = DropoutRiskPredictor()
 
-            # Try to load active model
-            active_model = MLModel.objects.filter(status=MLModel.Status.ACTIVE).first()
-            if active_model:
-                try:
-                    self._predictor.load_model()
-                except FileNotFoundError:
-                    logger.warning("Active model file not found. Using heuristics.")
-                    pass  # Use untrained predictor (will use heuristics)
-                except Exception as e:
-                    logger.error(f"Error loading model: {e}. Using heuristics.")
-                    pass
+            try:
+                self._predictor.load_model()
+            except FileNotFoundError:
+                raise RuntimeError(f"MODEL_FILE_NOT_FOUND: Fichier du modèle {active_model.name} non trouvé.")
+            except Exception as e:
+                raise RuntimeError(f"MODEL_LOAD_ERROR: Erreur lors du chargement du modèle: {e}")
 
         return self._predictor
 
@@ -308,9 +313,26 @@ class PredictionViewSet(viewsets.ViewSet):
         # Gather student features
         features = self._gather_student_features(student)
 
-        # Get prediction
-        predictor = self.get_predictor()
+        # Get predictor (will raise RuntimeError if no model)
+        try:
+            predictor = self.get_predictor()
+        except RuntimeError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         prediction = predictor.predict_risk(features)
+
+        # Check if prediction failed
+        if prediction.get('error'):
+            return Response({
+                'student_id': str(student.id),
+                'student_name': f"{student.first_name} {student.last_name}",
+                'error': prediction['error'],
+                'error_message': prediction.get('error_message'),
+                'missing_features': prediction.get('missing_features', [])
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Update student risk fields
         student.risk_score = prediction['risk_score']

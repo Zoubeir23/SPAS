@@ -21,7 +21,7 @@ def generate_predictions_task(self, ml_model_id=None, session_id=None):
     from .models import Prediction
 
     try:
-        # Get ML model (optional - will use heuristics if not provided)
+        # Get ML model - REQUIRED (no heuristics fallback)
         active_model = None
         if ml_model_id:
             active_model = MLModel.objects.get(id=ml_model_id)
@@ -31,6 +31,16 @@ def generate_predictions_task(self, ml_model_id=None, session_id=None):
             active_model = MLModel.objects.filter(status=MLModel.Status.ACTIVE).first()
             if active_model:
                 logger.info(f"Using active model: {active_model.name}")
+
+        # REQUIRE a model - no heuristics
+        if not active_model:
+            logger.error("No active ML model found. Cannot generate predictions without a trained model.")
+            return {
+                'status': 'error',
+                'error': 'NO_ACTIVE_MODEL',
+                'message': 'No active ML model. Train and activate a model first.',
+                'predictions_created': 0
+            }
 
         # Get students
         if session_id:
@@ -49,20 +59,23 @@ def generate_predictions_task(self, ml_model_id=None, session_id=None):
                 'message': 'No active students found'
             }
 
-        # Initialize predictor
+        # Initialize predictor and load model
         predictor = DropoutRiskPredictor()
-        model_loaded = False
 
-        if active_model:
-            try:
-                predictor.load_model()
-                model_loaded = True
-                logger.info("ML model loaded successfully")
-            except FileNotFoundError:
-                logger.warning("Model file not found, using heuristics")
-                model_loaded = False
+        try:
+            predictor.load_model()
+            logger.info("ML model loaded successfully")
+        except FileNotFoundError:
+            logger.error(f"Model file not found for {active_model.name}")
+            return {
+                'status': 'error',
+                'error': 'MODEL_FILE_NOT_FOUND',
+                'message': f'Model file for {active_model.name} not found. Retrain the model.',
+                'predictions_created': 0
+            }
 
         predictions_created = 0
+        predictions_skipped = 0
         alerts_created = 0
 
         for student in students:
@@ -72,6 +85,12 @@ def generate_predictions_task(self, ml_model_id=None, session_id=None):
 
                 # Get prediction
                 result = predictor.predict_risk(features)
+
+                # Skip if prediction failed (insufficient data)
+                if result.get('error'):
+                    predictions_skipped += 1
+                    logger.warning(f"Skipped student {student.id}: {result.get('error_message')}")
+                    continue
 
                 # Create prediction record
                 risk_level_map = {
@@ -87,7 +106,7 @@ def generate_predictions_task(self, ml_model_id=None, session_id=None):
                     risk_level=risk_level_map.get(result['risk_level'], Prediction.RiskLevel.MEDIUM),
                     predicted_success_rate=int(100 - result['risk_score']),
                     factors=result.get('factors', []),
-                    model_version=active_model if model_loaded else None
+                    model_version=active_model
                 )
 
                 # Update student risk fields
@@ -131,13 +150,14 @@ def generate_predictions_task(self, ml_model_id=None, session_id=None):
                 logger.error(f"Failed to generate prediction for student {student.id}: {str(e)}", exc_info=True)
                 continue
 
-        logger.info(f"Generated {predictions_created} predictions and {alerts_created} alerts")
+        logger.info(f"Generated {predictions_created} predictions, skipped {predictions_skipped}, created {alerts_created} alerts")
 
         return {
             'status': 'success',
             'predictions_created': predictions_created,
+            'predictions_skipped': predictions_skipped,
             'alerts_created': alerts_created,
-            'model_used': active_model.name if model_loaded and active_model else 'heuristics'
+            'model_used': f"{active_model.name} v{active_model.version}"
         }
 
     except MLModel.DoesNotExist:

@@ -39,7 +39,8 @@ interface RoleSpecificData {
   activeModels?: number
   totalPredictions?: number
   highRiskStudents?: number
-  modelAccuracy?: number
+  modelAccuracy?: number | null  // null = no model available
+  hasActiveModel?: boolean
   // Pour Pédagogique
   openAlerts?: number
   pendingInterventions?: number
@@ -210,7 +211,9 @@ export default function TableauDeBordGeneral() {
               activeModels: models.filter((m: any) => m.is_active).length,
               totalPredictions: predictions.length,
               highRiskStudents: highRisk,
-              modelAccuracy: activeModel?.accuracy ? (activeModel.accuracy * 100) : 94.2,
+              // NO FAKE DEFAULT - null if no model, frontend displays "N/A"
+              modelAccuracy: activeModel?.accuracy ? (activeModel.accuracy * 100) : null,
+              hasActiveModel: !!activeModel,
             })
             break
 
@@ -398,9 +401,7 @@ export default function TableauDeBordGeneral() {
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">
                     {stats.totalStudents.toLocaleString()}
                   </p>
-                  <span className="flex items-center text-xs font-medium text-green-600">
-                    <span className="material-symbols-outlined text-[14px]">trending_up</span>5%
-                  </span>
+                  {/* Trend removed - was hardcoded. Real trend requires historical data comparison */}
                 </div>
               </Carte>
               <Carte title="Filières Actives" icon="category" iconColor="purple" hover>
@@ -443,14 +444,20 @@ export default function TableauDeBordGeneral() {
                   <span className="text-xs font-medium text-red-600">risque élevé</span>
                 </div>
               </Carte>
-              <Carte title="Précision Modèle" icon="speed" iconColor="green" hover>
+              <Carte title="Précision Modèle" icon="speed" iconColor={roleData.hasActiveModel ? "green" : "gray"} hover>
                 <div className="mt-4 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-green-600">
-                    {(roleData.modelAccuracy || 94.2).toFixed(1)}%
-                  </p>
-                  <span className="flex items-center text-xs font-medium text-green-600">
-                    <span className="material-symbols-outlined text-[14px]">arrow_upward</span>2%
-                  </span>
+                  {roleData.modelAccuracy != null ? (
+                    <p className="text-3xl font-bold text-green-600">
+                      {roleData.modelAccuracy.toFixed(1)}%
+                    </p>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-400">
+                      N/A
+                    </p>
+                  )}
+                  {roleData.hasActiveModel === false && (
+                    <span className="text-xs font-medium text-amber-600">Aucun modèle</span>
+                  )}
                 </div>
               </Carte>
             </>
@@ -482,9 +489,7 @@ export default function TableauDeBordGeneral() {
               <Carte title="Taux de Réussite" icon="emoji_events" iconColor="green" hover>
                 <div className="mt-4 flex items-baseline gap-2">
                   <p className="text-3xl font-bold text-green-600">{stats.successRate}%</p>
-                  <span className="flex items-center text-xs font-medium text-green-600">
-                    <span className="material-symbols-outlined text-[14px]">arrow_upward</span>2%
-                  </span>
+                  {/* Trend removed - was hardcoded fake value */}
                 </div>
               </Carte>
             </>
@@ -518,9 +523,7 @@ export default function TableauDeBordGeneral() {
               <Carte title="Taux de Réussite" icon="trending_up" iconColor="green" hover>
                 <div className="mt-4 flex items-baseline gap-2">
                   <p className="text-3xl font-bold text-green-600">{stats.successRate}%</p>
-                  <span className="flex items-center text-xs font-medium text-green-600">
-                    <span className="material-symbols-outlined text-[14px]">arrow_upward</span>2%
-                  </span>
+                  {/* Trend removed - was hardcoded fake value */}
                 </div>
               </Carte>
             </>

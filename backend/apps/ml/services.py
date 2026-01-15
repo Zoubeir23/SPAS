@@ -72,19 +72,44 @@ class DropoutRiskPredictor:
     - Feature importance analysis (SHAP)
     """
 
-    # Default features used for prediction
+    # 24 features computed from real database data
+    # NO hardcoded defaults - features can be None if data unavailable
     DEFAULT_FEATURES = [
+        # Grade-based features (1-5)
         'average_grade',        # Moyenne des notes (0-20)
-        'attendance_rate',      # Taux de presence (0-100)
-        'assignments_completed', # Devoirs rendus (%)
-        'late_submissions',     # Retards de soumission (count)
-        'absences_count',       # Nombre total d'absences
-        'consecutive_absences', # Absences consecutives max
-        'grade_trend',          # Tendance des notes (-1 a 1)
-        'participation_score',  # Score de participation (0-100)
-        'weeks_enrolled',       # Semaines depuis inscription
+        'grade_std',            # Ecart-type des notes
+        'min_grade',            # Note minimale
         'failed_subjects',      # Matieres echouees (count)
+        'grade_trend',          # Tendance des notes (-1 a 1)
+
+        # Attendance-based features (6-12)
+        'attendance_rate',      # Taux de presence (0-100)
+        'absences_count',       # Nombre total d'absences
+        'late_count',           # Nombre de retards
+        'unexcused_absence_rate', # Taux d'absences non justifiees
+        'consecutive_absences', # Absences consecutives max
+        'recent_attendance_rate', # Taux presence 30 derniers jours
+        'attendance_trend',     # Tendance presence (-1 a 1)
+
+        # Academic progression features (13-18)
+        'exam_vs_assignment_diff', # Diff exam vs devoirs
+        'subjects_count',       # Nombre de matieres
+        'pass_rate',            # Taux de reussite (%)
+        'best_subject_avg',     # Meilleure moyenne matiere
+        'worst_subject_avg',    # Pire moyenne matiere
+        'subject_spread',       # Ecart best-worst
+
+        # Temporal/engagement features (19-24)
+        'weeks_enrolled',       # Semaines depuis inscription
+        'days_since_last_grade', # Jours depuis derniere note
+        'days_since_last_attendance', # Jours depuis derniere presence
+        'activity_per_week',    # Frequence d'activite
+        'prediction_count',     # Nombre de predictions anterieures
+        'previous_risk_score',  # Score de risque precedent
     ]
+
+    # Minimum features required for prediction (without heuristics)
+    MIN_FEATURES_FOR_PREDICTION = 5
 
     # Algorithm configurations
     ALGORITHMS = {
@@ -369,12 +394,53 @@ class DropoutRiskPredictor:
     def predict_risk(self, student_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Predict dropout risk for a single student.
-        """
-        # If no model, use heuristic-based prediction
-        if self.model is None:
-            return self._predict_risk_heuristic(student_data)
 
-        # Prepare features
+        IMPORTANT: No fallback to heuristics. If no model is loaded or insufficient
+        data, returns an error instead of fake predictions.
+
+        Args:
+            student_data: Dictionary of computed features from calculate_student_features_from_db()
+
+        Returns:
+            Dictionary with prediction results or error information
+        """
+        # Check data completeness - count non-None features
+        available_features = sum(1 for v in student_data.values() if v is not None)
+        missing_features = [k for k, v in student_data.items() if v is None]
+
+        # If no model loaded, return error (NO HEURISTICS)
+        if self.model is None:
+            return {
+                'risk_score': None,
+                'risk_level': None,
+                'factors': [],
+                'confidence': 0,
+                'model_version': None,
+                'algorithm': None,
+                'shap_explained': False,
+                'error': 'NO_MODEL_LOADED',
+                'error_message': 'Aucun modèle ML entrainé. Veuillez entrainer un modèle avant de générer des prédictions.',
+                'available_features': available_features,
+                'missing_features': missing_features,
+            }
+
+        # Check minimum data requirements
+        if available_features < self.MIN_FEATURES_FOR_PREDICTION:
+            return {
+                'risk_score': None,
+                'risk_level': None,
+                'factors': [],
+                'confidence': 0,
+                'model_version': self.model_version,
+                'algorithm': self.algorithm_name,
+                'shap_explained': False,
+                'error': 'INSUFFICIENT_DATA',
+                'error_message': f'Données insuffisantes pour prédiction. {available_features}/{self.MIN_FEATURES_FOR_PREDICTION} features disponibles.',
+                'available_features': available_features,
+                'missing_features': missing_features,
+            }
+
+        # Prepare features (replace None with 0 for model input)
         features = self.prepare_features(student_data)
 
         # Scale features
@@ -387,7 +453,6 @@ class DropoutRiskPredictor:
         if hasattr(self.model, 'predict_proba'):
             probas = self.model.predict_proba(features_scaled)[0]
             # Calculate weighted risk score (assuming 0=low, 1=medium, 2=high or similar)
-            # Adapt to number of classes
             n_classes = len(probas)
             if n_classes == 3:
                 # 0=low, 1=medium, 2=high
@@ -401,7 +466,7 @@ class DropoutRiskPredictor:
             confidence = max(probas) * 100
         else:
             prediction = self.model.predict(features_scaled)[0]
-            risk_score = prediction * 50  # Rough scale
+            risk_score = prediction * 50
             confidence = 70.0
 
         # Determine risk level
@@ -414,7 +479,7 @@ class DropoutRiskPredictor:
         else:
             risk_level = 'low'
 
-        # Analyze risk factors using SHAP if available, otherwise use heuristics
+        # Analyze risk factors using SHAP
         factors = self._analyze_risk_factors_shap(features_scaled, student_data)
 
         return {
@@ -425,6 +490,9 @@ class DropoutRiskPredictor:
             'model_version': self.model_version,
             'algorithm': self.algorithm_name,
             'shap_explained': self.explainer is not None,
+            'error': None,
+            'available_features': available_features,
+            'missing_features': missing_features,
         }
 
     def _analyze_risk_factors_shap(
@@ -770,51 +838,242 @@ def generate_synthetic_training_data(n_samples: int = 1000) -> Tuple[np.ndarray,
 
 def calculate_student_features_from_db(student) -> Dict[str, float]:
     """
-    Calculate ML features from database records for a given student.
+    Calculate 24 ML features from database records for a given student.
+
+    ALL values are computed from real database data.
+    Returns None for features that cannot be computed (no fallback/default values).
+
+    Features computed:
+    1-5: Grade-based features
+    6-12: Attendance-based features
+    13-18: Academic progression features
+    19-24: Temporal/engagement features
     """
     from apps.grades.models import Grade
     from apps.attendance.models import Attendance
+    from django.db.models import Avg, Count, StdDev, Min, Max
+    from django.utils import timezone
+    from datetime import timedelta
 
     features = {}
+    now = timezone.now()
 
-    # Get grades
-    grades = student.grades.all()
-    if grades.exists():
-        grade_values = [g.value for g in grades]
+    # ============================================================
+    # GRADE-BASED FEATURES (1-5)
+    # ============================================================
+    grades = student.grades.all().order_by('date')
+    grade_values = list(grades.values_list('value', flat=True))
+
+    if grade_values:
+        # 1. Average grade (0-20 scale)
         features['average_grade'] = float(np.mean(grade_values))
+
+        # 2. Grade standard deviation (variability)
+        features['grade_std'] = float(np.std(grade_values)) if len(grade_values) > 1 else 0.0
+
+        # 3. Minimum grade
+        features['min_grade'] = float(min(grade_values))
+
+        # 4. Number of failed subjects (grade < 10)
         features['failed_subjects'] = sum(1 for g in grade_values if g < 10)
 
-        # Calculate grade trend (last 5 vs first 5)
-        if len(grade_values) >= 10:
-            first_half = np.mean(grade_values[:5])
-            second_half = np.mean(grade_values[-5:])
-            features['grade_trend'] = (second_half - first_half) / 20  # Normalize to -1, 1
+        # 5. Grade trend (comparing recent vs older grades)
+        if len(grade_values) >= 4:
+            mid_point = len(grade_values) // 2
+            old_avg = np.mean(grade_values[:mid_point])
+            recent_avg = np.mean(grade_values[mid_point:])
+            # Normalized to -1 (declining) to +1 (improving)
+            features['grade_trend'] = float(np.clip((recent_avg - old_avg) / 10, -1, 1))
         else:
             features['grade_trend'] = 0.0
     else:
-        features['average_grade'] = 10.0
-        features['failed_subjects'] = 0
-        features['grade_trend'] = 0.0
+        # NO DEFAULT VALUES - indicate missing data
+        features['average_grade'] = None
+        features['grade_std'] = None
+        features['min_grade'] = None
+        features['failed_subjects'] = None
+        features['grade_trend'] = None
 
-    # Get attendance
-    attendances = student.attendances.all()
+    # ============================================================
+    # ATTENDANCE-BASED FEATURES (6-12)
+    # ============================================================
+    attendances = student.attendances.all().order_by('date')
+
     if attendances.exists():
-        total = attendances.count()
-        present = attendances.filter(status='present').count()
-        features['attendance_rate'] = (present / total) * 100 if total > 0 else 100.0
-        features['absences_count'] = attendances.filter(status='absent').count()
+        total_records = attendances.count()
+        present_count = attendances.filter(status='present').count()
+        absent_count = attendances.filter(status='absent').count()
+        late_count = attendances.filter(status='late').count()
+        excused_count = attendances.filter(status='excused').count()
 
-        # Calculate consecutive absences (simplified)
-        features['consecutive_absences'] = min(features['absences_count'], 5)
+        # 6. Attendance rate (percentage of present)
+        features['attendance_rate'] = (present_count / total_records) * 100 if total_records > 0 else None
+
+        # 7. Total absences count
+        features['absences_count'] = absent_count
+
+        # 8. Total late arrivals count
+        features['late_count'] = late_count
+
+        # 9. Unexcused absence rate
+        unexcused = absent_count
+        features['unexcused_absence_rate'] = (unexcused / total_records) * 100 if total_records > 0 else 0.0
+
+        # 10. Calculate consecutive absences (actual computation)
+        consecutive_absences = 0
+        max_consecutive = 0
+        for att in attendances:
+            if att.status == 'absent':
+                consecutive_absences += 1
+                max_consecutive = max(max_consecutive, consecutive_absences)
+            else:
+                consecutive_absences = 0
+        features['consecutive_absences'] = max_consecutive
+
+        # 11. Recent attendance (last 30 days)
+        thirty_days_ago = now - timedelta(days=30)
+        recent_attendance = attendances.filter(date__gte=thirty_days_ago.date())
+        if recent_attendance.exists():
+            recent_present = recent_attendance.filter(status='present').count()
+            features['recent_attendance_rate'] = (recent_present / recent_attendance.count()) * 100
+        else:
+            features['recent_attendance_rate'] = None
+
+        # 12. Attendance trend (comparing recent vs older)
+        if total_records >= 10:
+            mid_date = attendances[total_records // 2].date
+            old_att = attendances.filter(date__lt=mid_date)
+            recent_att = attendances.filter(date__gte=mid_date)
+
+            old_rate = old_att.filter(status='present').count() / old_att.count() if old_att.exists() else 0
+            recent_rate = recent_att.filter(status='present').count() / recent_att.count() if recent_att.exists() else 0
+            features['attendance_trend'] = float(np.clip((recent_rate - old_rate) * 2, -1, 1))
+        else:
+            features['attendance_trend'] = 0.0
     else:
-        features['attendance_rate'] = 100.0
-        features['absences_count'] = 0
-        features['consecutive_absences'] = 0
+        # NO DEFAULT VALUES - indicate missing data
+        features['attendance_rate'] = None
+        features['absences_count'] = None
+        features['late_count'] = None
+        features['unexcused_absence_rate'] = None
+        features['consecutive_absences'] = None
+        features['recent_attendance_rate'] = None
+        features['attendance_trend'] = None
 
-    # Default values for features not available in DB
-    features['assignments_completed'] = 80.0
-    features['late_submissions'] = 0
-    features['participation_score'] = 70.0
-    features['weeks_enrolled'] = 10
+    # ============================================================
+    # ACADEMIC PROGRESSION FEATURES (13-18)
+    # ============================================================
+
+    # 13. Exam vs assignment performance difference
+    exam_grades = grades.filter(type='exam').values_list('value', flat=True)
+    assignment_grades = grades.filter(type__in=['assignment', 'project']).values_list('value', flat=True)
+
+    if exam_grades and assignment_grades:
+        exam_avg = np.mean(list(exam_grades))
+        assignment_avg = np.mean(list(assignment_grades))
+        features['exam_vs_assignment_diff'] = float(exam_avg - assignment_avg)
+    else:
+        features['exam_vs_assignment_diff'] = None
+
+    # 14. Number of unique subjects with grades
+    unique_subjects = grades.values('subject').distinct().count()
+    features['subjects_count'] = unique_subjects if unique_subjects > 0 else None
+
+    # 15. Pass rate (percentage of grades >= 10)
+    if grade_values:
+        passed = sum(1 for g in grade_values if g >= 10)
+        features['pass_rate'] = (passed / len(grade_values)) * 100
+    else:
+        features['pass_rate'] = None
+
+    # 16. Best subject average
+    if grades.exists():
+        subject_avgs = grades.values('subject').annotate(avg=Avg('value')).order_by('-avg')
+        if subject_avgs:
+            features['best_subject_avg'] = float(subject_avgs[0]['avg'] or 0)
+        else:
+            features['best_subject_avg'] = None
+    else:
+        features['best_subject_avg'] = None
+
+    # 17. Worst subject average
+    if grades.exists():
+        subject_avgs = grades.values('subject').annotate(avg=Avg('value')).order_by('avg')
+        if subject_avgs:
+            features['worst_subject_avg'] = float(subject_avgs[0]['avg'] or 0)
+        else:
+            features['worst_subject_avg'] = None
+    else:
+        features['worst_subject_avg'] = None
+
+    # 18. Subject performance spread (best - worst)
+    if features.get('best_subject_avg') is not None and features.get('worst_subject_avg') is not None:
+        features['subject_spread'] = features['best_subject_avg'] - features['worst_subject_avg']
+    else:
+        features['subject_spread'] = None
+
+    # ============================================================
+    # TEMPORAL/ENGAGEMENT FEATURES (19-24)
+    # ============================================================
+
+    # 19. Weeks since enrollment
+    if student.created_at:
+        days_enrolled = (now - student.created_at).days
+        features['weeks_enrolled'] = days_enrolled / 7
+    else:
+        features['weeks_enrolled'] = None
+
+    # 20. Days since last grade
+    last_grade = grades.order_by('-date').first()
+    if last_grade and last_grade.date:
+        days_since_grade = (now.date() - last_grade.date).days
+        features['days_since_last_grade'] = days_since_grade
+    else:
+        features['days_since_last_grade'] = None
+
+    # 21. Days since last attendance record
+    last_attendance = attendances.order_by('-date').first()
+    if last_attendance and last_attendance.date:
+        days_since_attendance = (now.date() - last_attendance.date).days
+        features['days_since_last_attendance'] = days_since_attendance
+    else:
+        features['days_since_last_attendance'] = None
+
+    # 22. Activity frequency (records per week)
+    total_records = grades.count() + attendances.count()
+    if features.get('weeks_enrolled') and features['weeks_enrolled'] > 0:
+        features['activity_per_week'] = total_records / features['weeks_enrolled']
+    else:
+        features['activity_per_week'] = None
+
+    # 23. Has prediction history
+    predictions = student.predictions.all()
+    features['prediction_count'] = predictions.count()
+
+    # 24. Previous risk level (last prediction risk score, or None)
+    last_prediction = predictions.order_by('-created_at').first()
+    if last_prediction:
+        features['previous_risk_score'] = float(last_prediction.risk_score)
+    else:
+        features['previous_risk_score'] = None
 
     return features
+
+
+def get_feature_completeness(features: Dict[str, float]) -> Dict[str, Any]:
+    """
+    Analyze feature completeness for a student.
+
+    Returns statistics about which features are available vs missing.
+    """
+    total = len(features)
+    available = sum(1 for v in features.values() if v is not None)
+    missing = [k for k, v in features.items() if v is None]
+
+    return {
+        'total_features': total,
+        'available_features': available,
+        'missing_features': missing,
+        'completeness_rate': (available / total) * 100 if total > 0 else 0,
+        'can_predict': available >= 5  # Minimum features required for prediction
+    }

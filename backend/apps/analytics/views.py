@@ -64,14 +64,8 @@ def dashboard_stats(request):
                 'count': count
             })
     
-    # If no real data, generate from total students
-    if not enrollment_evolution:
-        base = total_students // 6 if total_students > 0 else 10
-        for i, year in enumerate(range(current_year - 5, current_year + 1)):
-            enrollment_evolution.append({
-                'year': year,
-                'count': base + (i * (base // 5))
-            })
+    # NO FAKE DATA - return empty array if no real data
+    # Frontend should handle empty state appropriately
     
     # Program distribution
     program_distribution = []
@@ -173,21 +167,22 @@ def analytics_metrics(request):
     
     # Model precision (from latest ML model or computed)
     from apps.ml.models import MLModel
+    # Model precision - NULL if no model (NO FAKE DEFAULT)
     active_model = MLModel.objects.filter(status='active').first()
     if active_model:
         precision_modele = round(float(active_model.accuracy), 1)
     else:
-        precision_modele = 94.8  # Default if no model
-    
+        precision_modele = None  # Frontend must handle null state
+
     # Dropout evolution (predicted vs real over months)
     dropout_evolution = get_dropout_evolution_data()
-    
+
     # Performance by program
     performance_by_program = get_program_performance_data()
-    
+
     # Intervention efficacy
     intervention_efficacy = get_intervention_efficacy_data()
-    
+
     # Response time (average time to handle alerts)
     resolved_alerts = Alert.objects.filter(status='resolved')
     if resolved_alerts.exists():
@@ -199,14 +194,15 @@ def analytics_metrics(request):
                 delta = alert.resolved_at - alert.created_at
                 total_hours += delta.total_seconds() / 3600
                 count += 1
-        temps_reponse_heures = round(total_hours / count, 1) if count > 0 else 24
+        temps_reponse_heures = round(total_hours / count, 1) if count > 0 else None
     else:
-        temps_reponse_heures = 24
-    
+        temps_reponse_heures = None  # No data available
+
     return Response({
         'riskGlobal': risk_global,
         'interventionsActives': interventions_actives,
         'precisionModele': precision_modele,
+        'hasActiveModel': active_model is not None,  # Frontend can show warning
         'dropoutEvolution': dropout_evolution,
         'performanceByProgram': performance_by_program,
         'interventionEfficacy': intervention_efficacy,
@@ -215,41 +211,39 @@ def analytics_metrics(request):
 
 
 def get_dropout_evolution_data():
-    """Generate dropout evolution data from predictions over time."""
-    months = ['Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin']
+    """
+    Calculate dropout evolution from REAL prediction data grouped by month.
+
+    NO fake/random data. Returns empty array if insufficient data.
+    """
+    from django.db.models.functions import TruncMonth
+
     evolution = []
-    
-    predictions = Prediction.objects.all()
-    total_predictions = predictions.count()
-    
-    if total_predictions > 0:
-        # Calculate base dropout rate
-        high_risk = predictions.filter(risk_level='high').count()
-        base_rate = (high_risk / total_predictions) * 100
-        
-        # Generate monthly evolution with slight variations
-        import random
-        random.seed(42)  # For consistent results
-        
-        for i, month in enumerate(months):
-            variation = random.uniform(-0.5, 0.5)
-            trend = (i - 5) * 0.1  # Slight trend
-            predicted = round(base_rate + variation + trend, 1)
-            real = round(predicted - random.uniform(0.1, 0.3), 1)
-            evolution.append({
-                'month': month,
-                'predicted': max(0, predicted),
-                'real': max(0, real)
-            })
-    else:
-        # Default data if no predictions
-        for i, month in enumerate(months):
-            evolution.append({
-                'month': month,
-                'predicted': 3.0 + (i * 0.2),
-                'real': 2.9 + (i * 0.2)
-            })
-    
+
+    # Get predictions grouped by month
+    predictions_by_month = Prediction.objects.annotate(
+        month=TruncMonth('created_at')
+    ).values('month').annotate(
+        total=Count('id'),
+        high_risk=Count('id', filter=Q(risk_level__in=['high', 'critical']))
+    ).order_by('month')
+
+    if predictions_by_month.exists():
+        for entry in predictions_by_month:
+            if entry['total'] > 0:
+                month_name = entry['month'].strftime('%b') if entry['month'] else 'N/A'
+                dropout_rate = (entry['high_risk'] / entry['total']) * 100
+                evolution.append({
+                    'month': month_name,
+                    'year': entry['month'].year if entry['month'] else None,
+                    'predicted': round(dropout_rate, 1),
+                    'total_predictions': entry['total'],
+                    # 'real' requires actual dropout tracking which we don't have
+                    # DO NOT fake this value
+                    'real': None
+                })
+
+    # Return empty array if no data - frontend handles empty state
     return evolution
 
 
@@ -331,15 +325,8 @@ def get_intervention_efficacy_data():
                 'efficacy': eff
             })
     
-    # Add default entries if no real data
-    if not efficacy:
-        efficacy = [
-            {'type': 'Soutien Psychologique', 'students': 0, 'gpaImpact': '+0.5 pts', 'retention': '+15%', 'efficacy': 'Élevée'},
-            {'type': 'Tutorat par les pairs', 'students': 0, 'gpaImpact': '+0.2 pts', 'retention': '+8%', 'efficacy': 'Moyenne'},
-            {'type': 'Atelier de Méthodologie', 'students': 0, 'gpaImpact': '+0.8 pts', 'retention': '+12%', 'efficacy': 'Élevée'},
-            {'type': 'Rappel Automatique SMS', 'students': 0, 'gpaImpact': '0.0 pts', 'retention': '+1%', 'efficacy': 'Faible'}
-        ]
-    
+    # NO FAKE DATA - return empty array if no interventions
+    # Frontend should display "No intervention data available" message
     return efficacy
 
 

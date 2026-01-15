@@ -1,5 +1,11 @@
 """
 Views for Attendance app.
+
+Permissions par rôle:
+- ADMIN: Full CRUD access
+- DS: Full CRUD access
+- TEACHER: Create/Update attendance for their students
+- PEDAGOGICAL: Read-only access
 """
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
@@ -11,25 +17,42 @@ from django.db import transaction
 
 from .models import Attendance
 from .serializers import AttendanceSerializer
+from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
+from apps.core.permissions import (
+    IsAdmin, IsDSOrAdmin, IsTeacherOrAdmin, IsPedagogicalOrAbove
+)
 
 
-class AttendanceViewSet(viewsets.ModelViewSet):
+class AttendanceViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSet):
     """
     ViewSet for Attendance model.
 
     Provides CRUD operations and custom actions:
     - GET /attendance/ - List all attendance records
-    - POST /attendance/ - Create an attendance record
+    - POST /attendance/ - Create an attendance record (Teacher/DS/Admin)
     - GET /attendance/{id}/ - Retrieve an attendance record
-    - PUT/PATCH /attendance/{id}/ - Update an attendance record
-    - DELETE /attendance/{id}/ - Delete an attendance record
+    - PUT/PATCH /attendance/{id}/ - Update an attendance record (Teacher/DS/Admin)
+    - DELETE /attendance/{id}/ - Delete an attendance record (Admin only)
     - GET /attendance/student/{student_id}/ - Get attendance for a student
-    - POST /attendance/bulk-create/ - Create multiple attendance records
+    - POST /attendance/bulk-create/ - Create multiple attendance records (Teacher/DS/Admin)
     - GET /attendance/statistics/ - Get attendance statistics
     """
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated]
+
+    # Role-based permissions per action
+    permission_classes_by_action = {
+        'list': [IsAuthenticated],
+        'retrieve': [IsAuthenticated],
+        'create': [IsAuthenticated, IsTeacherOrAdmin],
+        'update': [IsAuthenticated, IsTeacherOrAdmin],
+        'partial_update': [IsAuthenticated, IsTeacherOrAdmin],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'bulk_create': [IsAuthenticated, IsTeacherOrAdmin],
+        'statistics': [IsAuthenticated],
+        'low_attendance': [IsAuthenticated, IsPedagogicalOrAbove],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'subject', 'status', 'date']
     search_fields = ['student__first_name', 'student__last_name', 'student__matricule']
