@@ -90,6 +90,11 @@ export default function Connexion() {
                 error={errors.password?.message}
                 rightIcon={passwordVisibility.icon}
                 onRightIconClick={passwordVisibility.toggle}
+                rightIconLabel={
+                  passwordVisibility.isVisible
+                    ? 'Masquer le mot de passe'
+                    : 'Afficher le mot de passe'
+                }
                 {...register('password')}
               />
             </div>
