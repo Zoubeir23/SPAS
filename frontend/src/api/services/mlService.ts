@@ -1,20 +1,28 @@
 import apiClient from '../axiosConfig'
 import { API_ENDPOINTS } from '../endpoints'
 
+export interface ROCCurve {
+  fpr: number[]
+  tpr: number[]
+  thresholds?: number[]
+}
+
 export interface MLModel {
   id: string
   name: string
   version: string
-  status: 'active' | 'inactive' | 'training'
+  status: 'active' | 'inactive' | 'training' | 'archived'
   accuracy: number
   precision: number
   recall: number
   f1Score?: number
   f1_score?: number
+  auc?: number
   trainedAt?: string
   trained_at?: string
   trainingDataSize?: number
   training_data_size?: number
+  algorithm?: string
   description?: string
   created_at?: string
   updated_at?: string
@@ -23,6 +31,24 @@ export interface MLModel {
     precision?: number
     recall?: number
     f1_score?: number
+    auc?: number
+  }
+  rocCurve?: ROCCurve
+  roc_curve?: ROCCurve
+  featureImportances?: Array<{ feature: string; importance: number }>
+  feature_importances?: Array<{ feature: string; importance: number }>
+  featureImportance?: Array<{ name: string; importance: number | string; category?: string }>
+  confusionMatrix?: {
+    tp: number  // True Positives
+    tn: number  // True Negatives
+    fp: number  // False Positives
+    fn: number  // False Negatives
+  }
+  confusion_matrix?: {
+    tp: number
+    tn: number
+    fp: number
+    fn: number
   }
 }
 
@@ -58,6 +84,9 @@ function normalizeModel(model: MLModel): MLModel {
     f1Score: model.f1Score || model.f1_score,
     trainedAt: model.trainedAt || model.trained_at,
     trainingDataSize: model.trainingDataSize || model.training_data_size,
+    auc: model.auc || model.metrics?.auc,
+    rocCurve: model.rocCurve || model.roc_curve,
+    featureImportances: model.featureImportances || model.feature_importances,
   }
 }
 
@@ -96,10 +125,8 @@ export const mlService = {
   },
 
   async activate(id: string): Promise<MLModel> {
-    const response = await apiClient.patch<MLModel>(API_ENDPOINTS.ML.MODEL_BY_ID(id), {
-      status: 'active',
-    })
-    return normalizeModel(response.data)
+    const response = await apiClient.post<{ data: MLModel }>(`${API_ENDPOINTS.ML.MODEL_BY_ID(id)}/activate/`)
+    return normalizeModel(response.data.data || response.data)
   },
 
   async deactivate(id: string): Promise<MLModel> {
@@ -107,6 +134,11 @@ export const mlService = {
       status: 'inactive',
     })
     return normalizeModel(response.data)
+  },
+
+  async archive(id: string): Promise<MLModel> {
+    const response = await apiClient.post<{ data: MLModel }>(`${API_ENDPOINTS.ML.MODEL_BY_ID(id)}/archive/`)
+    return normalizeModel(response.data.data || response.data)
   },
 
   async delete(id: string): Promise<void> {

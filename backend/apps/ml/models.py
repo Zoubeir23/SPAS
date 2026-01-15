@@ -14,6 +14,7 @@ class MLModel(models.Model):
         ACTIVE = 'active', _('Actif')
         INACTIVE = 'inactive', _('Inactif')
         TRAINING = 'training', _('En Formation')
+        ARCHIVED = 'archived', _('Archivé')
 
     # Model Information
     name = models.CharField(_('name'), max_length=200)

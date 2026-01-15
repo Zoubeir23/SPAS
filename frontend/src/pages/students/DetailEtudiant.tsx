@@ -4,6 +4,7 @@ import MiseEnPagePrincipale from '@/components/layout/MiseEnPagePrincipale'
 import Carte from '@/components/common/Carte'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
+import ModaleEtudiant from '@/components/modals/ModaleEtudiant'
 import { studentService, Student } from '@/api/services/studentService'
 import { predictionService } from '@/api/services/predictionService'
 import { gradeService } from '@/api/services/gradeService'
@@ -21,6 +22,7 @@ export default function DetailEtudiant() {
   const [grades, setGrades] = useState<any[]>([])
   const [attendance, setAttendance] = useState<any[]>([])
   const [prediction, setPrediction] = useState<any>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -138,7 +140,7 @@ export default function DetailEtudiant() {
               <span className="material-symbols-outlined text-[20px]">arrow_back</span>
               Retour
             </Bouton>
-            <Bouton>
+            <Bouton onClick={() => setIsEditModalOpen(true)}>
               <span className="material-symbols-outlined text-[18px]">edit</span>
               Modifier
             </Bouton>
@@ -446,6 +448,21 @@ export default function DetailEtudiant() {
           )}
         </Carte>
       </div>
+
+      {/* Modale d'édition */}
+      <ModaleEtudiant
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        studentId={id}
+        onSuccess={async () => {
+          setIsEditModalOpen(false)
+          // Recharger les données de l'étudiant
+          if (id) {
+            const updatedStudent = await studentService.getById(id)
+            setStudent(updatedStudent)
+          }
+        }}
+      />
     </MiseEnPagePrincipale>
   )
 }

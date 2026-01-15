@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { clsx } from 'clsx'
 import MiseEnPagePrincipale from '@/components/layout/MiseEnPagePrincipale'
 import Carte from '@/components/common/Carte'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
 import GraphiqueLignes from '@/components/charts/GraphiqueLignes'
+import GraphiqueSHAP from '@/components/charts/GraphiqueSHAP'
+import ModaleIntervention from '@/components/modals/ModaleIntervention'
 import { studentService, Student } from '@/api/services/studentService'
-import { predictionService, Prediction } from '@/api/services/predictionService'
+import { predictionService, Prediction, PredictionFactor } from '@/api/services/predictionService'
 import { interventionService, Intervention } from '@/api/services/interventionService'
+import { alertService } from '@/api/services/alertService'
 import { analyticsService } from '@/api/services/analyticsService'
 import { ROUTES } from '@/utils/constants'
+import { toast } from 'react-toastify'
 
 interface RiskEvolutionPoint {
   month: string
@@ -34,6 +38,8 @@ export default function DetailPrediction() {
   const [loading, setLoading] = useState(true)
   const [riskEvolution, setRiskEvolution] = useState<RiskEvolutionPoint[]>([])
   const [interventions, setInterventions] = useState<InterventionDisplay[]>([])
+  const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false)
+  const [creatingAlert, setCreatingAlert] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -114,6 +120,59 @@ export default function DetailPrediction() {
     loadData()
   }, [id])
 
+  const handleCreateAlert = async () => {
+    if (!student || !prediction) return
+    setCreatingAlert(true)
+    try {
+      await alertService.create({
+        student_id: student.id,
+        prediction_id: prediction.id,
+        type: 'high_risk',
+        message: `Alerte générée pour ${student.firstName} ${student.lastName} - Score de risque: ${prediction.riskScore}%`,
+        severity: (prediction.riskScore ?? 0) >= 85 ? 'high' : 'medium'
+      })
+      toast.success('Alerte créée avec succès')
+      navigate(ROUTES.ALERTS)
+    } catch (error) {
+      console.error('Erreur création alerte:', error)
+      toast.error('Erreur lors de la création de l\'alerte')
+    } finally {
+      setCreatingAlert(false)
+    }
+  }
+
+  const reloadInterventions = async () => {
+    if (!student) return
+    try {
+      const interventionsData = await interventionService.getByStudent(String(student.id))
+      if (interventionsData && interventionsData.length > 0) {
+        const typeColorMap: Record<string, string> = {
+          'meeting': 'purple',
+          'email': 'blue',
+          'alert': 'orange',
+          'call': 'green',
+          'tutoring': 'cyan'
+        }
+        const statusMap: Record<string, { status: string; variant: 'success' | 'info' | 'warning' | 'danger' }> = {
+          'completed': { status: 'Réalisé', variant: 'success' },
+          'pending': { status: 'En attente', variant: 'warning' },
+          'scheduled': { status: 'Planifié', variant: 'info' },
+          'cancelled': { status: 'Annulé', variant: 'danger' }
+        }
+        setInterventions(interventionsData.slice(0, 5).map((intervention: Intervention) => ({
+          date: new Date(intervention.scheduled_date || intervention.created_at || new Date()).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
+          type: intervention.type || 'Entretien',
+          typeColor: typeColorMap[intervention.type?.toLowerCase()] || 'gray',
+          responsible: intervention.responsible_name || 'Système',
+          status: statusMap[intervention.status]?.status || intervention.status,
+          statusVariant: statusMap[intervention.status]?.variant || 'info'
+        })))
+      }
+    } catch (e) {
+      console.log('Failed to reload interventions')
+    }
+  }
+
   if (loading) {
     return (
       <MiseEnPagePrincipale>
@@ -149,6 +208,7 @@ export default function DetailPrediction() {
 
   const riskInfo = getRiskLevel()
 
+<<<<<<< Updated upstream
   // Préparer les facteurs SHAP (mélange de facteurs positifs et négatifs)
   const shapFactors = prediction.factors && prediction.factors.length > 0
     ? prediction.factors.map(f => ({
@@ -162,6 +222,24 @@ export default function DetailPrediction() {
         { name: 'Note Moyenne Maths', impact: 0.08, color: 'danger' },
         { name: 'Participation Forum', impact: -0.05, color: 'success' },
       ]
+=======
+  // Préparer les facteurs SHAP depuis les données API ou fallback
+  const shapFactors = prediction?.factors?.map((f: PredictionFactor) => ({
+    feature: f.name || f.feature || 'Facteur',
+    value: f.value ?? 0,
+    contribution: f.contribution ?? f.impact ?? 0,
+    direction: (f.direction || (f.impact && f.impact > 0 ? 'positive' : 'negative')) as 'positive' | 'negative'
+  })) || [
+    { feature: 'Absences (Cours Mag.)', value: 12, contribution: 0.18, direction: 'positive' as const },
+    { feature: 'Retard Rendu Projets', value: 3, contribution: 0.12, direction: 'positive' as const },
+    { feature: 'Note Moyenne Maths', value: 8.5, contribution: 0.08, direction: 'positive' as const },
+    { feature: 'Participation Forum', value: 'Active', contribution: -0.05, direction: 'negative' as const },
+    { feature: 'Assiduité TD', value: '92%', contribution: -0.03, direction: 'negative' as const },
+  ]
+  
+  // Est-ce que l'explication vient de SHAP ?
+  const isShapExplained = prediction?.shap_explained ?? true
+>>>>>>> Stashed changes
 
   return (
     <MiseEnPagePrincipale title="Détail Prédiction">
@@ -196,7 +274,7 @@ export default function DetailPrediction() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-[18px]">calendar_today</span>
-                    <span className="text-gray-900 dark:text-gray-300">Semestre 2 - 2023/2024</span>
+                    <span className="text-gray-900 dark:text-gray-300">{student.sessionName || 'Session en cours'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-purple-600 dark:text-purple-400 text-[18px]">mail</span>
@@ -239,7 +317,7 @@ export default function DetailPrediction() {
                 riskInfo.color === 'warning' && 'dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30',
                 riskInfo.color === 'success' && 'dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/30'
               )}>
-                Mise à jour: Il y a 2h
+                Mise à jour: {new Date(prediction.createdAt || Date.now()).toLocaleDateString('fr-FR')}
               </span>
             </div>
             <div className="p-6 flex-1 flex flex-col justify-center">
@@ -276,13 +354,13 @@ export default function DetailPrediction() {
                 Seuil {riskInfo.threshold} dépassé ({(prediction.riskScore ?? 0) >= 85 ? '>85%' : '>70%'}). Action requise {(prediction.riskScore ?? 0) >= 85 ? 'immédiate' : ''}.
               </p>
               <div className="grid grid-cols-2 gap-3 mt-auto">
-                <Bouton>
+                <Bouton onClick={() => setIsInterventionModalOpen(true)}>
                   <span className="material-symbols-outlined text-[18px]">add_task</span>
                   Intervention
                 </Bouton>
-                <Bouton variant="outline">
+                <Bouton variant="outline" onClick={handleCreateAlert} disabled={creatingAlert}>
                   <span className="material-symbols-outlined text-[18px]">notifications_active</span>
-                  Alerte
+                  {creatingAlert ? 'Création...' : 'Alerte'}
                 </Bouton>
               </div>
             </div>
@@ -314,42 +392,23 @@ export default function DetailPrediction() {
 
           {/* SHAP Analysis */}
           <Carte>
-            <div className="flex items-center gap-2 mb-6">
-              <span className="material-symbols-outlined text-primary">psychology</span>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Facteurs Clés (SHAP)</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">psychology</span>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Facteurs Clés (SHAP)</h3>
+              </div>
+              {isShapExplained && (
+                <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
+                  ✓ SHAP Explainability
+                </span>
+              )}
             </div>
-            <div className="space-y-5">
-              {shapFactors.map((factor, index) => (
-                <div key={index} className="group cursor-help">
-                  <div className="flex justify-between items-end mb-1">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-200">{factor.name}</span>
-                    <span className={`text-xs font-bold ${
-                      factor.impact > 0 
-                        ? 'text-red-600 dark:text-red-400' 
-                        : 'text-green-600 dark:text-green-400'
-                    }`}>
-                      {factor.impact > 0 ? '+' : ''}{(factor.impact * 100).toFixed(0)}% {factor.impact > 0 ? 'Impact' : 'Réduction'}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${
-                        factor.impact > 0 
-                          ? 'bg-red-600 dark:bg-red-500' 
-                          : 'bg-green-600 dark:bg-green-500'
-                      }`}
-                      style={{ width: `${Math.abs(factor.impact) * 500}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 p-3 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/10 flex gap-2">
-              <span className="material-symbols-outlined text-primary text-sm mt-0.5">info</span>
-              <p className="text-xs text-purple-600 dark:text-purple-400 leading-relaxed">
-                L'absentéisme est le facteur dominant ce mois-ci, augmentant le risque global de 18%.
-              </p>
-            </div>
+            <GraphiqueSHAP 
+              factors={shapFactors}
+              height={280}
+              showValues={true}
+              title=""
+            />
           </Carte>
         </div>
 
@@ -359,7 +418,7 @@ export default function DetailPrediction() {
           <Carte className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Historique d'Interventions</h3>
-              <button className="text-primary text-sm font-medium hover:underline">Voir tout</button>
+              <Link to={ROUTES.ALERTS} className="text-primary text-sm font-medium hover:underline">Voir tout</Link>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -455,6 +514,17 @@ export default function DetailPrediction() {
           </div>
         </div>
       </div>
+
+      {/* Modale d'intervention */}
+      <ModaleIntervention
+        isOpen={isInterventionModalOpen}
+        onClose={() => setIsInterventionModalOpen(false)}
+        studentId={student.id}
+        onSuccess={() => {
+          setIsInterventionModalOpen(false)
+          reloadInterventions()
+        }}
+      />
     </MiseEnPagePrincipale>
   )
 }

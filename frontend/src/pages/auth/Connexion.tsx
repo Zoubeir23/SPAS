@@ -60,7 +60,7 @@ export default function Connexion() {
 
       {/* Login Card */}
       <div className="mt-2 sm:mx-auto sm:w-full sm:max-w-[480px]">
-        <div className="bg-white dark:bg-surface-dark py-10 px-6 shadow-xl shadow-slate-200/50 dark:shadow-black/30 rounded-xl sm:px-12 border border-slate-100 dark:border-slate-700">
+        <div className="bg-white dark:bg-surface-dark py-10 px-8 shadow-xl shadow-slate-200/50 dark:shadow-black/30 rounded-xl sm:px-12 border border-slate-100 dark:border-slate-700">
           {error && (
             <div className="mb-6">
               <Alerte type="error" onClose={() => setError(null)}>

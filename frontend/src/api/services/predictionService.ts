@@ -3,7 +3,17 @@ import { API_ENDPOINTS } from '../endpoints'
 
 export interface PredictionFactor {
   name: string
+  feature?: string
   impact: number
+  contribution?: number
+  value?: string | number
+  direction?: 'positive' | 'negative'
+}
+
+export interface SHAPExplanation {
+  factors: PredictionFactor[]
+  base_score: number
+  shap_explained: boolean
 }
 
 export interface Prediction {
@@ -22,6 +32,10 @@ export interface Prediction {
   predictedSuccessRate?: number
   predicted_success_rate?: number
   factors?: PredictionFactor[]
+  risk_factors?: PredictionFactor[]
+  shapExplanation?: SHAPExplanation
+  shap_explanation?: SHAPExplanation
+  shap_explained?: boolean
   createdAt?: string
   created_at?: string
   modelVersion?: string

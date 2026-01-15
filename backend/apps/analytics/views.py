@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from django.db.models import Count, Avg, Q, F
 from django.db.models.functions import TruncMonth, ExtractYear
 from django.utils import timezone
+from django.http import HttpResponse
 from datetime import timedelta
 from decimal import Decimal
 
@@ -18,6 +19,8 @@ from apps.predictions.models import Prediction
 from apps.alerts.models import Alert, Intervention
 from apps.grades.models import Grade
 from apps.attendance.models import Attendance
+from apps.core.models import AuditLog
+from .chart_generator import ChartGenerator
 
 
 @api_view(['GET'])
@@ -529,3 +532,182 @@ def risk_evolution(request, student_id):
             })
     
     return Response({'evolution': evolution})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def enrollment_chart_image(request):
+    """
+    GET /api/analytics/charts/enrollment/
+    Returns PNG image of enrollment evolution chart.
+    """
+    academic_year = request.query_params.get('academic_year')
+    
+    # Get enrollment data
+    enrollment_evolution = []
+    current_year = timezone.now().year
+    for year in range(current_year - 5, current_year + 1):
+        count = Student.objects.filter(created_at__year=year).count()
+        if count > 0:
+            enrollment_evolution.append({
+                'name': str(year),
+                'value': count
+            })
+    
+    # Generate chart
+    chart_bytes = ChartGenerator.generate_line_chart(
+        data=enrollment_evolution,
+        x_key='name',
+        y_key='value',
+        title='Évolution des Inscriptions',
+        x_label='Année',
+        y_label='Nombre d\'étudiants',
+        width=800,
+        height=400
+    )
+    
+    response = HttpResponse(chart_bytes, content_type='image/png')
+    response['Cache-Control'] = 'public, max-age=3600'  # Cache 1 hour
+    return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def program_distribution_chart_image(request):
+    """
+    GET /api/analytics/charts/program-distribution/
+    Returns PNG image of program distribution pie chart.
+    """
+    # Get program distribution data
+    program_distribution = []
+    programs = Program.objects.annotate(
+        students_total=Count('students')
+    ).filter(students_total__gt=0).order_by('-students_total')[:6]
+    
+    for program in programs:
+        program_distribution.append({
+            'name': program.name,
+            'value': program.students_total
+        })
+    
+    # Generate chart
+    chart_bytes = ChartGenerator.generate_pie_chart(
+        data=program_distribution,
+        name_key='name',
+        value_key='value',
+        title='Répartition par Filière',
+        width=600,
+        height=400
+    )
+    
+    response = HttpResponse(chart_bytes, content_type='image/png')
+    response['Cache-Control'] = 'public, max-age=3600'  # Cache 1 hour
+    return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def system_activity(request):
+    """
+    GET /api/analytics/system-activity/
+    Returns recent system activity from AuditLog.
+    """
+    limit = int(request.query_params.get('limit', 10))
+    
+    # Get recent audit logs
+    recent_logs = AuditLog.objects.select_related('user').order_by('-timestamp')[:limit]
+    
+    activity = []
+    for log in recent_logs:
+        # Format action name
+        action_map = {
+            'login': 'Connexion',
+            'logout': 'Déconnexion',
+            'create': 'Création',
+            'update': 'Modification',
+            'delete': 'Suppression',
+            'ml_prediction': 'Prédiction ML',
+            'export': 'Export',
+            'import': 'Import',
+        }
+        action_name = action_map.get(log.action, log.get_action_display())
+        
+        # Format user name
+        if log.user:
+            user_name = f"{log.user.get_full_name() or log.user.email}"
+            if log.user.role:
+                role_map = {
+                    'admin': 'Admin',
+                    'teacher': 'Enseignant',
+                    'ds': 'DS',
+                    'pedagogical': 'Pédagogique'
+                }
+                user_name += f" ({role_map.get(log.user.role, log.user.role)})"
+        else:
+            user_name = 'Système'
+        
+        # Format time ago
+        time_ago = timezone.now() - log.timestamp
+        if time_ago.total_seconds() < 3600:  # Less than 1 hour
+            minutes = int(time_ago.total_seconds() / 60)
+            time_str = f"Il y a {minutes} min"
+        elif time_ago.total_seconds() < 86400:  # Less than 1 day
+            hours = int(time_ago.total_seconds() / 3600)
+            time_str = f"Il y a {hours}h"
+        else:
+            days = int(time_ago.total_seconds() / 86400)
+            time_str = f"Il y a {days}j"
+        
+        # Determine status
+        if log.status_code:
+            if 200 <= log.status_code < 300:
+                status = 'success'
+            elif 400 <= log.status_code < 500:
+                status = 'error'
+            else:
+                status = 'info'
+        else:
+            status = 'info'
+        
+        activity.append({
+            'id': str(log.id),
+            'action': action_name,
+            'user': user_name,
+            'time': time_str,
+            'timestamp': log.timestamp.isoformat(),
+            'status': status,
+            'model': log.model_name or 'Système'
+        })
+    
+    return Response({'activity': activity})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ml_models_performance(request):
+    """
+    GET /api/analytics/ml-models-performance/
+    Returns ML models performance data for dashboard.
+    """
+    from apps.ml.models import MLModel
+    
+    models = MLModel.objects.order_by('-created_at')[:10]
+    
+    performance = []
+    for model in models:
+        status_map = {
+            'active': 'Actif',
+            'archived': 'Archivé',
+            'training': 'Entraînement',
+            'failed': 'Échec'
+        }
+        
+        performance.append({
+            'name': model.version or f"Modèle {model.id}",
+            'type': model.model_type or 'Random Forest',
+            'accuracy': round(float(model.accuracy) * 100, 1) if model.accuracy else 0,
+            'status': status_map.get(model.status, model.status),
+            'statusCode': model.status
+        })
+    
+    return Response({'models': performance})

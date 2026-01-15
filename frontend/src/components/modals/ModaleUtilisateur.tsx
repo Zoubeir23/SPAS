@@ -23,6 +23,7 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
     phone: '',
     role: 'teacher',
     password: '',
+    password_confirm: '',
   })
 
   // Handle avatar upload
@@ -76,6 +77,7 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
         phone: '',
         role: 'teacher',
         password: '',
+        password_confirm: '',
       })
       setError(null)
     }
@@ -92,6 +94,7 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
         phone: '',
         role: user.role,
         password: '',
+        password_confirm: '',
       })
       // Charger l'avatar si disponible
       if (user.avatar_url) {
@@ -106,9 +109,9 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
 
   const roles = [
     { id: 'admin', label: 'Administrateur', desc: 'Accès complet', icon: 'admin_panel_settings', color: 'blue' },
-    { id: 'director', label: 'Direction Pédagogique', desc: 'Gestion des programmes', icon: 'school', color: 'purple' },
+    { id: 'pedagogical', label: 'Direction Pédagogique', desc: 'Gestion des programmes', icon: 'school', color: 'purple' },
     { id: 'teacher', label: 'Enseignant', desc: 'Gestion des cours', icon: 'cast_for_education', color: 'green' },
-    { id: 'data_scientist', label: 'Data Scientist', desc: 'Analytique & Prédictions', icon: 'science', color: 'orange' },
+    { id: 'ds', label: 'Data Scientist', desc: 'Analytique & Prédictions', icon: 'science', color: 'orange' },
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,9 +135,15 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
           setLoading(false)
           return
         }
+        if (formData.password !== formData.password_confirm) {
+          setError('Les mots de passe ne correspondent pas')
+          setLoading(false)
+          return
+        }
         await userService.create({
           email: formData.email,
           password: formData.password,
+          password_confirm: formData.password_confirm,
           first_name: formData.firstName,
           last_name: formData.lastName,
           role: formData.role,
@@ -151,8 +160,8 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
   }
 
   return (
-    <Modale isOpen={isOpen} onClose={onClose} title={userId ? "Modifier l'utilisateur" : "Ajouter un utilisateur"} size="xl">
-      <form onSubmit={handleSubmit} className="space-y-8">
+    <Modale isOpen={isOpen} onClose={onClose} title={userId ? "Modifier l'utilisateur" : "Nouvel utilisateur"} size="xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Error Message */}
         {error && (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -164,12 +173,12 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
         )}
 
         {/* Profile & Basic Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Picture */}
-          <div className="lg:col-span-4 flex flex-col items-center text-center space-y-4 pt-2">
+          <div className="lg:col-span-1 flex flex-col items-center text-center space-y-4 pt-2">
             <div className="relative group">
               {avatarPreview ? (
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
+                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg ring-4 ring-white dark:ring-gray-800">
                   <img
                     src={avatarPreview}
                     alt={`${formData.firstName} ${formData.lastName}`}
@@ -177,12 +186,12 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
                   />
                 </div>
               ) : (
-                <div className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 border-4 border-white dark:border-gray-800 shadow-lg flex items-center justify-center">
-                  <span className="material-symbols-outlined text-6xl text-gray-400">person</span>
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 border-4 border-primary/20 shadow-lg flex items-center justify-center">
+                  <span className="material-symbols-outlined text-5xl text-primary/40">person</span>
                 </div>
               )}
               <label
-                className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-md hover:bg-primary-dark transition-colors flex items-center justify-center w-9 h-9 border-2 border-white dark:border-gray-800 cursor-pointer"
+                className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-primary-dark transition-all flex items-center justify-center w-8 h-8 border-2 border-white dark:border-gray-800 cursor-pointer hover:scale-110"
                 title="Changer la photo"
               >
                 <input
@@ -193,94 +202,109 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
                   disabled={uploadingAvatar}
                 />
                 {uploadingAvatar ? (
-                  <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                  <span className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full"></span>
                 ) : (
-                  <span className="material-symbols-outlined text-sm">edit</span>
+                  <span className="material-symbols-outlined text-sm">photo_camera</span>
                 )}
               </label>
               {avatarPreview && (
                 <button
                   type="button"
                   onClick={handleAvatarRemove}
-                  className="absolute top-0 right-0 p-1.5 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors text-xs"
+                  className="absolute -top-1 -right-1 p-1 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all hover:scale-110"
                   title="Supprimer la photo"
                   disabled={uploadingAvatar}
                 >
-                  <span className="material-symbols-outlined text-sm">close</span>
+                  <span className="material-symbols-outlined text-xs">close</span>
                 </button>
               )}
             </div>
             <div>
-              <h4 className="text-gray-900 dark:text-white font-semibold text-lg">Photo de profil</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Formats: JPG, PNG. Max 2MB.</p>
+              <h4 className="text-gray-900 dark:text-white font-semibold">Photo de profil</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">JPG, PNG. Max 2MB</p>
             </div>
           </div>
 
           {/* Basic Info Fields */}
-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <ChampSaisie
-              required
-              label="Prénom"
-              placeholder="Ex: Thomas"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-            />
-            <ChampSaisie
-              required
-              label="Nom"
-              placeholder="Ex: Dubois"
-              value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-            />
-            <div className="md:col-span-2">
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  mail
-                </span>
-                <ChampSaisie
-                  required
-                  type="email"
-                  label="Email"
-                  className="pl-11"
-                  placeholder="thomas.dubois@university.edu"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="md:col-span-2">
+          <div className="lg:col-span-2 space-y-5">
+            {/* Nom et Prénom sur la même ligne */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ChampSaisie
-                type="tel"
-                label="Téléphone"
-                placeholder="+33 6 12 34 56 78"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                required
+                label="Prénom"
+                leftIcon="person"
+                placeholder="Thomas"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              />
+              <ChampSaisie
+                required
+                label="Nom"
+                leftIcon="badge"
+                placeholder="Dubois"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               />
             </div>
-            {/* Password field - only for new users */}
+            
+            {/* Email */}
+            <ChampSaisie
+              required
+              type="email"
+              label="Email"
+              leftIcon="mail"
+              placeholder="thomas.dubois@university.edu"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+            
+            {/* Téléphone */}
+            <ChampSaisie
+              type="tel"
+              label="Téléphone"
+              leftIcon="phone"
+              placeholder="+221 78 123 45 67"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
+            
+            {/* Password fields - only for new users */}
             {!userId && (
-              <div className="md:col-span-2">
+              <>
                 <ChampSaisie
                   required
                   type="password"
                   label="Mot de passe"
+                  leftIcon="lock"
                   placeholder="Minimum 8 caractères"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
-              </div>
+                <ChampSaisie
+                  required
+                  type="password"
+                  label="Confirmer le mot de passe"
+                  leftIcon="lock"
+                  placeholder="Répétez le mot de passe"
+                  value={formData.password_confirm}
+                  onChange={(e) => setFormData({ ...formData, password_confirm: e.target.value })}
+                />
+              </>
             )}
           </div>
         </div>
 
-        <hr className="border-gray-200 dark:border-gray-800" />
+        <hr className="border-gray-200 dark:border-gray-700" />
 
         {/* Role Selection */}
         <div>
-          <h3 className="text-gray-900 dark:text-white text-lg font-bold mb-4">Rôle et Permissions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <h3 className="text-gray-900 dark:text-white text-base font-bold mb-3 flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary">security</span>
+            Rôle et Permissions
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {roles.map((role) => (
-              <label key={role.id} className="relative group cursor-pointer">
+              <label key={role.id} className="relative cursor-pointer">
                 <input
                   type="radio"
                   name="role"
@@ -289,24 +313,24 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="peer sr-only"
                 />
-                <div className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary/5 transition-all h-full">
-                  <div className={`w-12 h-12 rounded-full ${
+                <div className="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary/50 peer-checked:border-primary peer-checked:bg-primary/5 transition-all h-full">
+                  <div className={`w-10 h-10 rounded-full ${
                     role.color === 'blue' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
                     role.color === 'purple' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' :
                     role.color === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
                     'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                  } flex items-center justify-center mb-3`}>
-                    <span className="material-symbols-outlined">{role.icon}</span>
+                  } flex items-center justify-center mb-2`}>
+                    <span className="material-symbols-outlined text-xl">{role.icon}</span>
                   </div>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white text-center">
+                  <span className="text-xs font-bold text-gray-900 dark:text-white text-center leading-tight">
                     {role.label}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 text-center mt-0.5">
                     {role.desc}
                   </span>
                 </div>
-                <div className="absolute top-3 right-3 opacity-0 peer-checked:opacity-100 transition-opacity text-primary">
-                  <span className="material-symbols-outlined">check_circle</span>
+                <div className="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity text-primary">
+                  <span className="material-symbols-outlined text-lg">check_circle</span>
                 </div>
               </label>
             ))}
@@ -314,13 +338,22 @@ export default function ModaleUtilisateur({ isOpen, onClose, userId, onSuccess }
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-3 pt-5 border-t border-gray-200 dark:border-gray-700">
           <Bouton type="button" variant="outline" onClick={onClose}>
             Annuler
           </Bouton>
           <Bouton type="submit" disabled={loading}>
-            <span className="material-symbols-outlined text-[20px] mr-2">save</span>
-            {userId ? 'Modifier' : 'Créer'} l'utilisateur
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                {userId ? 'Modification...' : 'Création...'}
+              </span>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-lg mr-1.5">{userId ? 'save' : 'person_add'}</span>
+                {userId ? 'Enregistrer' : 'Créer'}
+              </>
+            )}
           </Bouton>
         </div>
       </form>

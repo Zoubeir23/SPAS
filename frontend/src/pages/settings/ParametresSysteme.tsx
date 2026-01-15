@@ -1,18 +1,27 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import MiseEnPagePrincipale from '@/components/layout/MiseEnPagePrincipale'
 import Carte from '@/components/common/Carte'
 import Bouton from '@/components/common/Bouton'
+import ModaleConfirmation from '@/components/common/ModaleConfirmation'
 import { settingsService, type SystemSettings } from '@/api/services/settingsService'
+import { mlService, type MLModel } from '@/api/services/mlService'
+import { ROUTES } from '@/utils/constants'
 
 export default function ParametresSysteme() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('ai')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [resetConfirmation, setResetConfirmation] = useState(false)
   
   // Settings state
   const [_settings, setSettings] = useState<SystemSettings | null>(null)
+  
+  // Active ML Model
+  const [activeModel, setActiveModel] = useState<MLModel | null>(null)
   
   // Derived states for UI (converted from API format)
   const [highRiskThreshold, setHighRiskThreshold] = useState(10)
@@ -37,7 +46,17 @@ export default function ParametresSysteme() {
 
   useEffect(() => {
     loadSettings()
+    loadActiveModel()
   }, [])
+
+  const loadActiveModel = async () => {
+    try {
+      const model = await mlService.getActiveModel()
+      setActiveModel(model)
+    } catch (err) {
+      console.error('Erreur lors du chargement du modèle actif:', err)
+    }
+  }
 
   const loadSettings = async () => {
     setLoading(true)
@@ -110,8 +129,6 @@ export default function ParametresSysteme() {
   }
 
   const handleResetSettings = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir réinitialiser tous les paramètres ?')) return
-    
     setSaving(true)
     setError(null)
     try {
@@ -175,7 +192,7 @@ export default function ParametresSysteme() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Bouton variant="outline" onClick={handleResetSettings} disabled={saving}>
+            <Bouton variant="outline" onClick={() => setResetConfirmation(true)} disabled={saving}>
               <span className="material-symbols-outlined text-sm mr-1">restart_alt</span>
               Réinitialiser
             </Bouton>
@@ -418,30 +435,55 @@ export default function ParametresSysteme() {
                   </div>
                   <div>
                     <h3 className="text-gray-900 dark:text-white font-bold text-sm">Modèle Actif</h3>
-                    <p className="text-primary text-xs font-semibold">ISI-Predict v2.4.1</p>
+                    <p className="text-primary text-xs font-semibold">
+                      {activeModel ? `${activeModel.name} ${activeModel.version}` : 'Aucun modèle actif'}
+                    </p>
                   </div>
                 </div>
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Type</span>
-                    <span className="font-medium text-gray-900 dark:text-white">Random Forest</span>
+                {activeModel ? (
+                  <>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">Type</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{activeModel.algorithm || 'XGBoost'}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">Précision</span>
+                        <span className="font-medium text-emerald-600">
+                          {typeof activeModel.accuracy === 'string' 
+                            ? parseFloat(activeModel.accuracy).toFixed(1) 
+                            : (activeModel.accuracy > 1 ? activeModel.accuracy.toFixed(1) : (activeModel.accuracy * 100).toFixed(1))}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">F1-Score</span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {typeof activeModel.f1Score === 'string' 
+                            ? parseFloat(activeModel.f1Score).toFixed(3) 
+                            : (activeModel.f1Score?.toFixed(3) ?? 'N/A')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">Dernière mise à jour</span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {activeModel.trainedAt 
+                            ? new Date(activeModel.trainedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+                            : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+                    <Bouton variant="outline" className="w-full" onClick={() => navigate(`${ROUTES.ML_MODELS}/${activeModel.id}`)}>
+                      Voir les détails
+                    </Bouton>
+                  </>
+                ) : (
+                  <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                    <p>Aucun modèle ML n'est actuellement actif.</p>
+                    <Bouton variant="outline" className="mt-4" onClick={() => navigate(ROUTES.ML_MODELS)}>
+                      Gérer les modèles
+                    </Bouton>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Précision</span>
-                    <span className="font-medium text-emerald-600">94.2%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">F1-Score</span>
-                    <span className="font-medium text-gray-900 dark:text-white">0.892</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Dernière mise à jour</span>
-                    <span className="font-medium text-gray-900 dark:text-white">24 Oct 2023</span>
-                  </div>
-                </div>
-                <Bouton variant="outline" className="w-full">
-                  Voir les détails
-                </Bouton>
+                )}
               </Carte>
             </div>
           </div>
@@ -582,15 +624,19 @@ export default function ParametresSysteme() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Version</span>
-                    <span className="font-medium text-gray-900 dark:text-white">SPAS v2.0.0</span>
+                    <span className="font-medium text-gray-900 dark:text-white">SPAS v2.1.0</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">Environnement</span>
-                    <span className="font-medium text-emerald-600">Production</span>
+                    <span className={`font-medium ${maintenanceMode ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      {maintenanceMode ? 'Maintenance' : 'Production'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Dernière mise à jour</span>
-                    <span className="font-medium text-gray-900 dark:text-white">Janvier 2026</span>
+                    <span className="text-gray-500 dark:text-gray-400">Langue active</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {systemLanguage === 'fr' ? '🇫🇷 Français' : '🇬🇧 English'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -640,6 +686,14 @@ export default function ParametresSysteme() {
                   <span>Mises à jour système</span>
                 </div>
               </div>
+              {emailNotifications && (
+                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                    <span className="material-symbols-outlined text-sm mt-0.5">warning</span>
+                    <span>Serveur SMTP non configuré. Contactez l'administrateur pour activer l'envoi d'emails.</span>
+                  </p>
+                </div>
+              )}
             </Carte>
             
             {/* Notifications SMS */}
@@ -683,10 +737,10 @@ export default function ParametresSysteme() {
                 </div>
               </div>
               {smsNotifications && (
-                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                  <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">info</span>
-                    Des frais SMS peuvent s'appliquer
+                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                    <span className="material-symbols-outlined text-sm mt-0.5">warning</span>
+                    <span>Provider SMS non configuré (Twilio, etc.). Contactez l'administrateur système.</span>
                   </p>
                 </div>
               )}
@@ -731,6 +785,12 @@ export default function ParametresSysteme() {
                   <span className="material-symbols-outlined text-sm">check_circle</span>
                   <span>Tâches assignées</span>
                 </div>
+              </div>
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
+                  <span className="material-symbols-outlined text-sm mt-0.5">info</span>
+                  <span>Les notifications push fonctionnent uniquement dans l'application (pas de push système).</span>
+                </p>
               </div>
             </Carte>
           </div>
@@ -883,6 +943,18 @@ export default function ParametresSysteme() {
             </Carte>
           </div>
         )}
+
+        <ModaleConfirmation
+          isOpen={resetConfirmation}
+          onClose={() => setResetConfirmation(false)}
+          onConfirm={handleResetSettings}
+          title="Réinitialiser les paramètres"
+          message="Êtes-vous sûr de vouloir réinitialiser tous les paramètres aux valeurs par défaut ? Cette action est irréversible."
+          confirmText="Réinitialiser"
+          cancelText="Annuler"
+          variant="warning"
+          isLoading={saving}
+        />
       </div>
     </MiseEnPagePrincipale>
   )

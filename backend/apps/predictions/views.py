@@ -181,51 +181,99 @@ class PredictionViewSet(viewsets.ModelViewSet):
                 pass  # Will use heuristics
 
         predictions_created = []
+        alerts_created_count = 0
 
         for student in students:
-            # Gather student features
-            features = self._gather_student_features(student)
+            try:
+                # Gather student features using centralized function
+                features = calculate_student_features_from_db(student)
 
-            # Get prediction
-            result = predictor.predict_risk(features)
+                # Get prediction
+                result = predictor.predict_risk(features)
 
-            # Create prediction record
-            risk_level_map = {
-                'low': Prediction.RiskLevel.LOW,
-                'medium': Prediction.RiskLevel.MEDIUM,
-                'high': Prediction.RiskLevel.HIGH,
-                'critical': Prediction.RiskLevel.CRITICAL,
-            }
+                # Create prediction record
+                risk_level_map = {
+                    'low': Prediction.RiskLevel.LOW,
+                    'medium': Prediction.RiskLevel.MEDIUM,
+                    'high': Prediction.RiskLevel.HIGH,
+                    'critical': Prediction.RiskLevel.CRITICAL,
+                }
 
-            prediction = Prediction.objects.create(
-                student=student,
-                risk_score=float(result['risk_score']),
-                risk_level=risk_level_map.get(result['risk_level'], Prediction.RiskLevel.MEDIUM),
-                predicted_success_rate=100 - float(result['risk_score']),
-                factors=result.get('factors', []),
-                model_version=active_model if model_loaded else None
-            )
+                # Ensure risk_score is within valid range (0-100)
+                risk_score = max(0, min(100, float(result['risk_score'])))
 
-            # Update student risk fields
-            student.risk_score = float(result['risk_score'])
-            student.risk_level = result['risk_level']
-            student.save(update_fields=['risk_score', 'risk_level', 'updated_at'])
+                prediction = Prediction.objects.create(
+                    student=student,
+                    risk_score=int(risk_score),
+                    risk_level=risk_level_map.get(result['risk_level'], Prediction.RiskLevel.MEDIUM),
+                    predicted_success_rate=int(100 - risk_score),
+                    factors=result.get('factors', []),
+                    model_version=active_model if model_loaded else None
+                )
 
-            predictions_created.append({
-                'student_id': str(student.id),
-                'student_name': f"{student.first_name} {student.last_name}",
-                'prediction_id': str(prediction.id),
-                'risk_score': float(result['risk_score']),
-                'risk_level': result['risk_level']
-            })
+                # Update student risk fields
+                student.risk_score = risk_score
+                student.risk_level = result['risk_level']
+                student.save(update_fields=['risk_score', 'risk_level', 'updated_at'])
+
+                # Create alert automatically if risk is high or critical
+                if prediction.risk_level in [Prediction.RiskLevel.HIGH, Prediction.RiskLevel.CRITICAL]:
+                    from apps.alerts.models import Alert
+                    
+                    # Get top factors for the alert message
+                    top_factors = prediction.get_top_factors(limit=3)
+                    factors_list = []
+                    for f in top_factors:
+                        factor_name = f.get('name', 'N/A')
+                        impact = f.get('impact', 0)
+                        # Format impact as percentage
+                        if isinstance(impact, (int, float)):
+                            factors_list.append(f"{factor_name} ({impact:.1f}%)")
+                        else:
+                            factors_list.append(factor_name)
+                    factors_text = ', '.join(factors_list) if factors_list else 'Non disponibles'
+                    
+                    # Determine alert level
+                    alert_level = 'critical' if prediction.risk_level == Prediction.RiskLevel.CRITICAL else 'high'
+                    
+                    # Check if alert already exists
+                    existing_alert = Alert.objects.filter(
+                        student=student,
+                        type=Alert.AlertType.PREDICTION,
+                        status__in=[Alert.Status.NEW, Alert.Status.ACKNOWLEDGED]
+                    ).exists()
+                    
+                    if not existing_alert:
+                        # Create the alert using create_prediction_alert for prediction type
+                        Alert.create_prediction_alert(
+                            student=student,
+                            message=f"L'étudiant {student.get_full_name()} présente un risque de décrochage {prediction.risk_level} (Score: {prediction.risk_score}%). Facteurs principaux: {factors_text}.",
+                            level=alert_level
+                        )
+                        alerts_created_count += 1
+
+                predictions_created.append({
+                    'student_id': str(student.id),
+                    'student_name': f"{student.first_name} {student.last_name}",
+                    'prediction_id': str(prediction.id),
+                    'risk_score': float(result['risk_score']),
+                    'risk_level': result['risk_level']
+                })
+            except Exception as e:
+                # Log error but continue with other students
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Erreur lors de la génération de prédiction pour étudiant {student.id}: {e}", exc_info=True)
+                continue
 
         # Sort by risk score descending
         predictions_created.sort(key=lambda x: x['risk_score'], reverse=True)
 
         return Response({
             'success': True,
-            'model_used': active_model.name if model_loaded else 'heuristics',
+            'model_used': active_model.name if (model_loaded and active_model) else 'heuristics',
             'total_predictions': len(predictions_created),
+            'alerts_created': alerts_created_count,
             'predictions': predictions_created
         })
 

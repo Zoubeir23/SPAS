@@ -11,44 +11,54 @@ logger = logging.getLogger(__name__)
 @shared_task(bind=True)
 def create_alerts_from_predictions(self):
     """
-    Create alerts from recent predictions with high risk.
+    Create alerts from recent high-risk predictions that don't have alerts yet.
     """
     from apps.predictions.models import Prediction
     from .models import Alert
+    from django.db.models import Max
 
     try:
-        # Get recent high-risk predictions without alerts
+        # Get the latest prediction for each student
+        latest_prediction_ids = Prediction.objects.values('student').annotate(
+            latest_id=Max('id')
+        ).values_list('latest_id', flat=True)
+
+        # Get high-risk predictions (HIGH or CRITICAL) that are the latest for each student
         high_risk_predictions = Prediction.objects.filter(
-            is_at_risk=True,
-            is_latest=True,
-            alerts__isnull=True
-        )
+            id__in=latest_prediction_ids,
+            risk_level__in=[Prediction.RiskLevel.HIGH, Prediction.RiskLevel.CRITICAL]
+        ).select_related('student')
 
         alerts_created = 0
 
         for prediction in high_risk_predictions:
-            # Determine severity based on risk level
-            if prediction.risk_level == Prediction.RiskLevel.CRITICAL:
-                severity = Alert.Severity.CRITICAL
-            elif prediction.risk_level == Prediction.RiskLevel.HIGH:
-                severity = Alert.Severity.WARNING
-            else:
-                severity = Alert.Severity.INFO
-
-            # Create alert
-            alert = Alert.objects.create(
+            # Check if an alert already exists for this prediction/student
+            existing_alert = Alert.objects.filter(
                 student=prediction.student,
-                alert_type=Alert.AlertType.DROPOUT_RISK,
-                severity=severity,
-                title=f"Étudiant à risque: {prediction.student.get_full_name()}",
-                message=f"Score de risque: {prediction.risk_score}%. "
-                       f"Facteurs: Présence ({prediction.attendance_factor}%), "
-                       f"Notes ({prediction.grade_factor}%), "
-                       f"Engagement ({prediction.engagement_factor}%).",
-                prediction=prediction
-            )
+                type=Alert.AlertType.RISK,
+                status__in=[Alert.Status.NEW, Alert.Status.ACKNOWLEDGED]
+            ).exists()
 
-            alerts_created += 1
+            if not existing_alert:
+                # Get top factors for the alert message
+                top_factors = prediction.get_top_factors(limit=3)
+                factors_text = ', '.join([
+                    f"{f.get('name', 'N/A')} ({f.get('impact', 0):.1%})" 
+                    for f in top_factors
+                ]) if top_factors else 'Non disponibles'
+
+                # Determine alert level based on risk level
+                alert_level = 'critical' if prediction.risk_level == Prediction.RiskLevel.CRITICAL else 'high'
+
+                # Create the alert
+                Alert.create_risk_alert(
+                    student=prediction.student,
+                    message=f"Score de risque: {prediction.risk_score}%. "
+                           f"Facteurs principaux: {factors_text}.",
+                    level=alert_level
+                )
+
+                alerts_created += 1
 
         logger.info(f"Created {alerts_created} alerts from predictions")
 
@@ -65,40 +75,51 @@ def create_alerts_from_predictions(self):
 @shared_task(bind=True)
 def check_low_attendance(self):
     """
-    Create alerts for students with low attendance.
+    Create alerts for students with low attendance (< 70%).
     """
-    from apps.attendance.models import AttendanceSummary
+    from apps.attendance.models import Attendance
     from apps.students.models import Student
     from .models import Alert
+    from django.db.models import Count, Q
 
     try:
-        # Get students with low attendance (< 70%)
-        low_attendance = AttendanceSummary.objects.filter(
-            attendance_rate__lt=70,
-            enrollment__student__status=Student.Status.ACTIVE
-        )
+        # Get all active students
+        students = Student.objects.filter(status=Student.Status.ACTIVE)
 
         alerts_created = 0
+        threshold = 70  # 70% attendance threshold
 
-        for summary in low_attendance:
-            # Check if alert already exists
-            existing_alert = Alert.objects.filter(
-                student=summary.enrollment.student,
-                alert_type=Alert.AlertType.LOW_ATTENDANCE,
-                status__in=[Alert.Status.ACTIVE, Alert.Status.ACKNOWLEDGED]
-            ).exists()
+        for student in students:
+            # Get attendance records for this student
+            attendance_records = Attendance.objects.filter(student=student)
+            total = attendance_records.count()
 
-            if not existing_alert:
-                Alert.objects.create(
-                    student=summary.enrollment.student,
-                    alert_type=Alert.AlertType.LOW_ATTENDANCE,
-                    severity=Alert.Severity.WARNING if summary.attendance_rate < 60 else Alert.Severity.INFO,
-                    title=f"Faible présence: {summary.enrollment.student.get_full_name()}",
-                    message=f"Taux de présence: {summary.attendance_rate}% "
-                           f"dans {summary.enrollment.course_session.course.name}. "
-                           f"Absences: {summary.absent_count}/{summary.total_classes}."
-                )
-                alerts_created += 1
+            if total > 0:
+                # Calculate attendance rate
+                present_count = attendance_records.filter(status=Attendance.Status.PRESENT).count()
+                attendance_rate = (present_count / total) * 100
+
+                # Check if attendance is below threshold
+                if attendance_rate < threshold:
+                    # Check if alert already exists
+                    existing_alert = Alert.objects.filter(
+                        student=student,
+                        type=Alert.AlertType.ATTENDANCE,
+                        status__in=[Alert.Status.NEW, Alert.Status.ACKNOWLEDGED]
+                    ).exists()
+
+                    if not existing_alert:
+                        # Determine alert level
+                        alert_level = 'high' if attendance_rate < 60 else 'medium'
+
+                        Alert.create_attendance_alert(
+                            student=student,
+                            message=f"Taux de présence faible: {attendance_rate:.1f}%. "
+                                   f"Présent: {present_count}/{total} cours.",
+                            level=alert_level
+                        )
+
+                        alerts_created += 1
 
         logger.info(f"Created {alerts_created} low attendance alerts")
 
@@ -115,39 +136,46 @@ def check_low_attendance(self):
 @shared_task(bind=True)
 def check_failing_grades(self):
     """
-    Create alerts for students with failing grades.
+    Create alerts for students with failing grades (< 10/20 or < 50%).
     """
-    from apps.grades.models import CourseGradeSummary
+    from apps.grades.models import Grade
     from apps.students.models import Student
     from .models import Alert
+    from django.db.models import Avg
 
     try:
-        # Get students with failing grades
-        failing_grades = CourseGradeSummary.objects.filter(
-            is_passing=False,
-            enrollment__student__status=Student.Status.ACTIVE
-        )
+        # Get all active students
+        students = Student.objects.filter(status=Student.Status.ACTIVE)
 
         alerts_created = 0
+        passing_threshold = 10.0  # 10/20 or 50%
 
-        for summary in failing_grades:
-            # Check if alert already exists
-            existing_alert = Alert.objects.filter(
-                student=summary.enrollment.student,
-                alert_type=Alert.AlertType.FAILING_GRADES,
-                status__in=[Alert.Status.ACTIVE, Alert.Status.ACKNOWLEDGED]
-            ).exists()
+        for student in students:
+            # Get all grades for this student
+            grades = Grade.objects.filter(student=student)
+            
+            if grades.exists():
+                # Calculate average grade
+                avg_grade = grades.aggregate(avg=Avg('score'))['avg'] or 0
 
-            if not existing_alert:
-                Alert.objects.create(
-                    student=summary.enrollment.student,
-                    alert_type=Alert.AlertType.FAILING_GRADES,
-                    severity=Alert.Severity.WARNING,
-                    title=f"Notes insuffisantes: {summary.enrollment.student.get_full_name()}",
-                    message=f"Note finale: {summary.final_grade}% ({summary.letter_grade}) "
-                           f"dans {summary.enrollment.course_session.course.name}."
-                )
-                alerts_created += 1
+                # Check if average is below passing threshold
+                if avg_grade < passing_threshold:
+                    # Check if alert already exists
+                    existing_alert = Alert.objects.filter(
+                        student=student,
+                        type=Alert.AlertType.PERFORMANCE,
+                        status__in=[Alert.Status.NEW, Alert.Status.ACKNOWLEDGED]
+                    ).exists()
+
+                    if not existing_alert:
+                        Alert.create_performance_alert(
+                            student=student,
+                            message=f"Moyenne générale faible: {avg_grade:.1f}/20. "
+                                   f"Nombre de notes: {grades.count()}.",
+                            level='high'
+                        )
+
+                        alerts_created += 1
 
         logger.info(f"Created {alerts_created} failing grades alerts")
 

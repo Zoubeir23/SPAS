@@ -37,9 +37,11 @@ export interface UserFilters {
 export interface CreateUserData {
   email: string;
   password: string;
+  password_confirm: string;
   first_name: string;
   last_name: string;
   role: string;
+  phone?: string;
 }
 
 function normalizeUser(user: User): User {

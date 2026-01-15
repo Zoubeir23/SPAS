@@ -2,11 +2,14 @@
 
 Guide complet pour démarrer avec le projet SPAS.
 
+**Version** : 2.1  
+**Date** : 3 janvier 2026
+
 ---
 
 ## ⚡ Démarrage Rapide
 
-### Frontend (Fonctionnel en mode démo)
+### Frontend
 
 ```bash
 # 1. Aller dans le dossier frontend
@@ -22,53 +25,102 @@ npm run dev
 # http://localhost:5173
 ```
 
-### Login de Test
+### Backend
 
-| Rôle | Email | Mot de passe |
-|------|-------|--------------|
-| **Admin** | sophie.martin@isi.edu | *N'importe quel* |
-| **Teacher** | pierre.dupont@isi.edu | *N'importe quel* |
-| **Data Scientist** | marie.sarr@isi.edu | *N'importe quel* |
+```bash
+# 1. Aller dans le dossier backend
+cd backend
 
-**Note**: L'authentification est mockée, n'importe quel mot de passe fonctionne.
+# 2. Créer et activer l'environnement virtuel
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
+
+# 3. Installer les dépendances
+pip install -r requirements.txt
+
+# 4. Appliquer les migrations
+python manage.py migrate
+
+# 5. Créer les données de test
+python manage.py init_spas
+
+# 6. Lancer le serveur
+python manage.py runserver
+
+# API disponible sur http://localhost:8000
+```
 
 ---
 
-## 📁 Structure Frontend
+## 👥 Comptes de Test
+
+| Rôle | Email | Mot de passe |
+|------|-------|--------------|
+| **Admin** | admin@isi.edu | password123 |
+| **Enseignant** | teacher@isi.edu | password123 |
+| **Data Scientist** | ds@isi.edu | password123 |
+| **Pédagogique** | pedagogical@isi.edu | password123 |
+
+---
+
+## 🔐 Contrôle d'Accès par Rôle
+
+| Rôle | Accès Autorisés |
+|------|-----------------|
+| **admin** | Toutes les fonctionnalités + Utilisateurs + Paramètres |
+| **teacher** | Dashboard, Étudiants, Notes, Absences, Sessions |
+| **ds** | Dashboard Prédictif, ML, Prédictions, Analytics |
+| **pedagogical** | Dashboards, Alertes, Interventions, Prédictions |
+
+---
+
+## 📁 Structure du Projet
 
 ```
-frontend/src/
-├── pages/              # 18 pages React
-│   ├── auth/          # Login, ForgotPassword
-│   ├── dashboard/     # GeneralDashboard, PredictiveDashboard
-│   ├── students/      # StudentList, StudentDetail
-│   ├── programs/      # ProgramList
-│   ├── sessions/      # SessionList
-│   ├── alerts/        # AlertList
-│   ├── predictions/   # PredictionDetail
-│   ├── users/         # UserManagement
-│   ├── ml/            # ModelManagement, ModelDetails
-│   ├── attendance/    # AttendanceManagement
-│   ├── grades/        # GradeEntry
-│   ├── settings/      # SystemSettings
-│   └── analytics/     # AdvancedAnalytics
+SPAS/
+├── frontend/src/
+│   ├── pages/              # 18 pages React
+│   │   ├── auth/           # Connexion, MotDePasseOublie
+│   │   ├── dashboard/      # TableauDeBordGeneral, TableauDeBordPredictif
+│   │   ├── students/       # ListeEtudiants, DetailEtudiant
+│   │   ├── programs/       # ListeFilieres
+│   │   ├── sessions/       # ListeSessions
+│   │   ├── alerts/         # ListeAlertes
+│   │   ├── predictions/    # DetailPrediction (+ SHAP)
+│   │   ├── users/          # GestionUtilisateurs
+│   │   ├── ml/             # GestionModeles, DetailModele (+ ROC)
+│   │   ├── attendance/     # GestionAbsences
+│   │   ├── grades/         # SaisieNotes
+│   │   ├── settings/       # ParametresSysteme
+│   │   └── analytics/      # AnalysesAvancees
+│   │
+│   ├── components/         # 26 composants UI
+│   │   ├── common/         # Bouton, ChampSaisie, Carte, Badge...
+│   │   ├── layout/         # MiseEnPagePrincipale, BarreLaterale, EnTete
+│   │   ├── modals/         # ModaleEtudiant, ModaleUtilisateur...
+│   │   └── charts/         # GraphiqueROC, GraphiqueSHAP, GraphiqueLignes...
+│   │
+│   ├── api/services/       # 12 services API (connectés)
+│   ├── store/              # Zustand (état global)
+│   └── routes/             # Configuration routes + protection par rôle
 │
-├── components/         # 22 composants UI
-│   ├── common/        # Button, Input, Card, Badge, Alert...
-│   ├── layout/        # MainLayout, Sidebar, Header
-│   ├── modals/        # StudentModal, UserModal, TrainingModal...
-│   └── charts/        # LineChart, BarChart, PieChart, GaugeChart
+├── backend/
+│   ├── apps/               # 10 applications Django
+│   │   ├── authentication/ # JWT
+│   │   ├── users/          # Utilisateurs (4 rôles)
+│   │   ├── students/       # Étudiants
+│   │   ├── programs/       # Programmes
+│   │   ├── sessions/       # Sessions
+│   │   ├── grades/         # Notes
+│   │   ├── attendance/     # Présences
+│   │   ├── ml/             # XGBoost + SHAP + SMOTE
+│   │   ├── predictions/    # Prédictions
+│   │   ├── alerts/         # Alertes + Interventions
+│   │   └── core/           # Logs d'audit + Paramètres
+│   └── config/             # Configuration Django
 │
-├── api/
-│   ├── axiosConfig.ts
-│   ├── endpoints.ts
-│   └── services/      # 9 services API (mockés)
-│
-├── store/             # Zustand (état global)
-├── hooks/             # Hooks personnalisés
-├── routes/            # Configuration routes
-└── utils/             # Utilitaires
-```
+└── Docs/                   # Documentation
 
 ---
 
@@ -78,101 +130,106 @@ frontend/src/
 - `/auth/login` - Page de connexion
 - `/auth/forgot-password` - Mot de passe oublié
 
-### Routes Protégées
+### Routes Protégées (par rôle)
 
-#### Dashboards
-- `/dashboard` - Dashboard général
-- `/dashboard/predictive` - Dashboard prédictif ML
-
-#### Gestion Académique
-- `/students` - Liste des étudiants
-- `/students/:id` - Détail étudiant
-- `/programs` - Liste des filières
-- `/sessions` - Liste des sessions
-- `/grades` - Saisie des notes
-- `/attendance` - Gestion des absences
-
-#### Module IA
-- `/predictions` - Prédictions ML
-- `/alerts` - Alertes système
-- `/ml/models` - Gestion modèles ML
-- `/ml/models/:id` - Détails modèle
-
-#### Administration
-- `/users` - Gestion utilisateurs
-- `/analytics` - Analytics avancées
-- `/settings` - Paramètres système
+| Route | Admin | Teacher | DS | Pedagogical |
+|-------|:-----:|:-------:|:--:|:-----------:|
+| `/dashboard` | ✅ | ✅ | ✅ | ✅ |
+| `/dashboard/predictive` | ✅ | ❌ | ✅ | ✅ |
+| `/students` | ✅ | ✅ | ❌ | ✅ |
+| `/students/:id` | ✅ | ✅ | ❌ | ✅ |
+| `/programs` | ✅ | ✅ | ❌ | ✅ |
+| `/sessions` | ✅ | ✅ | ❌ | ❌ |
+| `/grades` | ✅ | ✅ | ❌ | ❌ |
+| `/attendance` | ✅ | ✅ | ❌ | ❌ |
+| `/predictions/:id` | ✅ | ❌ | ✅ | ✅ |
+| `/alerts` | ✅ | ❌ | ❌ | ✅ |
+| `/ml/models` | ✅ | ❌ | ✅ | ❌ |
+| `/ml/models/:id` | ✅ | ❌ | ✅ | ❌ |
+| `/analytics` | ✅ | ❌ | ✅ | ❌ |
+| `/users` | ✅ | ❌ | ❌ | ❌ |
+| `/settings` | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
 ## 🛠️ Commandes Disponibles
 
-### Développement
+### Frontend
 ```bash
 npm run dev          # Lancer serveur dev (port 5173)
 npm run build        # Build production
 npm run preview      # Prévisualiser build
+npm run test         # Lancer tests Vitest
+npm run lint         # Vérifier code ESLint
 ```
 
-### Tests
+### Backend
 ```bash
-npm run test         # Lancer tests (2 tests basiques)
-npm run test:ui      # Tests avec interface
-npm run coverage     # Rapport de couverture
-```
-
-### Qualité Code
-```bash
-npm run lint         # Vérifier code
-npm run format       # Formater code (si configuré)
+python manage.py runserver             # API (port 8000)
+python manage.py migrate               # Appliquer migrations
+python manage.py init_spas             # Créer données de test
+python manage.py createsuperuser       # Admin Django
+pytest                                 # Tests (28 passent)
 ```
 
 ---
 
-## 🔧 Technologies Utilisées
+## 🔧 Technologies
 
 ### Frontend
 | Techno | Version | Usage |
 |--------|---------|-------|
 | React | 18.3.1 | Framework UI |
 | TypeScript | 5.6.2 | Typage |
-| Vite | 6.0.3 | Build tool |
+| Vite | 5.4.21 | Build tool |
 | React Router | 7.1.1 | Routing |
 | Zustand | 5.0.2 | État global |
 | Axios | 1.7.9 | HTTP client |
 | Tailwind CSS | 3.4.17 | Styling |
-| Recharts | 2.15.0 | Graphiques |
+| Recharts | 2.15.0 | Graphiques (ROC, SHAP) |
 | Lucide React | 0.469.0 | Icônes |
 
-### Backend (À implémenter)
-❌ Aucune technologie backend actuellement
+### Backend
+| Techno | Version | Usage |
+|--------|---------|-------|
+| Django | 6.0 | Framework web |
+| Django REST Framework | 3.15+ | API REST |
+| PostgreSQL | 15+ | Base de données |
+| Simple JWT | 5.3+ | Authentification |
+| Celery | 5.3+ | Tâches async |
+| Redis | 7+ | Broker Celery |
 
-**Recommandations**:
-- **Option 1**: Node.js + Express + Prisma + PostgreSQL
-- **Option 2**: Django + DRF + PostgreSQL
-- **Option 3**: NestJS + TypeORM + PostgreSQL
+### Machine Learning
+| Techno | Version | Usage |
+|--------|---------|-------|
+| XGBoost | 2.0+ | Algorithme principal |
+| SHAP | 0.45+ | Explainability |
+| imbalanced-learn | 0.12+ | SMOTE |
+| scikit-learn | 1.3+ | Preprocessing |
 
 ---
 
-## ⚠️ Limitations Actuelles
+## 📊 Données en Base (PostgreSQL)
 
-### 1. Données Mockées
-Tous les services retournent des données simulées.
+| Entité | Nombre | Statut |
+|--------|--------|--------|
+| Étudiants | 66 | ✅ CRUD |
+| Notes | 2602 | ✅ CRUD + CSV |
+| Présences | 3857 | ✅ CRUD |
+| Prédictions ML | 15 | ✅ Automatique |
+| Alertes | 5 | ✅ Workflow |
+| Programmes | 4 | ✅ CRUD |
+| Sessions | 2 | ✅ CRUD |
+| Modèles ML | 3 | ✅ Entraînement |
+| Utilisateurs | 5 | ✅ 4 rôles |
 
-**Exemple**:
-```typescript
-// frontend/src/api/services/studentService.ts
-export const getAll = async (): Promise<Student[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return mockStudents; // ❌ Données en dur
-};
-```
+---
 
-### 2. Pas de Persistance
-Les modifications UI ne sont **PAS** sauvegardées.
-- Créer un étudiant → Perdu au refresh
-- Modifier une note → Perdu au refresh
-- Supprimer un item → Perdu au refresh
+## 📚 Documentation API
+
+- **Swagger UI** : http://localhost:8000/api/docs/
+- **ReDoc** : http://localhost:8000/api/redoc/
+- **Admin Django** : http://localhost:8000/admin/
 
 ### 3. Authentification Mockée
 ```typescript

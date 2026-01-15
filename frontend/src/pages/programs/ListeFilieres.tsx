@@ -3,24 +3,28 @@ import MiseEnPagePrincipale from '@/components/layout/MiseEnPagePrincipale'
 import TableauDonnees, { Column } from '@/components/common/TableauDonnees'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
+import ModaleFiliere from '@/components/modals/ModaleFiliere'
 import { programService, Program } from '@/api/services/programService'
 
 export default function ListeFilieres() {
   const [programs, setPrograms] = useState<Program[]>([])
   const [loading, setLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedProgramId, setSelectedProgramId] = useState<string | undefined>(undefined)
+
+  const loadPrograms = async () => {
+    setLoading(true)
+    try {
+      const data = await programService.getAll()
+      setPrograms(data)
+    } catch (error) {
+      console.error('Erreur lors du chargement des filières:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const loadPrograms = async () => {
-      setLoading(true)
-      try {
-        const data = await programService.getAll()
-        setPrograms(data)
-      } catch (error) {
-        console.error('Erreur lors du chargement des filières:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
     loadPrograms()
   }, [])
 
@@ -79,10 +83,30 @@ export default function ListeFilieres() {
               Gérez les filières et programmes académiques.
             </p>
           </div>
-          <Bouton>Nouvelle filière</Bouton>
+          <Bouton onClick={() => { setSelectedProgramId(undefined); setIsModalOpen(true); }}>Nouvelle filière</Bouton>
         </div>
 
-        <TableauDonnees data={programs} columns={columns} emptyMessage="Aucune filière trouvée" />
+        <TableauDonnees 
+          data={programs} 
+          columns={columns} 
+          emptyMessage="Aucune filière trouvée"
+          actions={(program) => (
+            <button
+              onClick={() => { setSelectedProgramId(program.id); setIsModalOpen(true); }}
+              className="text-gray-400 hover:text-primary p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="Modifier"
+            >
+              <span className="material-symbols-outlined text-[20px]">edit</span>
+            </button>
+          )}
+        />
+
+        <ModaleFiliere
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={loadPrograms}
+          programId={selectedProgramId}
+        />
       </div>
     </MiseEnPagePrincipale>
   )

@@ -114,5 +114,23 @@ export const alertService = {
     const response = await apiClient.get<Alert[]>(API_ENDPOINTS.ALERTS.BY_STUDENT(studentId))
     return response.data.map(normalizeAlert)
   },
+
+  async create(data: {
+    student_id: string
+    prediction_id?: string
+    type: string
+    message: string
+    severity?: string
+  }): Promise<Alert> {
+    const response = await apiClient.post<Alert>(API_ENDPOINTS.ALERTS.BASE, {
+      student: data.student_id,
+      prediction: data.prediction_id,
+      type: data.type,
+      message: data.message,
+      level: data.severity || 'medium',
+      status: 'new'
+    })
+    return normalizeAlert(response.data)
+  },
 }
 

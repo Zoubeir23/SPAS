@@ -2,8 +2,50 @@
 
 Backend Django REST API pour le système de prédiction d'abandon scolaire.
 
-**Version**: 1.0.0
-**Statut**: Production Ready (100% implémenté)
+**Version**: 2.0  
+**Statut**: Production Ready ✅
+
+---
+
+## 🧠 Machine Learning
+
+### Algorithmes Implémentés
+
+| Algorithme | Rôle | Package |
+|------------|------|---------|
+| **XGBoost** | Classification principale | `xgboost>=2.0` |
+| **SHAP** | Explainability (valeurs de Shapley) | `shap>=0.45` |
+| **SMOTE** | Rééquilibrage classes minoritaires | `imbalanced-learn>=0.12` |
+| **RandomForest** | Algorithme de fallback | `scikit-learn` |
+
+### Fonctionnalités ML
+
+- Prédiction du risque d'abandon (0-100%)
+- Calcul automatique de la courbe ROC avec AUC
+- Explication des facteurs via SHAP TreeExplainer
+- Traduction française des noms de features
+- Entraînement asynchrone via Celery
+- Support multi-algorithmes avec fallback automatique
+
+---
+
+## 📊 Logs d'Audit
+
+Le système inclut un module complet de logs d'audit pour la traçabilité :
+
+```
+GET  /api/core/audit-logs/              # Liste paginée des logs
+GET  /api/core/audit-logs/{id}/         # Détail d'un log
+GET  /api/core/audit-logs/statistics/   # Statistiques (30 jours)
+GET  /api/core/audit-logs/recent/       # 10 dernières actions
+```
+
+### Types d'actions auditées
+- Connexion/Déconnexion
+- Création/Modification/Suppression
+- Prédictions ML
+- Alertes créées/résolues
+- Import/Export de données
 
 ---
 
@@ -23,12 +65,14 @@ Backend Django REST API pour le système de prédiction d'abandon scolaire.
 
 Le backend SPAS est une API REST complète avec:
 
-- **9 applications Django** - Modulaire et maintenable
-- **17 modèles de données** - PostgreSQL avec indexes optimisés
+- **10 applications Django** - Modulaire et maintenable
+- **17+ modèles de données** - PostgreSQL avec indexes optimisés
 - **50+ endpoints API** - RESTful avec documentation OpenAPI 3.0
 - **5 tâches Celery** - Traitement asynchrone (ML, alertes)
 - **Authentification JWT** - Sécurisée avec refresh tokens
-- **Tests unitaires** - Framework pytest configuré
+- **XGBoost + SHAP** - ML avec explainability
+- **Logs d'audit** - Traçabilité complète des actions
+- **Tests unitaires** - 28 tests d'intégration
 - **Docker ready** - Configuration complète docker-compose
 
 ---
@@ -37,27 +81,32 @@ Le backend SPAS est une API REST complète avec:
 
 ### Stack Technique
 
-- **Django 5.0+** - Framework web Python
+- **Django 6.0** - Framework web Python
 - **Django REST Framework 3.15+** - API REST
-- **PostgreSQL 14+** - Base de données relationnelle
+- **PostgreSQL 15+** - Base de données relationnelle
 - **Redis 7+** - Cache et broker messages
 - **Celery 5.3+** - Tâches asynchrones
 - **Simple JWT** - Authentification JWT
+- **XGBoost 2.0+** - Machine Learning
+- **SHAP 0.45+** - Explainability IA
+- **imbalanced-learn** - SMOTE pour rééquilibrage
 - **drf-spectacular** - Documentation OpenAPI 3.0
 
-### Applications Django (9)
+### Applications Django (10)
 
 ```
 apps/
-├── users/          - Authentification & gestion utilisateurs (rôles)
+├── authentication/ - JWT login/logout/refresh
+├── users/          - Gestion utilisateurs (4 rôles)
 ├── students/       - CRUD étudiants avec évaluation risque
-├── programs/       - Programmes d'études et cours
-├── sessions/       - Périodes académiques et inscriptions
-├── grades/         - Notes avec calculs automatiques (GPA, letter_grade)
-├── attendance/     - Présences avec taux de présence automatique
-├── ml/             - Modèles ML et entraînement asynchrone
-├── predictions/    - Prédictions risque abandon avec interventions
-└── alerts/         - Système alertes avec workflow complet
+├── programs/       - Programmes d'études et matières
+├── sessions/       - Périodes académiques
+├── grades/         - Notes avec calculs automatiques
+├── attendance/     - Présences avec taux automatique
+├── ml/             - XGBoost + SHAP + SMOTE + ROC
+├── predictions/    - Prédictions avec facteurs SHAP
+├── alerts/         - Alertes avec workflow complet
+└── core/           - Utilitaires + Logs d'audit
 ```
 
 **Voir [STRUCTURE_BACKEND.md](C:\Users\Public\Libraries\one\SPAS\backend\STRUCTURE_BACKEND.md) pour détails complets**

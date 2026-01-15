@@ -2,7 +2,67 @@
 Core serializers for SPAS application.
 """
 from rest_framework import serializers
-from .models import SystemSettings
+from .models import SystemSettings, AuditLog
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    """Serializer for AuditLog model - used for listing and viewing audit entries."""
+    
+    user_email = serializers.CharField(source='user.email', read_only=True)
+    user_name = serializers.SerializerMethodField()
+    action_display = serializers.CharField(source='get_action_display', read_only=True)
+    
+    class Meta:
+        model = AuditLog
+        fields = [
+            'id',
+            'user',
+            'user_email',
+            'user_name',
+            'action',
+            'action_display',
+            'model_name',
+            'object_id',
+            'object_repr',
+            'changes',
+            'ip_address',
+            'endpoint',
+            'method',
+            'status_code',
+            'timestamp',
+            'extra_data',
+        ]
+        read_only_fields = fields
+    
+    def get_user_name(self, obj) -> str:
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.email
+        return 'Système'
+
+
+class AuditLogListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for listing audit logs."""
+    
+    user_name = serializers.SerializerMethodField()
+    action_display = serializers.CharField(source='get_action_display', read_only=True)
+    
+    class Meta:
+        model = AuditLog
+        fields = [
+            'id',
+            'user_name',
+            'action',
+            'action_display',
+            'model_name',
+            'object_repr',
+            'timestamp',
+            'ip_address',
+        ]
+    
+    def get_user_name(self, obj) -> str:
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.email
+        return 'Système'
 
 
 class SystemSettingsSerializer(serializers.ModelSerializer):

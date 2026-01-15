@@ -16,8 +16,8 @@ URL : http://localhost:5173
 | Email                  | Nom           | Rôle                  |
 |------------------------|---------------|-----------------------|
 | admin@isi.edu          | Admin SPAS    | Administrateur        |
-| teacher@isi.edu        | Jean Dupont   | Enseignant            |
-| ds@isi.edu             | Marie Sarr    | Data Scientist        |
+| teacher@isi.edu        | Zoubeir Ibrahima   | Enseignant            |
+| ds@isi.edu             | Mohamed Sarr    | Data Scientist        |
 | pedagogical@isi.edu    | Fatou Diallo  | Direction Pédagogique |
 
 # Connexion rapide

@@ -5,7 +5,10 @@ import BarreRecherche from '@/components/common/BarreRecherche'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
 import Alerte from '@/components/common/Alerte'
+import ModaleAbsence from '@/components/modals/ModaleAbsence'
+import ModaleConfirmation from '@/components/common/ModaleConfirmation'
 import { attendanceService, Attendance } from '@/api/services/attendanceService'
+import { toast } from 'react-toastify'
 
 export default function GestionAbsences() {
   const [attendances, setAttendances] = useState<Attendance[]>([])
@@ -13,22 +16,29 @@ export default function GestionAbsences() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingAttendance, setEditingAttendance] = useState<Attendance | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; attendance: Attendance | null }>({
+    isOpen: false,
+    attendance: null,
+  })
+
+  const loadAttendances = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await attendanceService.getAll()
+      setAttendances(data)
+      setFilteredAttendances(data)
+    } catch (err: any) {
+      console.error('Erreur lors du chargement des absences:', err)
+      setError(err.response?.data?.detail || err.message || 'Erreur lors du chargement des absences')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const loadAttendances = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const data = await attendanceService.getAll()
-        setAttendances(data)
-        setFilteredAttendances(data)
-      } catch (err: any) {
-        console.error('Erreur lors du chargement des absences:', err)
-        setError(err.response?.data?.detail || err.message || 'Erreur lors du chargement des absences')
-      } finally {
-        setLoading(false)
-      }
-    }
     loadAttendances()
   }, [])
 
@@ -110,7 +120,7 @@ export default function GestionAbsences() {
               Gérez les absences et la présence des étudiants.
             </p>
           </div>
-          <Bouton>
+          <Bouton onClick={() => { setEditingAttendance(null); setIsModalOpen(true); }}>
             <span className="material-symbols-outlined text-[20px]">add</span>
             Saisir une absence
           </Bouton>
@@ -139,8 +149,67 @@ export default function GestionAbsences() {
           data={filteredAttendances}
           columns={columns}
           emptyMessage="Aucune absence enregistrée"
+          actions={(attendance) => (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setEditingAttendance(attendance)
+                  setIsModalOpen(true)
+                }}
+                className="text-gray-400 hover:text-primary p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Modifier"
+              >
+                <span className="material-symbols-outlined text-[20px]">edit</span>
+              </button>
+              <button
+                onClick={() => {
+                  setDeleteConfirmation({ isOpen: true, attendance })
+                }}
+                className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Supprimer"
+              >
+                <span className="material-symbols-outlined text-[20px]">delete</span>
+              </button>
+            </div>
+          )}
         />
       </div>
+
+      <ModaleAbsence
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingAttendance(null)
+        }}
+        attendanceId={editingAttendance?.id}
+        onSuccess={async () => {
+          await loadAttendances()
+          setIsModalOpen(false)
+          setEditingAttendance(null)
+        }}
+      />
+
+      <ModaleConfirmation
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ isOpen: false, attendance: null })}
+        onConfirm={async () => {
+          if (deleteConfirmation.attendance) {
+            try {
+              await attendanceService.delete(deleteConfirmation.attendance.id)
+              await loadAttendances()
+              toast.success('Absence supprimée avec succès')
+            } catch (err) {
+              console.error('Erreur lors de la suppression:', err)
+              toast.error('Erreur lors de la suppression de l\'absence')
+            }
+          }
+        }}
+        title="Supprimer l'absence"
+        message="Êtes-vous sûr de vouloir supprimer cette absence ? Cette action est irréversible."
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        variant="danger"
+      />
     </MiseEnPagePrincipale>
   )
 }

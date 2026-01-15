@@ -66,7 +66,7 @@ export default function AppRoutes() {
       <Route
         path={ROUTES.DASHBOARD}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'teacher', 'pedagogical']}>
             <TableauDeBordGeneral />
           </RouteProtegee>
         }
@@ -74,17 +74,17 @@ export default function AppRoutes() {
       <Route
         path={ROUTES.DASHBOARD_PREDICTIVE}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'ds', 'pedagogical']}>
             <TableauDeBordPredictif />
           </RouteProtegee>
         }
       />
 
-      {/* Routes protégées - Étudiants */}
+      {/* Routes protégées - Étudiants (pas pour DS) */}
       <Route
         path={ROUTES.STUDENTS}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'teacher', 'pedagogical']}>
             <ListeEtudiants />
           </RouteProtegee>
         }
@@ -92,7 +92,7 @@ export default function AppRoutes() {
       <Route
         path="/students/:id"
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'teacher', 'pedagogical']}>
             <DetailEtudiant />
           </RouteProtegee>
         }
@@ -138,11 +138,11 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Routes protégées - Prédictions */}
+      {/* Routes protégées - Prédictions (admin, DS, pédagogique) */}
       <Route
         path={ROUTES.PREDICTIONS}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'ds', 'pedagogical']}>
             <ListePredictions />
           </RouteProtegee>
         }
@@ -150,27 +150,27 @@ export default function AppRoutes() {
       <Route
         path="/predictions/:id"
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'ds', 'pedagogical']}>
             <DetailPrediction />
           </RouteProtegee>
         }
       />
 
-      {/* Routes protégées - Utilisateurs */}
+      {/* Routes protégées - Utilisateurs (admin uniquement) */}
       <Route
         path={ROUTES.USERS}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin']}>
             <GestionUtilisateurs />
           </RouteProtegee>
         }
       />
 
-      {/* Routes protégées - ML */}
+      {/* Routes protégées - ML (admin et DS) */}
       <Route
         path={ROUTES.ML_MODELS}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'ds']}>
             <GestionModeles />
           </RouteProtegee>
         }
@@ -178,37 +178,37 @@ export default function AppRoutes() {
       <Route
         path="/ml/models/:id"
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'ds']}>
             <DetailModele />
           </RouteProtegee>
         }
       />
 
-      {/* Routes protégées - Absences */}
+      {/* Routes protégées - Absences (pas pour DS) */}
       <Route
         path={ROUTES.ATTENDANCE}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'teacher', 'pedagogical']}>
             <GestionAbsences />
           </RouteProtegee>
         }
       />
 
-      {/* Routes protégées - Notes */}
+      {/* Routes protégées - Notes (pas pour DS) */}
       <Route
         path={ROUTES.GRADES}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'teacher', 'pedagogical']}>
             <SaisieNotes />
           </RouteProtegee>
         }
       />
 
-      {/* Routes protégées - Paramètres */}
+      {/* Routes protégées - Paramètres (admin uniquement) */}
       <Route
         path={ROUTES.SETTINGS}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin']}>
             <ParametresSysteme />
           </RouteProtegee>
         }
@@ -224,11 +224,11 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Routes protégées - Analytics */}
+      {/* Routes protégées - Analytics (admin, DS, pédagogique) */}
       <Route
         path={ROUTES.ANALYTICS}
         element={
-          <RouteProtegee>
+          <RouteProtegee allowedRoles={['admin', 'ds', 'pedagogical']}>
             <AnalysesAvancees />
           </RouteProtegee>
         }

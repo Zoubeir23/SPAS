@@ -6,6 +6,13 @@ import Badge from '@/components/common/Badge'
 import { studentService, Student } from '@/api/services/studentService'
 import { sessionService } from '@/api/services/sessionService'
 import { gradeService } from '@/api/services/gradeService'
+import { programService, Program } from '@/api/services/programService'
+
+interface Subject {
+  id: string
+  name: string
+  code?: string
+}
 
 interface GradeEntry {
   studentId: string
@@ -22,6 +29,8 @@ export default function SaisieNotes() {
   const [selectedSubject, setSelectedSubject] = useState('')
   const [students, setStudents] = useState<Student[]>([])
   const [sessions, setSessions] = useState<any[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
   const [grades, setGrades] = useState<GradeEntry[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -33,7 +42,31 @@ export default function SaisieNotes() {
         setSelectedSession(data[0].id)
       }
     }
+    const loadPrograms = async () => {
+      try {
+        const data = await programService.getAll()
+        setPrograms(data)
+      } catch (error) {
+        console.error('Erreur lors du chargement des filières:', error)
+      }
+    }
+    const loadSubjects = async () => {
+      try {
+        // Les matières sont gérées via l'API programs avec un endpoint séparé
+        // Pour l'instant, on utilise une liste vide qui sera remplie quand le backend sera étendu
+        const response = await fetch('/api/programs/subjects/')
+        if (response.ok) {
+          const data = await response.json()
+          setSubjects(data.results || data || [])
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des matières:', error)
+        // Fallback: on peut laisser vide ou charger depuis un autre endpoint
+      }
+    }
     loadSessions()
+    loadPrograms()
+    loadSubjects()
   }, [])
 
   useEffect(() => {
@@ -117,8 +150,7 @@ export default function SaisieNotes() {
       .slice(0, 2)
   }
 
-  const programs = ['Génie Logiciel - Gr. 01', 'Génie Logiciel - Gr. 02', 'Informatique de Gestion']
-  const subjects = ['Base de données II', 'Algorithmique', 'Développement Web']
+  // Les données sont maintenant chargées depuis l'API via useEffect
 
   return (
     <MiseEnPagePrincipale title="Saisie des Notes">
@@ -173,9 +205,9 @@ export default function SaisieNotes() {
                   className="w-full h-11 pl-4 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
                 >
                   <option value="">Toutes les filières</option>
-                  {programs.map((program, index) => (
-                    <option key={index} value={String(index + 1)}>
-                      {program}
+                  {programs.map((program) => (
+                    <option key={program.id} value={program.id}>
+                      {program.name}
                     </option>
                   ))}
                 </select>
@@ -194,9 +226,9 @@ export default function SaisieNotes() {
                   className="w-full h-11 pl-4 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
                 >
                   <option value="">Sélectionner une matière</option>
-                  {subjects.map((subject, index) => (
-                    <option key={index} value={String(index + 1)}>
-                      {subject}
+                  {subjects.map((subject) => (
+                    <option key={subject.id} value={subject.id}>
+                      {subject.name}
                     </option>
                   ))}
                 </select>

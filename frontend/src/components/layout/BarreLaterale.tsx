@@ -10,6 +10,7 @@ interface NavItem {
   label: string
   icon: string
   path: string
+  roles?: ('admin' | 'teacher' | 'ds' | 'pedagogical')[] // Rôles autorisés (undefined = tous)
   children?: NavItem[]
 }
 
@@ -18,44 +19,50 @@ const navItems: NavItem[] = [
     label: 'Dashboard',
     icon: 'dashboard',
     path: ROUTES.DASHBOARD,
+    roles: ['admin', 'teacher', 'pedagogical'], // DS a son propre dashboard prédictif
   },
   {
     label: 'Gestion',
     icon: 'folder_managed',
     path: '#gestion',
+    roles: ['admin', 'teacher', 'pedagogical'],
     children: [
-      { label: 'Étudiants', icon: 'school', path: '/students' },
-      { label: 'Sessions', icon: 'calendar_month', path: '/sessions' },
-      { label: 'Départements', icon: 'business', path: '/departments' },
-      { label: 'Filières', icon: 'book_2', path: '/programs' },
-      { label: 'Absences', icon: 'event_busy', path: '/attendance' },
+      { label: 'Étudiants', icon: 'school', path: '/students', roles: ['admin', 'teacher', 'pedagogical'] },
+      { label: 'Sessions', icon: 'calendar_month', path: '/sessions', roles: ['admin', 'teacher', 'pedagogical'] },
+      { label: 'Départements', icon: 'business', path: '/departments', roles: ['admin', 'pedagogical'] },
+      { label: 'Filières', icon: 'book_2', path: '/programs', roles: ['admin', 'pedagogical'] },
+      { label: 'Absences', icon: 'event_busy', path: '/attendance', roles: ['admin', 'teacher', 'pedagogical'] },
     ],
   },
   {
     label: 'Module IA',
     icon: 'psychology',
     path: '#module-ia',
+    roles: ['admin', 'ds', 'pedagogical'],
     children: [
-      { label: 'Dashboard Prédictif', icon: 'dashboard', path: '/dashboard/predictive' },
-      { label: 'Prédictions', icon: 'auto_awesome', path: '/predictions' },
-      { label: 'Alertes', icon: 'notifications_active', path: '/alerts' },
-      { label: 'Modèles ML', icon: 'model_training', path: '/ml/models' },
+      { label: 'Dashboard Prédictif', icon: 'dashboard', path: '/dashboard/predictive', roles: ['admin', 'ds'] },
+      { label: 'Prédictions', icon: 'auto_awesome', path: '/predictions', roles: ['admin', 'ds', 'pedagogical'] },
+      { label: 'Alertes', icon: 'notifications_active', path: '/alerts', roles: ['admin', 'ds', 'pedagogical', 'teacher'] },
+      { label: 'Modèles ML', icon: 'model_training', path: '/ml/models', roles: ['admin', 'ds'] },
     ],
   },
   {
     label: 'Utilisateurs',
     icon: 'group',
     path: '/users',
+    roles: ['admin'], // Seul l'admin peut gérer les utilisateurs
   },
   {
     label: 'Analytics',
     icon: 'analytics',
     path: '/analytics',
+    roles: ['admin', 'ds', 'pedagogical'],
   },
   {
     label: 'Paramètres',
     icon: 'settings',
     path: '/settings',
+    roles: ['admin'], // Seul l'admin peut accéder aux paramètres système
   },
 ]
 
@@ -137,13 +144,48 @@ export default function BarreLaterale() {
   const { user } = useAuthStore()
   const { logout } = useAuth()
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const userRole = user?.role as 'admin' | 'teacher' | 'ds' | 'pedagogical' | undefined
+
+  // Fonction pour vérifier si un élément de navigation est accessible pour le rôle actuel
+  const isItemAccessible = (item: NavItem): boolean => {
+    // Si pas de restriction de rôle, accessible à tous
+    if (!item.roles || item.roles.length === 0) return true
+    // Si pas de rôle utilisateur, accessible
+    if (!userRole) return false
+    // Vérifier si le rôle de l'utilisateur est dans la liste des rôles autorisés
+    return item.roles.includes(userRole)
+  }
+
+  // Filtrer les éléments de navigation selon le rôle
+  const getFilteredNavItems = (): NavItem[] => {
+    return navItems
+      .filter((item) => isItemAccessible(item))
+      .map((item) => {
+        // Filtrer aussi les enfants si l'élément a des enfants
+        if (item.children) {
+          const filteredChildren = item.children.filter((child) => isItemAccessible(child))
+          // Ne retourner l'élément que s'il a au moins un enfant accessible ou s'il est accessible lui-même
+          if (filteredChildren.length > 0) {
+            return { ...item, children: filteredChildren }
+          }
+          // Si l'élément parent n'a pas de rôle spécifique mais a des enfants filtrés, le retourner quand même
+          if (!item.roles || item.roles.length === 0) {
+            return { ...item, children: filteredChildren }
+          }
+          // Sinon, ne pas retourner l'élément
+          return null
+        }
+        return item
+      })
+      .filter((item): item is NavItem => item !== null)
+  }
 
   // Garder le menu parent ouvert si un enfant est actif
   useEffect(() => {
     navItems.forEach((item) => {
       if (item.children) {
         const hasActiveChild = item.children.some(
-          (child) => child.path === location.pathname
+          (child) => child.path === location.pathname && isItemAccessible(child)
         )
         if (hasActiveChild) {
           setExpandedItems((prev) => {
@@ -154,7 +196,7 @@ export default function BarreLaterale() {
         }
       }
     })
-  }, [location.pathname])
+  }, [location.pathname, userRole])
 
   const toggleExpanded = (path: string) => {
     setExpandedItems((prev) => {
@@ -176,6 +218,8 @@ export default function BarreLaterale() {
     return false
   }
 
+  const filteredNavItems = getFilteredNavItems()
+
   return (
     <aside className="w-[280px] h-full flex flex-col bg-white dark:bg-[#1a1f2e] border-r border-slate-200 dark:border-slate-800 shrink-0 transition-colors duration-300">
       {/* Brand Header */}
@@ -185,7 +229,7 @@ export default function BarreLaterale() {
 
       {/* Navigation Menu */}
       <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
-        {navItems.map((item, index) => (
+        {filteredNavItems.map((item, index) => (
           <NavItemComponent
             key={`${item.label}-${index}`}
             item={item}

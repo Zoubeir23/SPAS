@@ -40,9 +40,19 @@ class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
         required=True,
-        validators=[validate_password]
+        validators=[validate_password],
+        error_messages={
+            'required': 'Le mot de passe est requis.',
+            'min_length': 'Le mot de passe doit contenir au moins 8 caractères.'
+        }
     )
-    password_confirm = serializers.CharField(write_only=True, required=True)
+    password_confirm = serializers.CharField(
+        write_only=True,
+        required=True,
+        error_messages={
+            'required': 'La confirmation du mot de passe est requise.'
+        }
+    )
 
     class Meta:
         model = User
@@ -50,12 +60,60 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'email', 'password', 'password_confirm',
             'first_name', 'last_name', 'role', 'phone'
         ]
+        extra_kwargs = {
+            'email': {
+                'error_messages': {
+                    'required': 'L\'email est requis.',
+                    'invalid': 'Veuillez entrer une adresse email valide.',
+                    'unique': 'Un utilisateur avec cet email existe déjà.'
+                }
+            },
+            'first_name': {
+                'error_messages': {
+                    'required': 'Le prénom est requis.',
+                    'max_length': 'Le prénom ne peut pas dépasser 100 caractères.'
+                }
+            },
+            'last_name': {
+                'error_messages': {
+                    'required': 'Le nom est requis.',
+                    'max_length': 'Le nom ne peut pas dépasser 100 caractères.'
+                }
+            },
+            'role': {
+                'error_messages': {
+                    'required': 'Le rôle est requis.',
+                    'invalid_choice': 'Le rôle sélectionné n\'est pas valide.'
+                }
+            }
+        }
+
+    def validate_email(self, value):
+        """Validate email format and uniqueness."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("L'email ne peut pas être vide.")
+        value = value.strip().lower()
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Un utilisateur avec cet email existe déjà.")
+        return value
+
+    def validate_first_name(self, value):
+        """Validate first name."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Le prénom ne peut pas être vide.")
+        return value.strip()
+
+    def validate_last_name(self, value):
+        """Validate last name."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Le nom ne peut pas être vide.")
+        return value.strip()
 
     def validate(self, attrs):
         """Validate password confirmation."""
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError({
-                "password": "Les mots de passe ne correspondent pas."
+                "password_confirm": "Les mots de passe ne correspondent pas."
             })
         return attrs
 

@@ -5,7 +5,10 @@ import BarreRecherche from '@/components/common/BarreRecherche'
 import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
 import ModaleUtilisateur from '@/components/modals/ModaleUtilisateur'
+import ModaleConfirmation from '@/components/common/ModaleConfirmation'
 import { userService, User } from '@/api/services/userService'
+import { useAuthStore } from '@/store/authStore'
+import { toast } from 'react-toastify'
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrateur',
@@ -15,6 +18,8 @@ const roleLabels: Record<string, string> = {
 }
 
 export default function GestionUtilisateurs() {
+  const { user: currentUser } = useAuthStore()
+  const isAdmin = currentUser?.role === 'admin'
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -23,6 +28,10 @@ export default function GestionUtilisateurs() {
   const [selectedRole, setSelectedRole] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; user: User | null }>({
+    isOpen: false,
+    user: null,
+  })
 
   const loadUsers = async () => {
     setLoading(true)
@@ -69,16 +78,20 @@ export default function GestionUtilisateurs() {
     setEditingUser(null)
   }
 
-  const handleDeleteUser = async (user: User) => {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstName || user.first_name} ${user.lastName || user.last_name} ?`)) {
-      return
-    }
-    try {
-      await userService.delete(user.id)
-      await loadUsers()
-    } catch (err) {
-      console.error('Erreur lors de la suppression:', err)
-      alert('Erreur lors de la suppression de l\'utilisateur')
+  const handleDeleteUser = (user: User) => {
+    setDeleteConfirmation({ isOpen: true, user })
+  }
+
+  const confirmDeleteUser = async () => {
+    if (deleteConfirmation.user) {
+      try {
+        await userService.delete(deleteConfirmation.user.id)
+        await loadUsers()
+        toast.success('Utilisateur supprimé avec succès')
+      } catch (err) {
+        console.error('Erreur lors de la suppression:', err)
+        toast.error('Erreur lors de la suppression de l\'utilisateur')
+      }
     }
   }
 
@@ -127,27 +140,33 @@ export default function GestionUtilisateurs() {
     },
   ]
 
-  const handleActions = (user: User) => (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => {
-          setEditingUser(user)
-          setIsModalOpen(true)
-        }}
-        className="text-gray-400 hover:text-primary p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-        title="Modifier"
-      >
-        <span className="material-symbols-outlined text-[20px]">edit</span>
-      </button>
-      <button
-        onClick={() => handleDeleteUser(user)}
-        className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-        title="Supprimer"
-      >
-        <span className="material-symbols-outlined text-[20px]">delete</span>
-      </button>
-    </div>
-  )
+  const handleActions = (user: User) => {
+    // Seul l'admin peut modifier/supprimer des utilisateurs
+    if (!isAdmin) {
+      return <span className="text-gray-400 text-sm">Aucune action disponible</span>
+    }
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => {
+            setEditingUser(user)
+            setIsModalOpen(true)
+          }}
+          className="text-gray-400 hover:text-primary p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          title="Modifier"
+        >
+          <span className="material-symbols-outlined text-[20px]">edit</span>
+        </button>
+        <button
+          onClick={() => handleDeleteUser(user)}
+          className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          title="Supprimer"
+        >
+          <span className="material-symbols-outlined text-[20px]">delete</span>
+        </button>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -222,10 +241,12 @@ export default function GestionUtilisateurs() {
               </span>
             </div>
           </div>
-          <Bouton onClick={() => { setEditingUser(null); setIsModalOpen(true); }}>
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Nouvel utilisateur
-          </Bouton>
+          {isAdmin && (
+            <Bouton onClick={() => { setEditingUser(null); setIsModalOpen(true); }}>
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Nouvel utilisateur
+            </Bouton>
+          )}
         </div>
 
         {/* Data Table */}
@@ -242,6 +263,17 @@ export default function GestionUtilisateurs() {
           onClose={() => { setIsModalOpen(false); setEditingUser(null); }}
           onSuccess={handleUserCreated}
           userId={editingUser?.id}
+        />
+
+        <ModaleConfirmation
+          isOpen={deleteConfirmation.isOpen}
+          onClose={() => setDeleteConfirmation({ isOpen: false, user: null })}
+          onConfirm={confirmDeleteUser}
+          title="Supprimer l'utilisateur"
+          message={`Êtes-vous sûr de vouloir supprimer ${deleteConfirmation.user ? (deleteConfirmation.user.firstName || deleteConfirmation.user.first_name) + ' ' + (deleteConfirmation.user.lastName || deleteConfirmation.user.last_name) : 'cet utilisateur'} ? Cette action est irréversible.`}
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          variant="danger"
         />
       </div>
     </MiseEnPagePrincipale>

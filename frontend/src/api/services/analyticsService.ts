@@ -1,4 +1,5 @@
 import apiClient from '../axiosConfig';
+import { API_BASE_URL } from '@/utils/constants';
 
 // Types pour les analytics
 export interface DropoutEvolution {
@@ -173,7 +174,59 @@ export const analyticsService = {
   async getRiskEvolution(studentId: number): Promise<{ date: string; risk_score: number }[]> {
     const response = await apiClient.get<{ evolution: { date: string; risk_score: number }[] }>(`/analytics/risk-evolution/${studentId}/`);
     return response.data.evolution;
+  },
+
+  /**
+   * Récupère l'URL de l'image du graphique d'évolution des inscriptions
+   */
+  getEnrollmentChartUrl(academicYear?: string): string {
+    const params = academicYear ? `?academic_year=${academicYear}` : '';
+    return `${API_BASE_URL}/analytics/charts/enrollment/${params}`;
+  },
+
+  /**
+   * Récupère l'URL de l'image du graphique de distribution par filière
+   */
+  getProgramDistributionChartUrl(): string {
+    return `${API_BASE_URL}/analytics/charts/program-distribution/`;
+  },
+
+  /**
+   * Récupère l'activité récente du système depuis AuditLog
+   */
+  async getSystemActivity(limit?: number): Promise<SystemActivity[]> {
+    const params: Record<string, number> = {};
+    if (limit) params.limit = limit;
+    
+    const response = await apiClient.get<{ activity: SystemActivity[] }>('/analytics/system-activity/', { params });
+    return response.data.activity;
+  },
+
+  /**
+   * Récupère les performances des modèles ML
+   */
+  async getMLModelsPerformance(): Promise<MLModelPerformance[]> {
+    const response = await apiClient.get<{ models: MLModelPerformance[] }>('/analytics/ml-models-performance/');
+    return response.data.models;
   }
 };
+
+export interface SystemActivity {
+  id: string;
+  action: string;
+  user: string;
+  time: string;
+  timestamp: string;
+  status: 'success' | 'error' | 'info';
+  model: string;
+}
+
+export interface MLModelPerformance {
+  name: string;
+  type: string;
+  accuracy: number;
+  status: string;
+  statusCode: string;
+}
 
 export default analyticsService;

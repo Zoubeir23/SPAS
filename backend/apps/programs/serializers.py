@@ -17,6 +17,34 @@ class DepartmentSerializer(serializers.ModelSerializer):
             'program_count', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'code': {
+                'error_messages': {
+                    'required': 'Le code du département est requis.',
+                    'unique': 'Un département avec ce code existe déjà.',
+                    'max_length': 'Le code ne peut pas dépasser 20 caractères.'
+                }
+            },
+            'name': {
+                'error_messages': {
+                    'required': 'Le nom du département est requis.',
+                    'unique': 'Un département avec ce nom existe déjà.',
+                    'max_length': 'Le nom ne peut pas dépasser 200 caractères.'
+                }
+            }
+        }
+
+    def validate_code(self, value):
+        """Validate department code format."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Le code du département ne peut pas être vide.")
+        return value.strip().upper()
+
+    def validate_name(self, value):
+        """Validate department name."""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Le nom du département ne peut pas être vide.")
+        return value.strip()
 
     def get_program_count(self, obj):
         """Get number of active programs in department."""
@@ -42,7 +70,15 @@ class ProgramSerializer(serializers.ModelSerializer):
 
     student_count = serializers.SerializerMethodField()
     department = DepartmentListSerializer(read_only=True)
-    department_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    department_id = serializers.UUIDField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        error_messages={
+            'invalid': 'L\'ID du département n\'est pas valide.',
+            'does_not_exist': 'Le département sélectionné n\'existe pas.'
+        }
+    )
 
     class Meta:
         model = Program
@@ -52,6 +88,27 @@ class ProgramSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'code': {
+                'error_messages': {
+                    'required': 'Le code de la filière est requis.',
+                    'unique': 'Une filière avec ce code existe déjà.',
+                    'max_length': 'Le code ne peut pas dépasser 20 caractères.'
+                }
+            },
+            'name': {
+                'error_messages': {
+                    'required': 'Le nom de la filière est requis.',
+                    'max_length': 'Le nom ne peut pas dépasser 200 caractères.'
+                }
+            },
+            'duration': {
+                'error_messages': {
+                    'required': 'La durée est requise.',
+                    'invalid': 'La durée doit être un nombre entier positif.'
+                }
+            }
+        }
 
     def create(self, validated_data):
         """Create program with department."""

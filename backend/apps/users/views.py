@@ -5,11 +5,11 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserCreateSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -28,12 +28,18 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['role', 'is_active']
     search_fields = ['email', 'first_name', 'last_name']
     ordering_fields = ['email', 'created_at', 'last_name']
     ordering = ['last_name', 'first_name']
+
+    def get_serializer_class(self):
+        """Return the appropriate serializer class based on the action."""
+        if self.action == 'create':
+            return UserCreateSerializer
+        return UserSerializer
 
     def get_permissions(self):
         """Set permissions based on action."""

@@ -298,16 +298,16 @@ export default function ModaleEtudiant({
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Matricule <span className="text-red-600">*</span>
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                   <span className="material-symbols-outlined text-gray-400 text-[20px]">badge</span>
                 </div>
                 <ChampSaisie
                   required
-                  className="pl-10"
+                  className="pl-11"
                   placeholder="Ex: 20230156"
                   value={formData.matricule}
                   onChange={(e) => setFormData({ ...formData, matricule: e.target.value })}
@@ -316,7 +316,7 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Nom <span className="text-red-600">*</span>
               </label>
               <ChampSaisie
@@ -328,7 +328,7 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Prénom <span className="text-red-600">*</span>
               </label>
               <ChampSaisie
@@ -340,7 +340,7 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Date de naissance <span className="text-red-600">*</span>
               </label>
               <ChampSaisie
@@ -352,11 +352,11 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Genre
               </label>
               <select
-                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm"
+                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-3 px-4 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm transition-all"
               >
                 <option>Sélectionner</option>
                 <option>Masculin</option>
@@ -366,17 +366,17 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Email <span className="text-red-600">*</span>
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                   <span className="material-symbols-outlined text-gray-400 text-[20px]">mail</span>
                 </div>
                 <ChampSaisie
                   required
                   type="email"
-                  className="pl-10"
+                  className="pl-11"
                   placeholder="etudiant@ecole.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -385,16 +385,16 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Téléphone
               </label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                   <span className="material-symbols-outlined text-gray-400 text-[20px]">call</span>
                 </div>
                 <ChampSaisie
                   type="tel"
-                  className="pl-10"
+                  className="pl-11"
                   placeholder="+33 6 12 34 56 78"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -403,11 +403,11 @@ export default function ModaleEtudiant({
             </div>
 
             <div className="col-span-1 md:col-span-2">
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Adresse Complète
               </label>
               <textarea
-                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm resize-none"
+                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-3 px-4 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm resize-none transition-all"
                 rows={2}
                 placeholder="Numéro, Rue, Ville, Code Postal"
                 value={formData.address}
@@ -425,12 +425,12 @@ export default function ModaleEtudiant({
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Département <span className="text-red-600">*</span>
               </label>
               <select
                 required
-                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm"
+                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-3 px-4 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm transition-all"
                 value={formData.departmentId}
                 onChange={(e) => setFormData({ ...formData, departmentId: e.target.value, programId: '', programName: '' })}
               >
@@ -444,13 +444,13 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Filière <span className="text-red-600">*</span>
               </label>
               <select
                 required
                 disabled={!formData.departmentId}
-                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-3 px-4 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 value={formData.programId}
                 onChange={(e) => {
                   const selectedProgram = filteredPrograms.find(p => p.id === e.target.value)
@@ -471,12 +471,12 @@ export default function ModaleEtudiant({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2.5">
                 Niveau <span className="text-red-600">*</span>
               </label>
               <select
                 required
-                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-2.5 pl-3 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm"
+                className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 py-3 px-4 pr-10 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-800 sm:text-sm transition-all"
                 value={formData.level}
                 onChange={(e) => setFormData({ ...formData, level: e.target.value as 'L1' | 'L2' | 'L3' | 'M1' | 'M2' })}
               >

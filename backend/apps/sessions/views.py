@@ -1,11 +1,12 @@
 """
 Views for Sessions app.
 """
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
 
 from .models import Session
 from .serializers import SessionSerializer
@@ -56,3 +57,149 @@ class SessionViewSet(viewsets.ModelViewSet):
 
         serializer = StudentListSerializer(students, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def close(self, request, pk=None):
+        """
+        Close a session (mark as completed).
+
+        POST /sessions/{id}/close/
+        """
+        session = self.get_object()
+
+        if session.status == Session.Status.COMPLETED:
+            return Response(
+                {'error': 'Cette session est déjà clôturée.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        session.status = Session.Status.COMPLETED
+        session.save(update_fields=['status', 'updated_at'])
+
+        return Response({
+            'success': True,
+            'message': 'Session clôturée avec succès.',
+            'data': SessionSerializer(session).data
+        })
+
+    @action(detail=True, methods=['post'])
+    def generate_predictions(self, request, pk=None):
+        """
+        Generate predictions for all active students in this session.
+
+        POST /sessions/{id}/generate-predictions/
+        """
+        session = self.get_object()
+
+        # Get all active students in this session
+        students = session.get_active_students()
+
+        if not students.exists():
+            return Response(
+                {'error': 'Aucun étudiant actif trouvé dans cette session.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Import here to avoid circular imports
+        from apps.ml.services import DropoutRiskPredictor, calculate_student_features_from_db
+        from apps.ml.models import MLModel
+        from apps.predictions.models import Prediction
+        from apps.alerts.models import Alert
+
+        # Get student IDs
+        student_ids = list(students.values_list('id', flat=True))
+
+        # Initialize predictor
+        predictor = DropoutRiskPredictor()
+
+        # Try to load active model
+        active_model = MLModel.objects.filter(status=MLModel.Status.ACTIVE).first()
+        model_loaded = False
+        if active_model:
+            try:
+                predictor.load_model()
+                model_loaded = True
+            except FileNotFoundError:
+                pass  # Will use heuristics
+
+        predictions_created = []
+        alerts_created = 0
+
+        for student in students:
+            # Gather student features
+            features = calculate_student_features_from_db(student)
+
+            # Get prediction
+            result = predictor.predict_risk(features)
+
+            # Create prediction record
+            risk_level_map = {
+                'low': Prediction.RiskLevel.LOW,
+                'medium': Prediction.RiskLevel.MEDIUM,
+                'high': Prediction.RiskLevel.HIGH,
+                'critical': Prediction.RiskLevel.CRITICAL,
+            }
+
+            prediction = Prediction.objects.create(
+                student=student,
+                risk_score=float(result['risk_score']),
+                risk_level=risk_level_map.get(result['risk_level'], Prediction.RiskLevel.MEDIUM),
+                predicted_success_rate=100 - float(result['risk_score']),
+                factors=result.get('factors', []),
+                model_version=active_model if model_loaded else None
+            )
+
+            # Update student risk fields
+            student.risk_score = float(result['risk_score'])
+            student.risk_level = result['risk_level']
+            student.save(update_fields=['risk_score', 'risk_level', 'updated_at'])
+
+            # Create alert automatically if risk is high or critical
+            if prediction.risk_level in [Prediction.RiskLevel.HIGH, Prediction.RiskLevel.CRITICAL]:
+                # Get top factors for the alert message
+                top_factors = prediction.get_top_factors(limit=3)
+                factors_text = ', '.join([
+                    f"{f.get('name', 'N/A')} ({f.get('impact', 0):.1%})" 
+                    for f in top_factors
+                ]) if top_factors else 'Non disponibles'
+                
+                # Determine alert level
+                alert_level = 'critical' if prediction.risk_level == Prediction.RiskLevel.CRITICAL else 'high'
+                
+                # Check if alert already exists
+                existing_alert = Alert.objects.filter(
+                    student=student,
+                    type=Alert.AlertType.RISK,
+                    status__in=[Alert.Status.NEW, Alert.Status.ACKNOWLEDGED]
+                ).exists()
+
+                if not existing_alert:
+                    Alert.create_risk_alert(
+                        student=student,
+                        message=f"Score de risque: {prediction.risk_score}%. "
+                               f"Facteurs principaux: {factors_text}.",
+                        level=alert_level
+                    )
+                    alerts_created += 1
+
+            predictions_created.append({
+                'student_id': str(student.id),
+                'student_name': f"{student.first_name} {student.last_name}",
+                'prediction_id': str(prediction.id),
+                'risk_score': float(result['risk_score']),
+                'risk_level': result['risk_level']
+            })
+
+        # Sort by risk score descending
+        predictions_created.sort(key=lambda x: x['risk_score'], reverse=True)
+
+        return Response({
+            'success': True,
+            'message': f'Prédictions générées pour {len(predictions_created)} étudiants de la session {session.name}.',
+            'session_id': str(session.id),
+            'session_name': session.name,
+            'model_used': active_model.name if model_loaded else 'heuristics',
+            'total_predictions': len(predictions_created),
+            'alerts_created': alerts_created,
+            'predictions': predictions_created
+        })

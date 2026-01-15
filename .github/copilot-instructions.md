@@ -4,18 +4,19 @@
 
 **SPAS** (Système Prédictif d'Alerte Scolaire) est une application full-stack pour identifier les étudiants à risque d'abandon scolaire via ML.
 
-- **Frontend** : React 18 + TypeScript + Vite (`frontend/`) - 100% implémenté avec données mockées
-- **Backend** : Django 5 + DRF + PostgreSQL (`backend/`) - API REST avec 10 apps Django, 14 ViewSets
-- **ML** : scikit-learn pour prédictions de risque d'abandon
+- **Frontend** : React 18 + TypeScript + Vite (`frontend/`) - 100% implémenté et connecté au backend
+- **Backend** : Django 6 + DRF + PostgreSQL (`backend/`) - API REST avec 10 apps Django
+- **ML** : XGBoost + SHAP + SMOTE pour prédictions explicables de risque d'abandon
 
 ## Stack et Conventions
 
 ### Frontend (`frontend/src/`)
 
 - **État global** : Zustand (`store/authStore.ts`)
-- **API** : Services mockés dans `api/services/` - à connecter à l'API Django
-- **Routing** : React Router avec routes protégées (`routes/RouteProtegee.tsx`)
+- **API** : Services connectés au backend Django dans `api/services/`
+- **Routing** : React Router avec routes protégées par rôle (`routes/RouteProtegee.tsx`)
 - **Formulaires** : React Hook Form + Zod pour validation
+- **Graphiques** : Recharts (GraphiqueROC.tsx, GraphiqueSHAP.tsx)
 - **Alias d'import** : `@/` pointe vers `src/` (voir `vite.config.ts`)
 - **Nommage pages** : Français (`Connexion.tsx`, `ListeEtudiants.tsx`, `TableauDeBordGeneral.tsx`)
 
@@ -71,7 +72,7 @@ pytest                                  # Tests
 
 ## Points d'Intégration Frontend/Backend
 
-Les services frontend (`frontend/src/api/services/`) sont **mockés** et doivent être connectés à l'API Django :
+Les services frontend (`frontend/src/api/services/`) sont **connectés** à l'API Django :
 
 | Service Frontend       | Endpoint Backend    |
 | ---------------------- | ------------------- |
@@ -80,6 +81,7 @@ Les services frontend (`frontend/src/api/services/`) sont **mockés** et doivent
 | `programService.ts`    | `/api/programs/`    |
 | `predictionService.ts` | `/api/predictions/` |
 | `alertService.ts`      | `/api/alerts/`      |
+| `mlService.ts`         | `/api/ml/`          |
 
 ## Patterns à Respecter
 

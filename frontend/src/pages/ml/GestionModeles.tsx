@@ -6,10 +6,22 @@ import Badge from '@/components/common/Badge'
 import Bouton from '@/components/common/Bouton'
 import Carte from '@/components/common/Carte'
 import GraphiqueLignes from '@/components/charts/GraphiqueLignes'
+import ModaleEntrainement from '@/components/modals/ModaleEntrainement'
 import { mlService, MLModel } from '@/api/services/mlService'
 import { analyticsService } from '@/api/services/analyticsService'
 import { ROUTES } from '@/utils/constants'
 import { exportToExcel, type ExportColumn } from '@/utils/exportService'
+
+// Helper pour normaliser les métriques (si > 1, c'est déjà en %)
+const formatMetric = (value: number | string | undefined, decimals: number = 1): string => {
+  if (value === undefined || value === null || value === '') return '0'
+  // Convertir en nombre (peut être string depuis Django Decimal)
+  const numValue = typeof value === 'string' ? parseFloat(value) : value
+  if (isNaN(numValue)) return '0'
+  // Si la valeur est > 1, elle est déjà en pourcentage (0-100 scale)
+  const normalized = numValue > 1 ? numValue : numValue * 100
+  return normalized.toFixed(decimals)
+}
 
 interface TrainingJob {
   id: string
@@ -28,9 +40,15 @@ interface PerformanceDataPoint {
 export default function GestionModeles() {
   const navigate = useNavigate()
   const [models, setModels] = useState<MLModel[]>([])
+  const [filteredModels, setFilteredModels] = useState<MLModel[]>([])
   const [loading, setLoading] = useState(true)
   const [trainingJobs, setTrainingJobs] = useState<TrainingJob[]>([])
   const [performanceData, setPerformanceData] = useState<PerformanceDataPoint[]>([])
+  const [showTrainingModal, setShowTrainingModal] = useState(false)
+  const [showCompareModal, setShowCompareModal] = useState(false)
+  const [selectedModels, setSelectedModels] = useState<string[]>([])
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [periodFilter, setPeriodFilter] = useState<'30' | '7' | '24'>('30')
 
   useEffect(() => {
     const loadData = async () => {
@@ -41,6 +59,7 @@ export default function GestionModeles() {
           analyticsService.getModelPerformanceHistory()
         ])
         setModels(modelsData)
+        setFilteredModels(modelsData)
         
         // Transformer performance history pour le graphique
         if (performanceHistory && performanceHistory.length > 0) {
@@ -87,6 +106,15 @@ export default function GestionModeles() {
     loadData()
   }, [])
 
+  // Filtrer les modèles selon le statut sélectionné
+  useEffect(() => {
+    if (statusFilter === 'all') {
+      setFilteredModels(models)
+    } else {
+      setFilteredModels(models.filter((m) => m.status === statusFilter))
+    }
+  }, [statusFilter, models])
+
   const activeModel = models.find((m) => m.status === 'active')
 
   const columns: Column<MLModel>[] = [
@@ -108,34 +136,27 @@ export default function GestionModeles() {
     {
       key: 'status',
       label: 'Statut',
-      render: (model) => (
-        <Badge
-          variant={
-            model.status === 'active'
-              ? 'success'
-              : model.status === 'training'
-              ? 'warning'
-              : 'info'
-          }
-        >
-          {model.status === 'active'
-            ? 'Actif'
-            : model.status === 'training'
-            ? 'Entraînement'
-            : 'Inactif'}
-        </Badge>
-      ),
+      render: (model) => {
+        const statusConfig = {
+          active: { label: 'Actif', variant: 'success' as const },
+          training: { label: 'Entraînement', variant: 'warning' as const },
+          inactive: { label: 'Inactif', variant: 'info' as const },
+          archived: { label: 'Archivé', variant: 'warning' as const },
+        }
+        const config = statusConfig[model.status] || statusConfig.inactive
+        return <Badge variant={config.variant}>{config.label}</Badge>
+      },
     },
     {
       key: 'accuracy',
       label: 'Précision',
-      render: (model) => `${(model.accuracy * 100).toFixed(1)}%`,
+      render: (model) => `${formatMetric(model.accuracy, 1)}%`,
       sortable: true,
     },
     {
       key: 'f1Score',
       label: 'F1 Score',
-      render: (model) => (model.f1Score ?? 0).toFixed(3),
+      render: (model) => formatMetric(model.f1Score, 2),
       sortable: true,
     },
     {
@@ -232,11 +253,11 @@ export default function GestionModeles() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Bouton variant="outline">
+            <Bouton variant="outline" onClick={() => setShowCompareModal(true)}>
               <span className="material-symbols-outlined text-[20px]">compare_arrows</span>
               Comparer Versions
             </Bouton>
-            <Bouton>
+            <Bouton onClick={() => setShowTrainingModal(true)}>
               <span className="material-symbols-outlined text-[20px]">add</span>
               Nouvel Entraînement
             </Bouton>
@@ -253,10 +274,38 @@ export default function GestionModeles() {
                 <Badge variant="success" size="sm">ACTIF</Badge>
               </div>
               <div className="flex gap-2">
-                <button className="text-gray-500 hover:text-primary p-1 rounded transition-colors" title="Télécharger">
+                <button 
+                  onClick={() => {
+                    // Télécharger les infos du modèle en JSON
+                    const modelData = {
+                      id: activeModel.id,
+                      name: activeModel.name,
+                      version: activeModel.version,
+                      accuracy: formatMetric(activeModel.accuracy, 2),
+                      f1_score: formatMetric(activeModel.f1Score, 2),
+                      precision: formatMetric(activeModel.precision, 2),
+                      recall: formatMetric(activeModel.recall, 2),
+                      trained_at: activeModel.trainedAt,
+                      training_data_size: activeModel.trainingDataSize
+                    }
+                    const blob = new Blob([JSON.stringify(modelData, null, 2)], { type: 'application/json' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `model-${activeModel.name}-v${activeModel.version}.json`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                  className="text-gray-500 hover:text-primary p-1 rounded transition-colors" 
+                  title="Télécharger les métadonnées du modèle"
+                >
                   <span className="material-symbols-outlined">download</span>
                 </button>
-                <button className="text-gray-500 hover:text-primary p-1 rounded transition-colors" title="Paramètres">
+                <button 
+                  onClick={() => navigate(`${ROUTES.ML_MODELS}/${activeModel.id}`)}
+                  className="text-gray-500 hover:text-primary p-1 rounded transition-colors" 
+                  title="Voir les détails du modèle"
+                >
                   <span className="material-symbols-outlined">settings</span>
                 </button>
               </div>
@@ -270,24 +319,16 @@ export default function GestionModeles() {
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">F1-Score</p>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{(activeModel.f1Score ?? 0).toFixed(2)}</p>
-                  <span className="flex items-center text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
-                    <span className="material-symbols-outlined text-[14px] mr-0.5">trending_up</span>
-                    +2.4%
-                  </span>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatMetric(activeModel.f1Score, 2)}</p>
                 </div>
-                <p className="text-xs text-gray-400">vs v2.3</p>
+                <p className="text-xs text-gray-400">Score actuel</p>
               </div>
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Précision (Accuracy)</p>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{(activeModel.accuracy * 100).toFixed(0)}%</p>
-                  <span className="flex items-center text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1.5 py-0.5 rounded">
-                    <span className="material-symbols-outlined text-[14px] mr-0.5">trending_up</span>
-                    +1.1%
-                  </span>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatMetric(activeModel.accuracy, 0)}%</p>
                 </div>
-                <p className="text-xs text-gray-400">vs v2.3</p>
+                <p className="text-xs text-gray-400">Score actuel</p>
               </div>
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Dernier Entraînement</p>
@@ -306,19 +347,24 @@ export default function GestionModeles() {
           <Carte className="lg:col-span-2 flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">Performance en Production</h2>
-              <select className="bg-gray-50 dark:bg-gray-800 border-none text-xs font-medium rounded-lg py-1.5 pl-3 pr-8 focus:ring-1 focus:ring-primary cursor-pointer text-gray-900 dark:text-white">
-                <option>30 derniers jours</option>
-                <option>7 derniers jours</option>
-                <option>24 dernières heures</option>
+              <select 
+                value={periodFilter}
+                onChange={(e) => setPeriodFilter(e.target.value as '30' | '7' | '24')}
+                className="bg-gray-50 dark:bg-gray-800 border-none text-xs font-medium rounded-lg py-1.5 pl-3 pr-8 focus:ring-1 focus:ring-primary cursor-pointer text-gray-900 dark:text-white"
+              >
+                <option value="30">30 derniers jours</option>
+                <option value="7">7 derniers jours</option>
+                <option value="24">24 dernières heures</option>
               </select>
             </div>
             <div className="p-6 flex-1 min-h-[300px]">
-              <div className="mb-4 flex items-start gap-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-lg p-3">
-                <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-[20px] mt-0.5">warning</span>
+              <div className="mb-4 flex items-start gap-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-3">
+                <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px] mt-0.5">info</span>
                 <div>
-                  <p className="text-sm font-bold text-red-600 dark:text-red-400">Dérive des données détectée (Drift)</p>
+                  <p className="text-sm font-bold text-blue-600 dark:text-blue-400">Surveillance des performances</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    La distribution de la caractéristique <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">taux_assiduite</code> a changé significativement depuis hier.
+                    La détection de dérive des données (drift) n'est pas encore implémentée. 
+                    Cette fonctionnalité sera ajoutée dans une prochaine version.
                   </p>
                 </div>
               </div>
@@ -377,10 +423,9 @@ export default function GestionModeles() {
               ))}
             </div>
             <div className="mt-auto px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-              <button className="w-full text-sm font-semibold text-primary hover:text-purple-700 dark:hover:text-purple-300 transition-colors flex items-center justify-center gap-2">
-                Voir tous les jobs
-                <span className="material-symbols-outlined text-base">arrow_forward</span>
-              </button>
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                {trainingJobs.length > 0 ? `${trainingJobs.length} job(s) affichés` : 'Aucun job en cours'}
+              </p>
             </div>
           </Carte>
         </div>
@@ -389,11 +434,26 @@ export default function GestionModeles() {
         <Carte>
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 justify-between items-center">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">Historique des Versions</h2>
-            <div className="flex gap-2">
-              <button className="text-gray-500 hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
-                <span className="material-symbols-outlined text-[18px]">filter_list</span>
-                Filtrer
-              </button>
+            <div className="flex gap-2 items-center">
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="pl-10 pr-8 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white appearance-none cursor-pointer focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="active">Actifs</option>
+                  <option value="inactive">Inactifs</option>
+                  <option value="archived">Archivés</option>
+                  <option value="training">En entraînement</option>
+                </select>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[18px] pointer-events-none">
+                  filter_list
+                </span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[16px] pointer-events-none">
+                  expand_more
+                </span>
+              </div>
               <button
                 onClick={handleExport}
                 className="text-gray-500 hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium"
@@ -405,14 +465,125 @@ export default function GestionModeles() {
           </div>
           <div className="overflow-x-auto">
             <TableauDonnees
-              data={models}
+              data={filteredModels}
               columns={columns}
               actions={handleActions}
-              emptyMessage="Aucun modèle trouvé"
+              emptyMessage={statusFilter === 'archived' ? 'Aucun modèle archivé' : 'Aucun modèle trouvé'}
             />
           </div>
         </Carte>
       </div>
+
+      {/* Modale d'entraînement */}
+      <ModaleEntrainement
+        isOpen={showTrainingModal}
+        onClose={() => setShowTrainingModal(false)}
+        onSuccess={async () => {
+          setShowTrainingModal(false)
+          // Recharger les modèles après entraînement
+          const data = await mlService.getAll()
+          setModels(data)
+        }}
+      />
+
+      {/* Modale de comparaison des versions */}
+      {showCompareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Comparer les Versions</h2>
+              <button
+                onClick={() => setShowCompareModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Sélectionnez deux modèles à comparer :
+              </p>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {models.slice(0, 6).map((model) => (
+                  <label
+                    key={model.id}
+                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
+                      selectedModels.includes(model.id)
+                        ? 'border-primary bg-primary/5'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedModels.includes(model.id)}
+                      onChange={(e) => {
+                        if (e.target.checked && selectedModels.length < 2) {
+                          setSelectedModels([...selectedModels, model.id])
+                        } else if (!e.target.checked) {
+                          setSelectedModels(selectedModels.filter((id) => id !== model.id))
+                        }
+                      }}
+                      disabled={!selectedModels.includes(model.id) && selectedModels.length >= 2}
+                      className="w-4 h-4 text-primary rounded"
+                    />
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-white">{model.name}</p>
+                      <p className="text-sm text-gray-500">v{model.version} - {formatMetric(model.accuracy, 1)}%</p>
+                    </div>
+                    {model.status === 'active' && <Badge variant="success" size="sm">ACTIF</Badge>}
+                  </label>
+                ))}
+              </div>
+
+              {selectedModels.length === 2 && (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-4">Comparaison</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                          <th className="pb-2">Métrique</th>
+                          {selectedModels.map((id) => {
+                            const m = models.find((model) => model.id === id)
+                            return <th key={id} className="pb-2">{m?.name} v{m?.version}</th>
+                          })}
+                          <th className="pb-2">Différence</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                        {['accuracy', 'f1Score', 'precision', 'recall'].map((metric) => {
+                          const vals = selectedModels.map((id) => {
+                            const m = models.find((model) => model.id === id)
+                            return parseFloat(formatMetric((m as any)?.[metric], 2))
+                          })
+                          const diff = vals[1] - vals[0]
+                          return (
+                            <tr key={metric}>
+                              <td className="py-2 font-medium text-gray-700 dark:text-gray-300 capitalize">{metric === 'f1Score' ? 'F1 Score' : metric}</td>
+                              {vals.map((v, i) => (
+                                <td key={i} className="py-2 text-gray-900 dark:text-white">{v}%</td>
+                              ))}
+                              <td className={`py-2 font-semibold ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                                {diff > 0 ? '+' : ''}{diff.toFixed(2)}%
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Bouton variant="outline" onClick={() => { setShowCompareModal(false); setSelectedModels([]); }}>
+                  Fermer
+                </Bouton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </MiseEnPagePrincipale>
   )
 }

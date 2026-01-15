@@ -1,13 +1,84 @@
 """
 Core views for SPAS application.
-Contains system-wide views like settings management.
+Contains system-wide views like settings management and audit logs.
 """
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import status, viewsets, filters
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from .models import SystemSettings
-from .serializers import SystemSettingsSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import SystemSettings, AuditLog
+from .serializers import SystemSettingsSerializer, AuditLogSerializer, AuditLogListSerializer
+
+
+class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet pour consulter les logs d'audit.
+    
+    Accessible uniquement aux administrateurs.
+    Lecture seule - les logs ne peuvent pas être modifiés ou supprimés via l'API.
+    
+    Actions disponibles:
+    - list: Liste tous les logs avec pagination et filtres
+    - retrieve: Détails d'un log spécifique
+    - statistics: Statistiques sur les actions
+    - recent: Les 10 dernières actions
+    """
+    queryset = AuditLog.objects.select_related('user').order_by('-timestamp')
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['action', 'model_name', 'user']
+    search_fields = ['object_repr', 'ip_address', 'endpoint', 'user__email']
+    ordering_fields = ['timestamp', 'action', 'model_name']
+    ordering = ['-timestamp']
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AuditLogListSerializer
+        return AuditLogSerializer
+    
+    @action(detail=False, methods=['get'])
+    def statistics(self, request):
+        """Retourne des statistiques sur les logs d'audit."""
+        from django.db.models import Count
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Stats des 30 derniers jours
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        recent_logs = self.queryset.filter(timestamp__gte=thirty_days_ago)
+        
+        # Actions par type
+        actions_count = recent_logs.values('action').annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        # Actions par modèle
+        models_count = recent_logs.values('model_name').annotate(
+            count=Count('id')
+        ).order_by('-count')[:10]
+        
+        # Utilisateurs les plus actifs
+        active_users = recent_logs.exclude(user__isnull=True).values(
+            'user__email'
+        ).annotate(
+            count=Count('id')
+        ).order_by('-count')[:10]
+        
+        return Response({
+            'total_logs': self.queryset.count(),
+            'logs_last_30_days': recent_logs.count(),
+            'actions_by_type': list(actions_count),
+            'actions_by_model': list(models_count),
+            'most_active_users': list(active_users),
+        })
+    
+    @action(detail=False, methods=['get'])
+    def recent(self, request):
+        """Retourne les 10 dernières actions."""
+        recent = self.queryset[:10]
+        serializer = AuditLogListSerializer(recent, many=True)
+        return Response(serializer.data)
 
 
 @api_view(['GET', 'PATCH'])

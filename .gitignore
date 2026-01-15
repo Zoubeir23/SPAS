@@ -492,3 +492,15 @@ docker-compose.override.yml
 *.deb
 *.rpm
 
+# ML Models and Training Data (keep structure, ignore files)
+ml_models/*.pkl
+ml_models/*.joblib
+ml_models/*.h5
+ml_models/*.pth
+ml_models/*.pt
+ml_models/training_data*.csv
+ml_models/training_data*.npy
+ml_models/*_X.npy
+ml_models/*_y.npy
+ml_models/*_feature_names.pkl
+

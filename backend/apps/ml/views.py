@@ -60,7 +60,7 @@ class MLModelViewSet(viewsets.ModelViewSet):
 
         # Filter by status
         model_status = self.request.query_params.get('status', None)
-        if model_status:
+        if model_status and model_status != 'all':
             queryset = queryset.filter(status=model_status)
 
         return queryset
@@ -78,6 +78,36 @@ class MLModelViewSet(viewsets.ModelViewSet):
         return Response({
             'success': True,
             'message': f'Modèle {model.name} v{model.version} activé.',
+            'data': MLModelSerializer(model).data
+        })
+
+    @action(detail=True, methods=['post'])
+    def archive(self, request, pk=None):
+        """
+        Archive a model (marks it as archived, does not delete it).
+
+        POST /models/{id}/archive/
+        """
+        model = self.get_object()
+        
+        if model.status == MLModel.Status.ACTIVE:
+            return Response(
+                {'error': 'Impossible d\'archiver un modèle actif. Désactivez-le d\'abord.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if model.status == MLModel.Status.ARCHIVED:
+            return Response(
+                {'error': 'Ce modèle est déjà archivé.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        model.status = MLModel.Status.ARCHIVED
+        model.save(update_fields=['status', 'updated_at'])
+
+        return Response({
+            'success': True,
+            'message': f'Modèle {model.name} v{model.version} archivé avec succès.',
             'data': MLModelSerializer(model).data
         })
 
@@ -115,6 +145,7 @@ class MLModelViewSet(viewsets.ModelViewSet):
             'active_models': queryset.filter(status=MLModel.Status.ACTIVE).count(),
             'inactive_models': queryset.filter(status=MLModel.Status.INACTIVE).count(),
             'training_models': queryset.filter(status=MLModel.Status.TRAINING).count(),
+            'archived_models': queryset.filter(status=MLModel.Status.ARCHIVED).count(),
         }
 
         # Get best model metrics

@@ -141,6 +141,20 @@ class AlertViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
+    def unread(self, request):
+        """
+        Get all unread (new) alerts.
+
+        GET /alerts/unread/
+        """
+        unread_alerts = self.get_queryset().filter(
+            status=Alert.Status.NEW
+        ).order_by('-level', '-created_at')[:10]  # Limit to 10 most recent
+
+        serializer = AlertListSerializer(unread_alerts, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
     def statistics(self, request):
         """
         Get alert statistics.
