@@ -146,12 +146,12 @@ class StudentViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixi
     @action(detail=False, methods=['get'])
     def at_risk(self, request):
         """
-        Get all students at risk (medium, high risk levels).
+        Get all students at risk (medium, high, critical risk levels).
 
         GET /students/at-risk/
         """
         at_risk_students = self.get_queryset().filter(
-            risk_level__in=['medium', 'high']
+            risk_level__in=['medium', 'high', 'critical']
         ).order_by('-risk_score')
 
         serializer = self.get_serializer(at_risk_students, many=True)
@@ -271,7 +271,24 @@ class StudentViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixi
                         row.get('Statut', 'Actif').strip(),
                         'active'
                     )
-                    
+
+                    # Valider la date de naissance
+                    from datetime import datetime
+                    date_of_birth = row.get('Date de naissance', '').strip()
+                    validated_date = None
+                    if date_of_birth:
+                        # Essayer formats courants: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY
+                        for fmt in ['%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y']:
+                            try:
+                                validated_date = datetime.strptime(date_of_birth, fmt).date()
+                                break
+                            except ValueError:
+                                continue
+
+                        if validated_date is None:
+                            errors.append(f"Ligne {row_num}: Date de naissance invalide '{date_of_birth}'. Formats acceptés: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY")
+                            continue
+
                     # Créer ou mettre à jour
                     student, was_created = Student.objects.update_or_create(
                         matricule=matricule,
@@ -280,7 +297,7 @@ class StudentViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixi
                             'last_name': row.get('Nom', '').strip(),
                             'email': row.get('Email', '').strip(),
                             'phone': row.get('Téléphone', '').strip() or None,
-                            'date_of_birth': row.get('Date de naissance', '').strip() or None,
+                            'date_of_birth': validated_date,
                             'program': program,
                             'session': session,
                             'status': status_value,

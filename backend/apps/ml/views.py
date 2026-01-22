@@ -370,7 +370,17 @@ class PredictionViewSet(viewsets.ViewSet):
         if program_id:
             queryset = queryset.filter(program_id=program_id)
 
-        predictor = self.get_predictor()
+        try:
+            predictor = self.get_predictor()
+        except RuntimeError as e:
+            return Response(
+                {
+                    'error': 'NO_ACTIVE_MODEL',
+                    'message': str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         predictions = []
 
         for student in queryset:

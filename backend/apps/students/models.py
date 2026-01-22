@@ -20,6 +20,7 @@ class Student(models.Model):
         LOW = 'low', _('Faible')
         MEDIUM = 'medium', _('Moyen')
         HIGH = 'high', _('Élevé')
+        CRITICAL = 'critical', _('Critique')
 
     class Level(models.TextChoices):
         """Student academic level choices."""
