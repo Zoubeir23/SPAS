@@ -33,11 +33,24 @@ export default function ListePredictions() {
   const handleGeneratePredictions = async () => {
     try {
       setLoading(true)
+      setError(null)
       await predictionService.generatePredictions()
       await loadPredictions()
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erreur lors de la génération des prédictions:', err)
-      setError('Impossible de générer les prédictions')
+      // Afficher le message d'erreur du backend s'il existe
+      const errorMessage = err.response?.data?.message ||
+                          err.response?.data?.error ||
+                          'Impossible de générer les prédictions'
+
+      // Message spécifique si aucun modèle actif
+      if (err.response?.data?.error === 'NO_ACTIVE_MODEL') {
+        setError('⚠️ Aucun modèle ML actif. Veuillez d\'abord entraîner et activer un modèle dans la section ML.')
+      } else {
+        setError(errorMessage)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -48,6 +61,7 @@ export default function ListePredictions() {
       case 'medium':
         return 'warning'
       case 'high':
+      case 'critical':
         return 'danger'
       default:
         return 'info'
@@ -62,8 +76,10 @@ export default function ListePredictions() {
         return 'Moyen'
       case 'high':
         return 'Élevé'
+      case 'critical':
+        return 'Critique'
       default:
-        return level
+        return level || 'N/A'
     }
   }
 

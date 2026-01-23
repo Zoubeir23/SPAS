@@ -128,7 +128,7 @@ export default function ModaleFiliere({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ChampSaisie
             label="Code"
-            placeholder="Ex: INFO, GESTION"
+            placeholder="Ex: GL, RI, DSBD"
             value={formData.code}
             onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
             error={errors.code}
@@ -148,7 +148,7 @@ export default function ModaleFiliere({
 
         <ChampSaisie
           label="Nom de la filière"
-          placeholder="Ex: Informatique de Gestion"
+          placeholder="Ex: Génie Logiciel, Cyber Sécurité, Data Science & Big Data Technology"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           error={errors.name}

@@ -68,16 +68,12 @@ export default function DetailPrediction() {
                   }
                 }))
               } else {
-                // Fallback: générer depuis le score actuel
-                const baseScore = predictionData.riskScore ? predictionData.riskScore * 100 : 50
-                const months = ['Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr']
-                setRiskEvolution(months.map((month, i) => ({
-                  month,
-                  value: Math.round(Math.max(5, baseScore - (i * 10) + Math.random() * 10))
-                })))
+                // Pas de données d'évolution disponibles
+                setRiskEvolution([])
               }
             } catch (e) {
               console.log('Risk evolution not available')
+              setRiskEvolution([])
             }
             
             // Charger les interventions depuis l'API
@@ -208,22 +204,16 @@ export default function DetailPrediction() {
 
   const riskInfo = getRiskLevel()
 
-// Préparer les facteurs SHAP depuis les données API ou fallback
+// Préparer les facteurs SHAP depuis les données API uniquement
   const shapFactors = prediction?.factors?.map((f: PredictionFactor) => ({
     feature: f.name || f.feature || 'Facteur',
     value: f.value ?? 0,
     contribution: f.contribution ?? f.impact ?? 0,
     direction: (f.direction || (f.impact && f.impact > 0 ? 'positive' : 'negative')) as 'positive' | 'negative'
-  })) || [
-    { feature: 'Absences (Cours Mag.)', value: 12, contribution: 0.18, direction: 'positive' as const },
-    { feature: 'Retard Rendu Projets', value: 3, contribution: 0.12, direction: 'positive' as const },
-    { feature: 'Note Moyenne Maths', value: 8.5, contribution: 0.08, direction: 'positive' as const },
-    { feature: 'Participation Forum', value: 'Active', contribution: -0.05, direction: 'negative' as const },
-    { feature: 'Assiduité TD', value: '92%', contribution: -0.03, direction: 'negative' as const },
-  ]
+  })) || []
 
   // Est-ce que l'explication vient de SHAP ?
-  const isShapExplained = prediction?.shap_explained ?? true
+  const isShapExplained = prediction?.shap_explained ?? false
 
   return (
     <MiseEnPagePrincipale title="Détail Prédiction">
@@ -365,13 +355,23 @@ export default function DetailPrediction() {
                 <option>Année complète</option>
               </select>
             </div>
-            <GraphiqueLignes
-              data={riskEvolution}
-              dataKey="value"
-              lines={[{ key: 'value', name: 'Score de Risque', color: '#DC2626' }]}
-              xAxisKey="month"
-              height={250}
-            />
+            {riskEvolution.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <span className="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[64px] mb-4">trending_up</span>
+                <p className="text-gray-500 dark:text-gray-400 text-center">
+                  Aucune donnée d'évolution disponible.<br/>
+                  <span className="text-sm">L'historique apparaîtra après plusieurs prédictions.</span>
+                </p>
+              </div>
+            ) : (
+              <GraphiqueLignes
+                data={riskEvolution}
+                dataKey="value"
+                lines={[{ key: 'value', name: 'Score de Risque', color: '#DC2626' }]}
+                xAxisKey="month"
+                height={250}
+              />
+            )}
           </Carte>
 
           {/* SHAP Analysis */}
@@ -381,18 +381,28 @@ export default function DetailPrediction() {
                 <span className="material-symbols-outlined text-primary">psychology</span>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Facteurs Clés (SHAP)</h3>
               </div>
-              {isShapExplained && (
+              {isShapExplained && shapFactors.length > 0 && (
                 <span className="px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
                   ✓ SHAP Explainability
                 </span>
               )}
             </div>
-            <GraphiqueSHAP 
-              factors={shapFactors}
-              height={280}
-              showValues={true}
-              title=""
-            />
+            {shapFactors.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <span className="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[64px] mb-4">science</span>
+                <p className="text-gray-500 dark:text-gray-400 text-center">
+                  Aucun facteur d'explication disponible.<br/>
+                  <span className="text-sm">Les facteurs SHAP apparaîtront après la prédiction.</span>
+                </p>
+              </div>
+            ) : (
+              <GraphiqueSHAP
+                factors={shapFactors}
+                height={280}
+                showValues={true}
+                title=""
+              />
+            )}
           </Carte>
         </div>
 

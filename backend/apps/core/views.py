@@ -95,8 +95,8 @@ def system_settings(request):
         return Response(serializer.data)
     
     elif request.method == 'PATCH':
-        # Only admins can update settings
-        if not request.user.is_staff and request.user.role != 'admin':
+        # Only admins can update settings (strict role check, not is_staff)
+        if request.user.role != 'admin':
             return Response(
                 {'detail': 'Seuls les administrateurs peuvent modifier les paramètres'},
                 status=status.HTTP_403_FORBIDDEN

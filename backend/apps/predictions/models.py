@@ -89,6 +89,8 @@ class Prediction(models.Model):
 
     def save(self, *args, **kwargs):
         """Auto-calculate risk level based on risk score."""
+        from django.utils import timezone
+
         # Determine risk level from risk score
         if self.risk_score >= 75:
             self.risk_level = self.RiskLevel.CRITICAL
@@ -101,11 +103,15 @@ class Prediction(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Update student's risk assessment
-        self.student.update_risk_assessment(
+        # Update student's risk assessment using update() to avoid potential circular references
+        from apps.students.models import Student
+        Student.objects.filter(id=self.student.id).update(
             risk_score=self.risk_score,
-            risk_level=self.risk_level
+            risk_level=self.risk_level,
+            updated_at=timezone.now()
         )
+        # Refresh the student instance in memory
+        self.student.refresh_from_db(fields=['risk_score', 'risk_level', 'updated_at'])
 
     def get_top_factors(self, limit=5):
         """Get top N contributing factors sorted by impact."""

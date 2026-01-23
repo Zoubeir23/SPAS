@@ -43,9 +43,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Set permissions based on action."""
-        if self.action in ['create', 'destroy', 'update', 'partial_update']:
-            return [IsAdminUser()]
-        return super().get_permissions()
+        # Only 'me' endpoint is accessible to all authenticated users
+        # All other actions (list, retrieve, create, update, delete) require admin
+        if self.action == 'me':
+            return [IsAuthenticated()]
+        # All other actions require admin privileges
+        return [IsAdminUser()]
 
     @action(detail=True, methods=['post'], url_path='change-password')
     def change_password(self, request, pk=None):

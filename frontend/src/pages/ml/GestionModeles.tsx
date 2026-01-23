@@ -68,16 +68,8 @@ export default function GestionModeles() {
             value: Math.round(p.accuracy * 100)
           })))
         } else {
-          // Fallback: générer depuis les modèles
-          const activeModel = modelsData.find((m: MLModel) => m.status === 'active')
-          if (activeModel && activeModel.metrics) {
-            const baseValue = activeModel.metrics.accuracy ? activeModel.metrics.accuracy * 100 : 70
-            const dates = ['1 Oct', '5 Oct', '10 Oct', '15 Oct', '20 Oct', '22 Oct', '24 Oct', '26 Oct']
-            setPerformanceData(dates.map((date, i) => ({
-              date,
-              value: Math.round(baseValue - 15 + (i * 2) + Math.random() * 3)
-            })))
-          }
+          // Pas de données disponibles - afficher vide
+          setPerformanceData([])
         }
         
         // Charger les jobs d'entraînement depuis l'API
@@ -358,23 +350,35 @@ export default function GestionModeles() {
               </select>
             </div>
             <div className="p-6 flex-1 min-h-[300px]">
-              <div className="mb-4 flex items-start gap-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-3">
-                <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px] mt-0.5">info</span>
-                <div>
-                  <p className="text-sm font-bold text-blue-600 dark:text-blue-400">Surveillance des performances</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    La détection de dérive des données (drift) n'est pas encore implémentée. 
-                    Cette fonctionnalité sera ajoutée dans une prochaine version.
+              {performanceData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full py-12">
+                  <span className="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[64px] mb-4">bar_chart</span>
+                  <p className="text-gray-500 dark:text-gray-400 text-center">
+                    Aucune donnée de performance disponible.<br/>
+                    <span className="text-sm">Les données apparaîtront après l'entraînement de modèles.</span>
                   </p>
                 </div>
-              </div>
-              <GraphiqueLignes
-                data={performanceData}
-                dataKey="value"
-                lines={[{ key: 'value', name: 'Performance', color: '#7c3bed' }]}
-                xAxisKey="date"
-                height={250}
-              />
+              ) : (
+                <>
+                  <div className="mb-4 flex items-start gap-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-lg p-3">
+                    <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px] mt-0.5">info</span>
+                    <div>
+                      <p className="text-sm font-bold text-blue-600 dark:text-blue-400">Surveillance des performances</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        La détection de dérive des données (drift) n'est pas encore implémentée.
+                        Cette fonctionnalité sera ajoutée dans une prochaine version.
+                      </p>
+                    </div>
+                  </div>
+                  <GraphiqueLignes
+                    data={performanceData}
+                    dataKey="value"
+                    lines={[{ key: 'value', name: 'Performance', color: '#7c3bed' }]}
+                    xAxisKey="date"
+                    height={250}
+                  />
+                </>
+              )}
             </div>
           </Carte>
 
