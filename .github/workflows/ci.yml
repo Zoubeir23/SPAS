@@ -3,6 +3,9 @@ name: CI/CD Pipeline - SPAS
 on:
   push:
     branches: [ main, develop ]
+    # Ignore temporary Claude branches
+    branches-ignore:
+      - 'claude/**'
   pull_request:
     branches: [ main, develop ]
 
@@ -52,13 +55,19 @@ jobs:
       - name: ✅ Django system check
         run: |
           cd backend
+          # Create minimal .env for CI (django-environ compatibility)
+          cat > .env << EOF
+          SECRET_KEY=ci-test-secret-key-not-for-production-12345678901234567890
+          DEBUG=False
+          DATABASE_URL=sqlite:///ci_db.sqlite3
+          ALLOWED_HOSTS=localhost,127.0.0.1
+          REDIS_URL=redis://localhost:6379/0
+          CELERY_BROKER_URL=redis://localhost:6379/0
+          EOF
           # Check if Django configuration is valid
           python manage.py check --deploy --fail-level WARNING
         env:
           DJANGO_SETTINGS_MODULE: config.settings
-          SECRET_KEY: 'ci-test-secret-key-not-for-production'
-          DEBUG: 'False'
-          DATABASE_URL: 'sqlite:///db.sqlite3'
 
       - name: 🧪 Run tests with pytest
         run: |
