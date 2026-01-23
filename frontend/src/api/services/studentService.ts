@@ -25,8 +25,8 @@ export interface Student {
   status: 'active' | 'inactive' | 'graduated'
   level?: 'L1' | 'L2' | 'L3' | 'M1' | 'M2'
   level_display?: string
-  riskLevel?: 'low' | 'medium' | 'high'
-  risk_level?: 'low' | 'medium' | 'high'
+  riskLevel?: 'low' | 'medium' | 'high' | 'critical'
+  risk_level?: 'low' | 'medium' | 'high' | 'critical'
   riskScore?: number
   risk_score?: number
   photo?: string
