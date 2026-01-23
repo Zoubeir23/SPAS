@@ -3,9 +3,6 @@ name: CI/CD Pipeline - SPAS
 on:
   push:
     branches: [ main, develop ]
-    # Ignore temporary Claude branches
-    branches-ignore:
-      - 'claude/**'
   pull_request:
     branches: [ main, develop ]
 
