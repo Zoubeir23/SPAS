@@ -310,6 +310,12 @@ SPECTACULAR_SETTINGS = {
 ML_MODEL_PATH = BASE_DIR / env('ML_MODEL_PATH', default='ml_models')
 ML_PREDICTION_THRESHOLD = env.float('ML_PREDICTION_THRESHOLD', default=0.7)
 
+import os
+
+# Create logs directory if it doesn't exist
+LOGS_DIR = BASE_DIR / 'logs'
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 # Logging Configuration
 LOGGING = {
     'version': 1,
