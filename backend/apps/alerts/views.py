@@ -6,16 +6,21 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from .models import Alert, Intervention
 from .serializers import (
     AlertSerializer, AlertListSerializer,
     InterventionSerializer, InterventionListSerializer, InterventionCreateSerializer
 )
+from apps.core.mixins import RoleBasedPermissionMixin
+from apps.core.permissions import (
+    CanManageAlerts, IsAdmin, IsDSOrAdmin, IsPedagogicalOrAbove,
+    teacher_can_access_student,
+)
 
 
-class AlertViewSet(viewsets.ModelViewSet):
+class AlertViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for Alert model.
 
@@ -32,6 +37,21 @@ class AlertViewSet(viewsets.ModelViewSet):
     """
     queryset = Alert.objects.all()
     permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'list': [IsAuthenticated, CanManageAlerts],
+        'retrieve': [IsAuthenticated, CanManageAlerts],
+        'create': [IsAuthenticated, CanManageAlerts],
+        'update': [IsAuthenticated, CanManageAlerts],
+        'partial_update': [IsAuthenticated, CanManageAlerts],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'acknowledge': [IsAuthenticated, CanManageAlerts],
+        'resolve': [IsAuthenticated, CanManageAlerts],
+        'active': [IsAuthenticated, IsPedagogicalOrAbove],
+        'critical': [IsAuthenticated, IsPedagogicalOrAbove],
+        'unread': [IsAuthenticated, IsPedagogicalOrAbove],
+        'statistics': [IsAuthenticated, IsPedagogicalOrAbove],
+        'student_alerts': [IsAuthenticated, CanManageAlerts],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'type', 'level', 'status']
     search_fields = ['student__first_name', 'student__last_name', 'student__matricule', 'message']
@@ -45,8 +65,18 @@ class AlertViewSet(viewsets.ModelViewSet):
         return AlertSerializer
 
     def get_queryset(self):
-        """Optimize queryset with select_related."""
+        """Return alerts scoped to the requesting user's role."""
         queryset = Alert.objects.select_related('student', 'student__program')
+
+        user = self.request.user
+        if user.is_teacher():
+            from apps.students.models import Student
+            teacher_session_ids = user.teaching_sessions.values_list('id', flat=True)
+            enrollment_q = Q(student__enrollments__session_id__in=teacher_session_ids)
+            if hasattr(Student, 'teacher'):
+                queryset = queryset.filter(Q(student__teacher=user) | enrollment_q).distinct()
+            else:
+                queryset = queryset.filter(enrollment_q).distinct()
 
         # Filter by type
         alert_type = self.request.query_params.get('type', None)
@@ -199,15 +229,21 @@ class AlertViewSet(viewsets.ModelViewSet):
 
         GET /alerts/student/{student_id}/
         """
-        alerts = self.get_queryset().filter(
-            student_id=student_id
-        ).order_by('-created_at')
+        from django.shortcuts import get_object_or_404
+        from rest_framework.exceptions import PermissionDenied
+        from apps.students.models import Student
 
+        student = get_object_or_404(Student, pk=student_id)
+        if not request.user.has_elevated_permissions():
+            if not request.user.is_teacher() or not teacher_can_access_student(request.user, student):
+                raise PermissionDenied()
+
+        alerts = self.get_queryset().filter(student=student).order_by('-created_at')
         serializer = self.get_serializer(alerts, many=True)
         return Response(serializer.data)
 
 
-class InterventionViewSet(viewsets.ModelViewSet):
+class InterventionViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for Intervention model.
 
@@ -223,6 +259,19 @@ class InterventionViewSet(viewsets.ModelViewSet):
     """
     queryset = Intervention.objects.all()
     permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'list': [IsAuthenticated, CanManageAlerts],
+        'retrieve': [IsAuthenticated, CanManageAlerts],
+        'create': [IsAuthenticated, CanManageAlerts],
+        'update': [IsAuthenticated, CanManageAlerts],
+        'partial_update': [IsAuthenticated, CanManageAlerts],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'complete': [IsAuthenticated, CanManageAlerts],
+        'cancel': [IsAuthenticated, CanManageAlerts],
+        'student_interventions': [IsAuthenticated, CanManageAlerts],
+        'pending': [IsAuthenticated, CanManageAlerts],
+        'statistics': [IsAuthenticated, IsPedagogicalOrAbove],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'type', 'priority', 'status', 'responsible']
     search_fields = ['student__first_name', 'student__last_name', 'student__matricule', 'description']
@@ -238,10 +287,20 @@ class InterventionViewSet(viewsets.ModelViewSet):
         return InterventionSerializer
 
     def get_queryset(self):
-        """Optimize queryset with select_related."""
-        return Intervention.objects.select_related(
+        """Return interventions scoped to the requesting user's role."""
+        user = self.request.user
+        queryset = Intervention.objects.select_related(
             'student', 'student__program', 'responsible', 'alert'
         )
+        if user.is_teacher():
+            from apps.students.models import Student
+            teacher_session_ids = user.teaching_sessions.values_list('id', flat=True)
+            enrollment_q = Q(student__enrollments__session_id__in=teacher_session_ids)
+            if hasattr(Student, 'teacher'):
+                queryset = queryset.filter(Q(student__teacher=user) | enrollment_q).distinct()
+            else:
+                queryset = queryset.filter(enrollment_q).distinct()
+        return queryset
 
     def perform_create(self, serializer):
         """Auto-assign current user as responsible if not specified."""
@@ -304,10 +363,16 @@ class InterventionViewSet(viewsets.ModelViewSet):
 
         GET /interventions/student/{student_id}/
         """
-        interventions = self.get_queryset().filter(
-            student_id=student_id
-        ).order_by('-scheduled_date')
+        from django.shortcuts import get_object_or_404
+        from rest_framework.exceptions import PermissionDenied
+        from apps.students.models import Student
 
+        student = get_object_or_404(Student, pk=student_id)
+        if not request.user.has_elevated_permissions():
+            if not request.user.is_teacher() or not teacher_can_access_student(request.user, student):
+                raise PermissionDenied()
+
+        interventions = self.get_queryset().filter(student=student).order_by('-scheduled_date')
         serializer = self.get_serializer(interventions, many=True)
         return Response(serializer.data)
 

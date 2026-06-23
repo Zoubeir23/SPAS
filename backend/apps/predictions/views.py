@@ -20,7 +20,8 @@ from apps.ml.services import DropoutRiskPredictor, calculate_student_features_fr
 from apps.ml.models import MLModel
 from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
 from apps.core.permissions import (
-    IsAdmin, IsDSOrAdmin, CanViewPredictions, CanRunMLPredictions, IsPedagogicalOrAbove
+    IsAdmin, IsDSOrAdmin, CanViewPredictions, CanRunMLPredictions, IsPedagogicalOrAbove,
+    teacher_can_access_student,
 )
 
 
@@ -93,9 +94,22 @@ class PredictionViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelV
 
         GET /predictions/student/{student_id}/
         """
-        predictions = self.get_queryset().filter(
-            student_id=student_id
-        ).order_by('-created_at')
+        from apps.students.models import Student
+        from django.shortcuts import get_object_or_404
+        from rest_framework.exceptions import PermissionDenied
+
+        student = get_object_or_404(Student, pk=student_id)
+
+        # Verify the requesting user has access to this student's predictions
+        if not request.user.has_elevated_permissions():
+            if not request.user.is_teacher():
+                raise PermissionDenied()
+            if not teacher_can_access_student(request.user, student):
+                raise PermissionDenied()
+
+        predictions = Prediction.objects.filter(
+            student=student
+        ).select_related('model_version').order_by('-created_at')
 
         serializer = self.get_serializer(predictions, many=True)
         return Response(serializer.data)
