@@ -95,27 +95,32 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # PostgreSQL with optimizations for performance and reliability
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME', default='spas_db'),
-        'USER': env('DB_USER', default='postgres'),
-        'PASSWORD': env('DB_PASSWORD'),  # Required - must be set in .env
-        'HOST': env('DB_HOST', default='localhost'),
-        'PORT': env('DB_PORT', default='5432'),
-        # Connection pooling and performance optimization
-        'CONN_MAX_AGE': env.int('DB_CONN_MAX_AGE', default=600),  # 10 minutes
-        'CONN_HEALTH_CHECKS': True,  # Enable connection health checks
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'options': '-c statement_timeout=30000',  # 30 seconds query timeout
-            'client_encoding': 'UTF8',  # Ensure UTF-8 encoding
-        },
-        # Database engine options for better performance
-        'ATOMIC_REQUESTS': True,  # Wrap each request in a transaction
-        'AUTOCOMMIT': True,
+if env('DATABASE_URL', default=None):
+    DATABASES = {
+        'default': env.db('DATABASE_URL')
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME', default='spas_db'),
+            'USER': env('DB_USER', default='postgres'),
+            'PASSWORD': env('DB_PASSWORD'),  # Required - must be set in .env
+            'HOST': env('DB_HOST', default='localhost'),
+            'PORT': env('DB_PORT', default='5432'),
+            # Connection pooling and performance optimization
+            'CONN_MAX_AGE': env.int('DB_CONN_MAX_AGE', default=600),  # 10 minutes
+            'CONN_HEALTH_CHECKS': True,  # Enable connection health checks
+            'OPTIONS': {
+                'connect_timeout': 10,
+                'options': '-c statement_timeout=30000',  # 30 seconds query timeout
+                'client_encoding': 'UTF8',  # Ensure UTF-8 encoding
+            },
+            # Database engine options for better performance
+            'ATOMIC_REQUESTS': True,  # Wrap each request in a transaction
+            'AUTOCOMMIT': True,
+        }
+    }
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
