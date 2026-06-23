@@ -1,0 +1,7 @@
+version: 2
+
+# Exclude test files from secret scanning — passwords in tests are dummy values
+ignore-paths:
+  - backend/tests/
+  - "**/test_*.py"
+  - "**/*_test.py"
