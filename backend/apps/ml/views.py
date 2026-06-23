@@ -6,9 +6,10 @@ from django.db import models
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
+from apps.core.permissions import IsAdmin
 from .models import MLModel, TrainingJob
 from .serializers import (
     MLModelSerializer, MLModelListSerializer,
@@ -51,7 +52,7 @@ class MLModelViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
+            return [IsAdmin()]
         return super().get_permissions()
 
     def get_queryset(self):
@@ -194,7 +195,7 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ['create', 'destroy', 'cancel']:
-            return [IsAdminUser()]
+            return [IsAdmin()]
         return super().get_permissions()
 
     def perform_create(self, serializer):

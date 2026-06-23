@@ -95,27 +95,32 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # PostgreSQL with optimizations for performance and reliability
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME', default='spas_db'),
-        'USER': env('DB_USER', default='postgres'),
-        'PASSWORD': env('DB_PASSWORD'),  # Required - must be set in .env
-        'HOST': env('DB_HOST', default='localhost'),
-        'PORT': env('DB_PORT', default='5432'),
-        # Connection pooling and performance optimization
-        'CONN_MAX_AGE': env.int('DB_CONN_MAX_AGE', default=600),  # 10 minutes
-        'CONN_HEALTH_CHECKS': True,  # Enable connection health checks
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'options': '-c statement_timeout=30000',  # 30 seconds query timeout
-            'client_encoding': 'UTF8',  # Ensure UTF-8 encoding
-        },
-        # Database engine options for better performance
-        'ATOMIC_REQUESTS': True,  # Wrap each request in a transaction
-        'AUTOCOMMIT': True,
+if env('DATABASE_URL', default=None):
+    DATABASES = {
+        'default': env.db('DATABASE_URL')
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME', default='spas_db'),
+            'USER': env('DB_USER', default='postgres'),
+            'PASSWORD': env('DB_PASSWORD'),  # Required - must be set in .env
+            'HOST': env('DB_HOST', default='localhost'),
+            'PORT': env('DB_PORT', default='5432'),
+            # Connection pooling and performance optimization
+            'CONN_MAX_AGE': env.int('DB_CONN_MAX_AGE', default=600),  # 10 minutes
+            'CONN_HEALTH_CHECKS': True,  # Enable connection health checks
+            'OPTIONS': {
+                'connect_timeout': 10,
+                'options': '-c statement_timeout=30000',  # 30 seconds query timeout
+                'client_encoding': 'UTF8',  # Ensure UTF-8 encoding
+            },
+            # Database engine options for better performance
+            'ATOMIC_REQUESTS': True,  # Wrap each request in a transaction
+            'AUTOCOMMIT': True,
+        }
+    }
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
@@ -305,6 +310,12 @@ SPECTACULAR_SETTINGS = {
 ML_MODEL_PATH = BASE_DIR / env('ML_MODEL_PATH', default='ml_models')
 ML_PREDICTION_THRESHOLD = env.float('ML_PREDICTION_THRESHOLD', default=0.7)
 
+import os
+
+# Create logs directory if it doesn't exist
+LOGS_DIR = BASE_DIR / 'logs'
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 # Logging Configuration
 LOGGING = {
     'version': 1,
@@ -360,3 +371,4 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+SILENCED_SYSTEM_CHECKS = ['drf_spectacular.W001', 'drf_spectacular.W002', 'staticfiles.W004']
