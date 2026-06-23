@@ -364,6 +364,24 @@ class CanRunMLPredictions(permissions.BasePermission):
         )
 
 
+def teacher_can_access_student(user, student):
+    """
+    Return True if the teacher `user` is authorised to access data for `student`.
+
+    Checks in order:
+    1. If the student model has a direct `teacher` FK, compare it to the user.
+    2. Otherwise fall back to session/enrollment intersection.
+    Fail-closed: returns False when neither relationship can be confirmed.
+    """
+    teacher_field = getattr(student, 'teacher', None)
+    if teacher_field is not None:
+        return teacher_field == user
+    # Enrollment-based check (fail-closed: no enrollments → no access)
+    teacher_classes = user.teaching_sessions.all()
+    student_classes = student.enrollments.values_list('session_id', flat=True)
+    return teacher_classes.filter(id__in=student_classes).exists()
+
+
 class ReadOnlyPermission(permissions.BasePermission):
     """
     Permission class that allows read-only access.

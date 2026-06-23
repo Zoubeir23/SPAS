@@ -20,7 +20,8 @@ from apps.ml.services import DropoutRiskPredictor, calculate_student_features_fr
 from apps.ml.models import MLModel
 from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
 from apps.core.permissions import (
-    IsAdmin, IsDSOrAdmin, CanViewPredictions, CanRunMLPredictions, IsPedagogicalOrAbove
+    IsAdmin, IsDSOrAdmin, CanViewPredictions, CanRunMLPredictions, IsPedagogicalOrAbove,
+    teacher_can_access_student,
 )
 
 
@@ -103,15 +104,8 @@ class PredictionViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelV
         if not request.user.has_elevated_permissions():
             if not request.user.is_teacher():
                 raise PermissionDenied()
-            # Teachers may only view predictions for their own students
-            teacher_field = getattr(student, 'teacher', None)
-            if teacher_field is not None and teacher_field != request.user:
+            if not teacher_can_access_student(request.user, student):
                 raise PermissionDenied()
-            elif teacher_field is None and hasattr(student, 'enrollments'):
-                teacher_classes = request.user.teaching_sessions.all()
-                student_classes = student.enrollments.values_list('session_id', flat=True)
-                if not teacher_classes.filter(id__in=student_classes).exists():
-                    raise PermissionDenied()
 
         predictions = Prediction.objects.filter(
             student=student
