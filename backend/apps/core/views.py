@@ -5,10 +5,11 @@ Contains system-wide views like settings management and audit logs.
 
 from rest_framework import status, viewsets, filters
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import SystemSettings, AuditLog
+from .permissions import IsAdmin
 from .serializers import (
     SystemSettingsSerializer,
     AuditLogSerializer,
@@ -31,7 +32,7 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     queryset = AuditLog.objects.select_related("user").order_by("-timestamp")
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdmin]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -125,20 +126,11 @@ def system_settings(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated, IsAdmin])
 def reset_settings(request):
     """
     POST: Reset all settings to default values
     """
-    # Only admins can reset settings (strict role check, not is_staff)
-    if request.user.role != "admin":
-        return Response(
-            {
-                "detail": "Seuls les administrateurs peuvent réinitialiser les paramètres"
-            },
-            status=status.HTTP_403_FORBIDDEN,
-        )
-
     settings = SystemSettings.get_settings()
 
     # Reset to defaults

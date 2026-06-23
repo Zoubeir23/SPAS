@@ -5,12 +5,13 @@ Views for Users app.
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django_filters.rest_framework import DjangoFilterBackend
 
+from apps.core.permissions import IsAdmin
 from .models import User
-from .serializers import UserSerializer, UserCreateSerializer
+from .serializers import UserSerializer, UserCreateSerializer, ChangePasswordSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -51,14 +52,12 @@ class UserViewSet(viewsets.ModelViewSet):
         """Set permissions based on action."""
         # Only 'me' and 'change_password' endpoints are accessible to all authenticated users
         # All other actions (list, retrieve, create, update, delete) require admin
-        if self.action == "me":
-            return [IsAuthenticated()]
-        if self.action == "change_password":
+        if self.action in ["me", "change_password"]:
             return [IsAuthenticated()]
         # All other actions require admin privileges
-        return [IsAdminUser()]
+        return [IsAdmin()]
 
-    @action(detail=True, methods=["post"], url_path="change-password")
+    @action(detail=True, methods=["post"], url_path="change-password", serializer_class=ChangePasswordSerializer)
     def change_password(self, request, pk=None):
         """
         Change password for a specific user.
@@ -72,44 +71,18 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
 
         # Only allow users to change their own password or admins
-        if request.user != user and not request.user.is_staff:
+        if request.user != user and not request.user.is_admin():
             return Response(
                 {"error": "You can only change your own password"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        old_password = request.data.get("old_password")
-        new_password = request.data.get("new_password")
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"success": True, "message": "Password changed successfully"})
 
-        if not old_password or not new_password:
-            return Response(
-                {"error": "Both old_password and new_password are required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Check old password
-        if not user.check_password(old_password):
-            return Response(
-                {"error": "Old password is incorrect"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Validate new password using Django's password validators
-        from django.contrib.auth.password_validation import validate_password
-        from django.core.exceptions import ValidationError
-
-        try:
-            validate_password(new_password, user)
-        except ValidationError as e:
-            return Response(
-                {"error": list(e.messages)}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Set new password
-        user.set_password(new_password)
-        user.save()
-
-        return Response({"success": True, "message": "Password changed successfully"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=["get"])
     def me(self, request):
