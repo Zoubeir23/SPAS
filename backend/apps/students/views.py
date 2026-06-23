@@ -76,12 +76,9 @@ class StudentViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixi
         return StudentSerializer
 
     def get_queryset(self):
-        """Optimize queryset with select_related."""
-        queryset = Student.objects.select_related(
-            'program',
-            'session'
-        )
-        return queryset
+        """Optimize queryset with select_related, filtered by role via QuerySetFilterMixin."""
+        self.queryset = Student.objects.select_related('program', 'session')
+        return super().get_queryset()
 
     @action(detail=True, methods=['get'])
     def predictions(self, request, pk=None):

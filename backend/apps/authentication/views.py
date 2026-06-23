@@ -54,7 +54,6 @@ logger = logging.getLogger(__name__)
                 'properties': {
                     'message': {'type': 'string'},
                     'user': {'type': 'object'},
-                    'verification_token': {'type': 'string'}
                 }
             }
         ),
@@ -86,7 +85,6 @@ def register_view(request):
     return Response({
         'message': 'Utilisateur créé avec succès. Veuillez vérifier votre email.',
         'user': UserSerializer(user).data,
-        'verification_token': verification_token  # Remove in production, only for dev/testing
     }, status=status.HTTP_201_CREATED)
 
 

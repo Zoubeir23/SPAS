@@ -13,9 +13,11 @@ from .serializers import (
     AlertSerializer, AlertListSerializer,
     InterventionSerializer, InterventionListSerializer, InterventionCreateSerializer
 )
+from apps.core.mixins import RoleBasedPermissionMixin
+from apps.core.permissions import CanManageAlerts, IsAdmin, IsDSOrAdmin, IsPedagogicalOrAbove
 
 
-class AlertViewSet(viewsets.ModelViewSet):
+class AlertViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for Alert model.
 
@@ -32,6 +34,21 @@ class AlertViewSet(viewsets.ModelViewSet):
     """
     queryset = Alert.objects.all()
     permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'list': [IsAuthenticated, CanManageAlerts],
+        'retrieve': [IsAuthenticated, CanManageAlerts],
+        'create': [IsAuthenticated, CanManageAlerts],
+        'update': [IsAuthenticated, CanManageAlerts],
+        'partial_update': [IsAuthenticated, CanManageAlerts],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'acknowledge': [IsAuthenticated, CanManageAlerts],
+        'resolve': [IsAuthenticated, CanManageAlerts],
+        'active': [IsAuthenticated, IsPedagogicalOrAbove],
+        'critical': [IsAuthenticated, IsPedagogicalOrAbove],
+        'unread': [IsAuthenticated, IsPedagogicalOrAbove],
+        'statistics': [IsAuthenticated, IsPedagogicalOrAbove],
+        'student_alerts': [IsAuthenticated, CanManageAlerts],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'type', 'level', 'status']
     search_fields = ['student__first_name', 'student__last_name', 'student__matricule', 'message']
@@ -207,7 +224,7 @@ class AlertViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class InterventionViewSet(viewsets.ModelViewSet):
+class InterventionViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for Intervention model.
 
@@ -223,6 +240,19 @@ class InterventionViewSet(viewsets.ModelViewSet):
     """
     queryset = Intervention.objects.all()
     permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'list': [IsAuthenticated, CanManageAlerts],
+        'retrieve': [IsAuthenticated, CanManageAlerts],
+        'create': [IsAuthenticated, CanManageAlerts],
+        'update': [IsAuthenticated, CanManageAlerts],
+        'partial_update': [IsAuthenticated, CanManageAlerts],
+        'destroy': [IsAuthenticated, IsAdmin],
+        'complete': [IsAuthenticated, CanManageAlerts],
+        'cancel': [IsAuthenticated, CanManageAlerts],
+        'student_interventions': [IsAuthenticated, CanManageAlerts],
+        'pending': [IsAuthenticated, CanManageAlerts],
+        'statistics': [IsAuthenticated, IsPedagogicalOrAbove],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['student', 'type', 'priority', 'status', 'responsible']
     search_fields = ['student__first_name', 'student__last_name', 'student__matricule', 'description']

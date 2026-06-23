@@ -93,9 +93,29 @@ class PredictionViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelV
 
         GET /predictions/student/{student_id}/
         """
-        predictions = self.get_queryset().filter(
-            student_id=student_id
-        ).order_by('-created_at')
+        from apps.students.models import Student
+        from django.shortcuts import get_object_or_404
+        from rest_framework.exceptions import PermissionDenied
+
+        student = get_object_or_404(Student, pk=student_id)
+
+        # Verify the requesting user has access to this student's predictions
+        if not request.user.has_elevated_permissions():
+            if not request.user.is_teacher():
+                raise PermissionDenied()
+            # Teachers may only view predictions for their own students
+            teacher_field = getattr(student, 'teacher', None)
+            if teacher_field is not None and teacher_field != request.user:
+                raise PermissionDenied()
+            elif teacher_field is None and hasattr(student, 'enrollments'):
+                teacher_classes = request.user.teaching_sessions.all()
+                student_classes = student.enrollments.values_list('session_id', flat=True)
+                if not teacher_classes.filter(id__in=student_classes).exists():
+                    raise PermissionDenied()
+
+        predictions = Prediction.objects.filter(
+            student=student
+        ).select_related('model_version').order_by('-created_at')
 
         serializer = self.get_serializer(predictions, many=True)
         return Response(serializer.data)
