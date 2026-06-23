@@ -1,182 +1,196 @@
-# SPAS - Système Prédictif d'Alerte Scolaire
+# SPAS — Système Prédictif d'Alerte Scolaire
 
-Système de gestion académique avec prédictions ML pour identifier les étudiants à risque d'abandon scolaire.
+Plateforme académique Django/React qui utilise le machine learning (XGBoost + SHAP) pour identifier les étudiants à risque d'abandon scolaire et déclencher des alertes proactives.
 
-## 📊 État du Projet
+## Fonctionnalités
 
-- **Frontend** : ✅ 100% Implémenté (React + TypeScript + Vite)
-- **Backend** : ✅ 100% Implémenté (Django 6.0 + PostgreSQL)
-- **Machine Learning** : ✅ 100% (XGBoost + SHAP + SMOTE)
-- **Tests** : ✅ 28 tests d'intégration passent
-
-### Score Global : 100% - PROJET TERMINÉ ✅
+| Domaine | Détail |
+|---|---|
+| **Authentification** | JWT avec refresh tokens, contrôle d'accès par rôle (RBAC) |
+| **Gestion académique** | Étudiants, programmes, sessions, notes, absences |
+| **Prédictions ML** | Score de risque 0-100 %, facteurs explicatifs SHAP, courbe ROC interactive |
+| **Alertes** | Déclenchement automatique, interventions pédagogiques, workflow de résolution |
+| **Rôles** | Admin · Enseignant · Conseiller pédagogique · Data Scientist |
 
 ---
 
-## 🚀 Démarrage Rapide
+## Démarrage rapide
 
-### Frontend
+### Option 1 — Docker (recommandé)
+
 ```bash
-cd frontend
+git clone https://github.com/Zoubeir23/SPAS.git
+cd SPAS/backend
+
+# Copier et adapter la configuration
+cp .env.example .env
+# Éditer .env si nécessaire (les valeurs par défaut fonctionnent avec Docker)
+
+# Lancer PostgreSQL + Redis + Django + Celery
+docker compose up -d
+
+# Créer les tables et charger les données de démonstration
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py init_spas
+```
+
+API disponible sur **http://localhost:8000**  
+Swagger UI : **http://localhost:8000/api/docs/**
+
+Lancer ensuite le frontend :
+```bash
+cd ../frontend
 npm install
 npm run dev
-# Accessible sur http://localhost:5173
+# http://localhost:5173
 ```
 
-### Backend
+### Option 2 — Installation locale
+
+**Prérequis :** Python 3.10+, Node 18+, PostgreSQL 15+, Redis 7+
+
+```bash
+git clone https://github.com/Zoubeir23/SPAS.git
+cd SPAS/backend
+
+# Configurer l'environnement
+cp .env.example .env
+# Éditer .env avec vos identifiants PostgreSQL
+
+# Installer les dépendances Python
+python -m venv venv
+source venv/bin/activate          # Linux / macOS
+# venv\Scripts\activate           # Windows
+
+pip install -r requirements.txt
+
+# Initialiser la base de données
+python manage.py migrate
+python manage.py init_spas        # Données de démonstration
+
+# Démarrer le serveur
+python manage.py runserver
+```
+
+```bash
+# Dans un autre terminal — worker Celery (tâches ML asynchrones)
+source venv/bin/activate
+celery -A config worker -l info
+```
+
+```bash
+# Frontend
+cd ../frontend
+npm install
+npm run dev
+```
+
+---
+
+## Configuration (.env)
+
+Copier `backend/.env.example` vers `backend/.env` et adapter les valeurs :
+
+| Variable | Description | Défaut |
+|---|---|---|
+| `SECRET_KEY` | Clé secrète Django — **changer en production** | — |
+| `DEBUG` | Mode debug | `True` |
+| `DB_NAME` | Nom de la base PostgreSQL | `spas_db` |
+| `DB_USER` | Utilisateur PostgreSQL | `spas_user` |
+| `DB_PASSWORD` | Mot de passe PostgreSQL | — |
+| `DB_HOST` | Hôte PostgreSQL | `localhost` |
+| `REDIS_URL` | URL Redis | `redis://localhost:6379/0` |
+| `JWT_ACCESS_TOKEN_LIFETIME` | Durée du token d'accès (minutes) | `60` |
+| `CORS_ALLOWED_ORIGINS` | Origines frontend autorisées | `http://localhost:5173` |
+
+---
+
+## Tests
+
 ```bash
 cd backend
-python -m venv venv
-venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py init_spas  # Données de test
-python manage.py runserver
-# API sur http://localhost:8000
+
+# Tests complets avec couverture
+pytest --cov=apps --cov-report=html
+
+# Tests de sécurité uniquement (pas besoin de PostgreSQL)
+DJANGO_SETTINGS_MODULE=config.settings_test \
+DB_PASSWORD=test DB_NAME=test DB_USER=test \
+pytest tests/test_security_permissions.py -v
 ```
 
----
-
-## 🧠 Machine Learning
-
-### Algorithmes Implémentés
-
-| Algorithme | Description |
-|------------|-------------|
-| **XGBoost** | Algorithme principal de classification (Gradient Boosting optimisé) |
-| **SHAP** | Explainability - Valeurs de Shapley pour interpréter les prédictions |
-| **SMOTE** | Rééquilibrage des classes minoritaires (étudiants à risque) |
-| **Courbe ROC** | Visualisation interactive des performances du modèle |
-
-### Fonctionnalités ML
-
-- Prédiction du risque d'abandon (score 0-100%)
-- Facteurs de risque expliqués via SHAP
-- Entraînement automatique via Celery
-- Courbe ROC interactive avec seuil optimal
-- Support multi-algorithmes (XGBoost, RandomForest, GradientBoosting)
+La suite couvre : authentification, contrôle d'accès RBAC, protection IDOR, prédictions ML, alertes.
 
 ---
 
-## 🔐 Sécurité et Contrôle d'Accès
-
-### Rôles Utilisateurs
-
-| Rôle | Accès |
-|------|-------|
-| **Admin** | Toutes les fonctionnalités + Paramètres + Utilisateurs |
-| **Teacher** | Étudiants, Notes, Absences, Dashboard général |
-| **Data Scientist** | ML, Prédictions, Analytics, Dashboard prédictif |
-| **Pedagogical** | Dashboards, Alertes, Interventions, Analytics |
-
-### Protection des Routes
-
-- Routes frontend protégées par rôle (`allowedRoles`)
-- Navigation dynamique filtrée selon le rôle connecté
-- Authentification JWT avec refresh tokens
-
----
-
-## 📚 Documentation
-
-### Documentation Principale
-- **[Docs/README.md](Docs/README.md)** - Index de la documentation
-- **[backend/API_GUIDE.md](backend/API_GUIDE.md)** - Documentation API complète
-- **[backend/STRUCTURE_BACKEND.md](backend/STRUCTURE_BACKEND.md)** - Architecture backend
-- **[Architecture/Architecture.txt](Architecture/Architecture.txt)** - Architecture complète
-
-### APIs Disponibles
-- **Swagger UI** : http://localhost:8000/api/docs/
-- **ReDoc** : http://localhost:8000/api/redoc/
-- **Admin Django** : http://localhost:8000/admin/
-
----
-
-## 🏗️ Structure du Projet
+## Structure du projet
 
 ```
 SPAS/
-├── frontend/          ✅ React 18 + TypeScript + Vite
-│   ├── src/pages/     18 pages complètes
-│   ├── src/components/ 24+ composants (dont graphiques ROC, SHAP)
-│   └── src/api/       Services connectés à l'API Django
-├── backend/           ✅ Django 6.0 + DRF + PostgreSQL
-│   ├── apps/          10 applications Django
-│   ├── config/        Configuration Django
-│   └── tests/         Tests pytest
-├── Docs/              ✅ Documentation
-└── Architecture/      ✅ Diagrammes et architecture
+├── backend/
+│   ├── apps/
+│   │   ├── authentication/   # JWT, inscription, vérification email
+│   │   ├── users/            # Modèle utilisateur, rôles
+│   │   ├── students/         # Gestion des étudiants
+│   │   ├── programs/         # Programmes et matières
+│   │   ├── sessions/         # Sessions académiques
+│   │   ├── grades/           # Notes
+│   │   ├── attendance/       # Absences
+│   │   ├── predictions/      # Prédictions ML (XGBoost)
+│   │   ├── alerts/           # Alertes et interventions
+│   │   ├── ml/               # Entraînement, modèles, SHAP
+│   │   └── core/             # Permissions, mixins, utilitaires
+│   ├── config/               # Settings Django, URLs, WSGI
+│   └── tests/                # Suite de tests (pytest)
+└── frontend/
+    ├── src/pages/            # 18 pages React
+    ├── src/components/       # Composants réutilisables
+    ├── src/api/              # Clients API (Axios)
+    ├── src/hooks/            # Hooks personnalisés
+    └── src/store/            # État global (Zustand)
 ```
 
 ---
 
-## 🎯 Fonctionnalités
+## Comptes de démonstration
 
-### Frontend
-- ✅ 18 pages complètes
-- ✅ 24+ composants UI réutilisables
-- ✅ Authentification JWT
-- ✅ Dashboards (Général + Prédictif)
-- ✅ Graphique ROC interactif
-- ✅ Visualisation SHAP des facteurs de risque
-- ✅ Contrôle d'accès par rôle
-- ✅ Navigation dynamique
-
-### Backend
-- ✅ API REST complète (50+ endpoints)
-- ✅ 10 applications Django modulaires
-- ✅ Authentification JWT (Simple JWT)
-- ✅ XGBoost + SHAP + SMOTE
-- ✅ Logs d'audit avec statistiques
-- ✅ Tâches asynchrones Celery
-- ✅ Documentation OpenAPI 3.0
-
----
-
-## 👥 Comptes de Test
+> Disponibles après `python manage.py init_spas`
 
 | Email | Rôle | Mot de passe |
-|-------|------|--------------|
-| admin@isi.edu | Admin | password123 |
-| teacher@isi.edu | Enseignant | password123 |
-| ds@isi.edu | Data Scientist | password123 |
-| pedagogical@isi.edu | Pédagogique | password123 |
+|---|---|---|
+| admin@isi.edu | Administrateur | Voir `.env` / `init_spas` |
+| teacher@isi.edu | Enseignant | Voir `.env` / `init_spas` |
+| ds@isi.edu | Data Scientist | Voir `.env` / `init_spas` |
+| pedagogical@isi.edu | Conseiller pédagogique | Voir `.env` / `init_spas` |
 
 ---
 
-## 📦 Technologies
+## Technologies
 
-### Frontend
-- React 18.3.1
-- TypeScript 5.6.2
-- Vite 5.4.21
-- Tailwind CSS 3.4.17
-- React Router DOM 7.1.1
-- Zustand 5.0.2
-- Recharts 2.15.0 (Courbes ROC, graphiques SHAP)
+**Backend :** Django 6 · Django REST Framework · PostgreSQL 15 · Simple JWT · Celery · Redis · XGBoost · SHAP · imbalanced-learn (SMOTE)
 
-### Backend
-- Django 6.0
-- Django REST Framework 3.15+
-- PostgreSQL 15+
-- Simple JWT (Authentification)
-- Celery + Redis (Tâches asynchrones)
-- XGBoost 2.0+ (Machine Learning)
-- SHAP 0.45+ (Explainability)
-- imbalanced-learn 0.12+ (SMOTE)
+**Frontend :** React 18 · TypeScript · Vite · Tailwind CSS · Zustand · Recharts · React Router 7
+
+**Infrastructure :** Docker · GitHub Actions CI · pytest · GitGuardian
 
 ---
 
-## 📧 Contact
+## Contribuer
 
-**Auteur** : Zoubeir IBRAHIMA AMED  
-**Projet** : Mémoire de fin d'études - Système Prédictif d'Alerte Scolaire  
-**Repository** : github.com/Zoubeir23/SPAS
+```bash
+# Créer une branche de feature
+git checkout -b feat/ma-fonctionnalite
+
+# Lancer les tests avant de pousser
+cd backend && pytest --no-cov -q
+
+# Ouvrir une Pull Request vers main
+```
+
+Le CI vérifie automatiquement : tests Django, build TypeScript, audit de sécurité GitGuardian.
 
 ---
 
-**Version** : 2.0  
-**Date** : 3 janvier 2026  
-**Statut** : Production Ready ✅
-
-
+**Auteur :** Zoubeir IBRAHIMA AMED  
+**Contexte :** Mémoire de fin d'études  
+**Licence :** MIT
