@@ -371,3 +371,4 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+SILENCED_SYSTEM_CHECKS = ['drf_spectacular.W001', 'drf_spectacular.W002', 'staticfiles.W004']
