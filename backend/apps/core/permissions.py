@@ -376,8 +376,12 @@ def teacher_can_access_student(user, student):
     teacher_field = getattr(student, 'teacher', None)
     if teacher_field is not None:
         return teacher_field == user
-    # Enrollment-based check (fail-closed: no enrollments → no access)
+    # Enrollment-based check (fail-closed: no relation or no enrollments → no access)
+    if not hasattr(user, 'teaching_sessions'):
+        return False
     teacher_classes = user.teaching_sessions.all()
+    if not hasattr(student, 'enrollments'):
+        return False
     student_classes = student.enrollments.values_list('session_id', flat=True)
     return teacher_classes.filter(id__in=student_classes).exists()
 

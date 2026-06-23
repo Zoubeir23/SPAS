@@ -71,12 +71,18 @@ class AlertViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
         user = self.request.user
         if user.is_teacher():
             from apps.students.models import Student
-            teacher_session_ids = user.teaching_sessions.values_list('id', flat=True)
-            enrollment_q = Q(student__enrollments__session_id__in=teacher_session_ids)
             if hasattr(Student, 'teacher'):
-                queryset = queryset.filter(Q(student__teacher=user) | enrollment_q).distinct()
+                base_q = Q(student__teacher=user)
             else:
-                queryset = queryset.filter(enrollment_q).distinct()
+                base_q = Q()
+            if hasattr(user, 'teaching_sessions'):
+                teacher_session_ids = user.teaching_sessions.values_list('id', flat=True)
+                enrollment_q = Q(student__enrollments__session_id__in=teacher_session_ids)
+                queryset = queryset.filter(base_q | enrollment_q).distinct()
+            elif hasattr(Student, 'teacher'):
+                queryset = queryset.filter(base_q).distinct()
+            else:
+                queryset = queryset.none()
 
         # Filter by type
         alert_type = self.request.query_params.get('type', None)
@@ -294,12 +300,18 @@ class InterventionViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
         )
         if user.is_teacher():
             from apps.students.models import Student
-            teacher_session_ids = user.teaching_sessions.values_list('id', flat=True)
-            enrollment_q = Q(student__enrollments__session_id__in=teacher_session_ids)
             if hasattr(Student, 'teacher'):
-                queryset = queryset.filter(Q(student__teacher=user) | enrollment_q).distinct()
+                base_q = Q(student__teacher=user)
             else:
-                queryset = queryset.filter(enrollment_q).distinct()
+                base_q = Q()
+            if hasattr(user, 'teaching_sessions'):
+                teacher_session_ids = user.teaching_sessions.values_list('id', flat=True)
+                enrollment_q = Q(student__enrollments__session_id__in=teacher_session_ids)
+                queryset = queryset.filter(base_q | enrollment_q).distinct()
+            elif hasattr(Student, 'teacher'):
+                queryset = queryset.filter(base_q).distinct()
+            else:
+                queryset = queryset.none()
         return queryset
 
     def perform_create(self, serializer):
