@@ -16,7 +16,7 @@ export default function MiseEnPagePrincipale({
   breadcrumbs,
 }: MainLayoutProps) {
   const location = useLocation()
-  const [_sidebarOpen, _setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Générer les breadcrumbs automatiquement si non fournis
   const getBreadcrumbs = () => {
@@ -50,15 +50,28 @@ export default function MiseEnPagePrincipale({
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark">
       {/* Sidebar */}
-      <BarreLaterale />
+      <BarreLaterale isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header */}
-        <EnTete breadcrumbs={getBreadcrumbs()} title={title} />
+        <EnTete
+          breadcrumbs={getBreadcrumbs()}
+          title={title}
+          onOpenSidebar={() => setSidebarOpen(true)}
+        />
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto pt-[70px] bg-background-light dark:bg-background-dark">
+        <main className="flex-1 overflow-y-auto pt-header bg-background-light dark:bg-background-dark">
           <div className="p-4 md:p-8">{children}</div>
         </main>
       </div>

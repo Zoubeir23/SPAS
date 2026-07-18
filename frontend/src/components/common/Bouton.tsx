@@ -28,14 +28,14 @@ export default function Bouton({
     outline:
       'border-2 border-primary text-primary hover:bg-primary/10 dark:border-blue-400 dark:text-blue-400',
     danger:
-      'bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600 dark:bg-red-600 dark:hover:bg-red-700',
+      'bg-danger-600 text-white hover:bg-danger-700 focus-visible:outline-danger-600 dark:bg-danger-600 dark:hover:bg-danger-700',
     warning:
-      'bg-orange-600 text-white hover:bg-orange-700 focus-visible:outline-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700',
+      'bg-warning-600 text-white hover:bg-warning-700 focus-visible:outline-warning-600 dark:bg-warning-600 dark:hover:bg-warning-700',
   }
 
   const sizes = {
     sm: 'px-3 py-1.5 text-sm',
-    md: 'px-3 py-3 text-sm',
+    md: 'px-4 py-2.5 text-sm',
     lg: 'px-4 py-3.5 text-base',
   }
 

@@ -16,13 +16,13 @@ export default function Badge({
 }: BadgeProps) {
   const variants = {
     success:
-      'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+      'bg-success-100 text-success-800 dark:bg-success-900/20 dark:text-success-400',
     warning:
-      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-    danger: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-    info: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+      'bg-warning-100 text-warning-800 dark:bg-warning-900/20 dark:text-warning-400',
+    danger: 'bg-danger-100 text-danger-800 dark:bg-danger-900/20 dark:text-danger-400',
+    info: 'bg-info-100 text-info-800 dark:bg-info-900/20 dark:text-info-400',
     primary:
-      'bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-400',
+      'bg-primary/10 text-primary dark:bg-primary/20 dark:text-info-400',
   }
 
   const sizes = {

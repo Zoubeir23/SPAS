@@ -14,9 +14,10 @@ interface BreadcrumbItem {
 interface HeaderProps {
   breadcrumbs?: BreadcrumbItem[]
   title?: string
+  onOpenSidebar?: () => void
 }
 
-export default function EnTete({ breadcrumbs, title }: HeaderProps) {
+export default function EnTete({ breadcrumbs, title, onOpenSidebar }: HeaderProps) {
   const { user } = useAuthStore()
   const { logout } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
@@ -77,9 +78,19 @@ export default function EnTete({ breadcrumbs, title }: HeaderProps) {
   const unreadCount = unreadAlerts.length
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-[70px] bg-white dark:bg-[#1a202c] border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 z-50 shadow-sm transition-colors duration-200">
+    <header className="fixed top-0 left-0 right-0 h-header bg-white dark:bg-surface-dark border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 z-50 shadow-sm transition-colors duration-200">
+      {/* Sidebar toggle (mobile only) */}
+      <button
+        type="button"
+        onClick={onOpenSidebar}
+        className="lg:hidden p-2 -ml-2 mr-2 text-gray-600 hover:bg-gray-100 rounded-full dark:text-gray-300 dark:hover:bg-gray-700 shrink-0"
+        aria-label="Ouvrir le menu"
+      >
+        <span className="material-symbols-outlined">menu</span>
+      </button>
+
       {/* Left: Breadcrumbs */}
-      <nav className="flex items-center min-w-0 mr-4">
+      <nav className="hidden sm:flex items-center min-w-0 mr-4">
         <ol className="flex items-center whitespace-nowrap space-x-2">
           {defaultBreadcrumbs.map((item, index) => (
             <li key={index} className="flex items-center">
@@ -145,11 +156,11 @@ export default function EnTete({ breadcrumbs, title }: HeaderProps) {
             {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-[#1a202c]"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-danger-500 border-2 border-white dark:border-surface-dark"></span>
               </span>
             )}
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white dark:border-[#1a202c]">
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger-500 text-[10px] font-bold text-white border-2 border-white dark:border-surface-dark">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -208,20 +219,20 @@ export default function EnTete({ breadcrumbs, title }: HeaderProps) {
                             className={clsx(
                               'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
                               alert.level === 'critical' || alert.level === 'high'
-                                ? 'bg-red-100 dark:bg-red-900/30'
+                                ? 'bg-danger-100 dark:bg-danger-900/30'
                                 : alert.level === 'medium'
-                                ? 'bg-yellow-100 dark:bg-yellow-900/30'
-                                : 'bg-blue-100 dark:bg-blue-900/30'
+                                ? 'bg-warning-100 dark:bg-warning-900/30'
+                                : 'bg-info-100 dark:bg-info-900/30'
                             )}
                           >
                             <span
                               className={clsx(
                                 'material-symbols-outlined text-lg',
                                 alert.level === 'critical' || alert.level === 'high'
-                                  ? 'text-red-600 dark:text-red-400'
+                                  ? 'text-danger-600 dark:text-danger-400'
                                   : alert.level === 'medium'
-                                  ? 'text-yellow-600 dark:text-yellow-400'
-                                  : 'text-blue-600 dark:text-blue-400'
+                                  ? 'text-warning-600 dark:text-warning-400'
+                                  : 'text-info-600 dark:text-info-400'
                               )}
                             >
                               {alert.type === 'attendance' ? 'event_busy' : 
@@ -358,7 +369,7 @@ export default function EnTete({ breadcrumbs, title }: HeaderProps) {
                     setShowUserMenu(false)
                     logout()
                   }}
-                  className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                  className="flex items-center w-full px-4 py-2 text-sm text-danger-600 hover:bg-danger-50 dark:text-danger-400 dark:hover:bg-danger-900/20"
                 >
                   <span className="material-symbols-outlined text-[20px] mr-3">logout</span>
                   Déconnexion

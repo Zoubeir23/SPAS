@@ -21,11 +21,11 @@ export default function Carte({
   hover = false,
 }: CardProps) {
   const iconColors = {
-    primary: 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-300',
+    primary: 'bg-info-50 text-primary dark:bg-info-900/20 dark:text-info-300',
     purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-300',
     orange: 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-300',
-    green: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-300',
-    red: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-300',
+    green: 'bg-success-50 text-success-600 dark:bg-success-900/20 dark:text-success-300',
+    red: 'bg-danger-50 text-danger-600 dark:bg-danger-900/20 dark:text-danger-300',
   }
 
   return (

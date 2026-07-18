@@ -53,7 +53,7 @@ const ChampSaisie = forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
             className={clsx(
-              'block w-full rounded-lg border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary dark:bg-background-dark dark:ring-gray-600 dark:text-white sm:text-sm sm:leading-6 bg-[#f8f9fb] dark:bg-opacity-50 transition-all',
+              'block w-full rounded-lg border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary dark:bg-background-dark dark:ring-gray-600 dark:text-white sm:text-sm sm:leading-6 bg-background-light dark:bg-opacity-50 transition-all',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
               !leftIcon && !rightIcon && 'px-4',
