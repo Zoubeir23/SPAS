@@ -149,14 +149,15 @@ export const authService = {
   },
 
   /**
-   * Register new user (admin only)
+   * Register a new self-service account. The backend always creates it with
+   * the 'teacher' role; other roles can only be granted by an admin via user
+   * management.
    */
   async register(userData: {
     email: string
     password: string
     first_name: string
     last_name: string
-    role: string
   }): Promise<UserProfile> {
     const response = await apiClient.post<UserProfile>(
       API_ENDPOINTS.AUTH.REGISTER,

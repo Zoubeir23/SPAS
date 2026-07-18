@@ -18,14 +18,14 @@ from .models import Prediction
 from .serializers import PredictionSerializer, PredictionListSerializer
 from apps.ml.services import DropoutRiskPredictor, calculate_student_features_from_db
 from apps.ml.models import MLModel
-from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
+from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin
 from apps.core.permissions import (
     IsAdmin, IsDSOrAdmin, CanViewPredictions, CanRunMLPredictions, IsPedagogicalOrAbove,
     teacher_can_access_student,
 )
 
 
-class PredictionViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSet):
+class PredictionViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin, viewsets.ModelViewSet):
     """
     ViewSet for Prediction model.
 
@@ -69,11 +69,9 @@ class PredictionViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelV
         return PredictionSerializer
 
     def get_queryset(self):
-        """Optimize queryset with select_related."""
-        queryset = Prediction.objects.select_related(
-            'student',
-            'model_version'
-        )
+        """Optimize queryset with select_related, filtered by role via QuerySetFilterMixin."""
+        self.queryset = Prediction.objects.select_related('student', 'model_version')
+        queryset = super().get_queryset()
 
         # Filter by student
         student_id = self.request.query_params.get('student', None)

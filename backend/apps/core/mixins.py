@@ -362,9 +362,13 @@ class QuerySetFilterMixin:
             return queryset.filter(teacher=self.request.user)
         elif hasattr(model, 'created_by'):
             return queryset.filter(created_by=self.request.user)
+        elif hasattr(model, 'student'):
+            from apps.core.permissions import get_accessible_student_ids
+            return queryset.filter(student_id__in=get_accessible_student_ids(self.request.user))
 
-        # If no suitable field found, return all (permissions will handle access)
-        return queryset
+        # No relationship to the teacher could be established: fail closed
+        # rather than silently exposing every record to every teacher.
+        return queryset.none()
 
     def get_queryset_for_student(self, queryset):
         """

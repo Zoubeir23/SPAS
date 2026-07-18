@@ -31,14 +31,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'email', 'password', 'password_confirm',
-            'first_name', 'last_name', 'phone', 'role'
+            'first_name', 'last_name', 'phone'
         ]
         extra_kwargs = {
             'email': {'required': True},
             'first_name': {'required': True},
             'last_name': {'required': True},
             'phone': {'required': False},
-            'role': {'required': True}
         }
 
     def validate_email(self, value):
@@ -69,14 +68,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         # Remove password_confirm from validated_data
         validated_data.pop('password_confirm')
 
-        # Create user with inactive status until email is verified
+        # Create user with inactive status until email is verified.
+        # Public self-registration always creates a TEACHER account; other
+        # roles (admin, DS, pedagogical) may only be granted by an admin
+        # through the user-management endpoints.
         user = User.objects.create_user(
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
             phone=validated_data.get('phone', ''),
-            role=validated_data.get('role', User.Role.TEACHER),
+            role=User.Role.TEACHER,
             is_active=False  # Require email verification
         )
 

@@ -10,23 +10,38 @@ from django.utils import timezone
 
 from .models import Session
 from .serializers import SessionSerializer
+from apps.core.mixins import RoleBasedPermissionMixin
+from apps.core.permissions import IsDSOrAdmin, CanRunMLPredictions
 
 
-class SessionViewSet(viewsets.ModelViewSet):
+class SessionViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for Session model.
 
     Provides CRUD operations and custom actions:
     - GET /sessions/ - List all sessions
-    - POST /sessions/ - Create a session
+    - POST /sessions/ - Create a session (DS/Admin only)
     - GET /sessions/{id}/ - Retrieve a session
-    - PUT/PATCH /sessions/{id}/ - Update a session
-    - DELETE /sessions/{id}/ - Delete a session
+    - PUT/PATCH /sessions/{id}/ - Update a session (DS/Admin only)
+    - DELETE /sessions/{id}/ - Delete a session (DS/Admin only)
     - GET /sessions/{id}/students/ - Get all students in session
+    - POST /sessions/{id}/close/ - Close a session (DS/Admin only)
+    - POST /sessions/{id}/generate-predictions/ - Generate ML predictions (DS/Admin only)
     """
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
     permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'list': [IsAuthenticated],
+        'retrieve': [IsAuthenticated],
+        'create': [IsAuthenticated, IsDSOrAdmin],
+        'update': [IsAuthenticated, IsDSOrAdmin],
+        'partial_update': [IsAuthenticated, IsDSOrAdmin],
+        'destroy': [IsAuthenticated, IsDSOrAdmin],
+        'students': [IsAuthenticated],
+        'close': [IsAuthenticated, IsDSOrAdmin],
+        'generate_predictions': [IsAuthenticated, CanRunMLPredictions],
+    }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['status', 'year']
     search_fields = ['name', 'year']

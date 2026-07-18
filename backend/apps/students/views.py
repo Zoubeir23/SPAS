@@ -22,7 +22,7 @@ from .serializers import StudentSerializer, StudentListSerializer
 from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin
 from apps.core.permissions import (
     IsAdmin, IsDSOrAdmin, IsPedagogicalOrAbove,
-    CanManageStudents, IsTeacherOrAdmin
+    CanManageStudents, IsTeacherOrAdmin, get_accessible_student_ids
 )
 
 
@@ -62,9 +62,10 @@ class StudentViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixi
         'import_csv': [IsAuthenticated, IsDSOrAdmin],
         'export_csv': [IsAuthenticated, IsPedagogicalOrAbove],
         'at_risk': [IsAuthenticated, IsPedagogicalOrAbove],
+        'assign_teacher': [IsAuthenticated, IsDSOrAdmin],
     }
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['program', 'session', 'risk_level', 'status']
+    filterset_fields = ['program', 'session', 'teacher', 'risk_level', 'status']
     search_fields = ['matricule', 'first_name', 'last_name', 'email']
     ordering_fields = ['last_name', 'first_name', 'created_at', 'risk_score']
     ordering = ['last_name', 'first_name']
@@ -79,6 +80,39 @@ class StudentViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixi
         """Optimize queryset with select_related, filtered by role via QuerySetFilterMixin."""
         self.queryset = Student.objects.select_related('program', 'session')
         return super().get_queryset()
+
+    def get_queryset_for_teacher(self, queryset):
+        """Restrict the student list to the requesting teacher's own students."""
+        return queryset.filter(id__in=get_accessible_student_ids(self.request.user))
+
+    @action(detail=True, methods=['post'], url_path='assign-teacher')
+    def assign_teacher(self, request, pk=None):
+        """
+        Assign (or unassign) the teacher responsible for a student.
+
+        POST /students/{id}/assign-teacher/
+        Body: {"teacher_id": "uuid"} or {"teacher_id": null} to unassign.
+        """
+        from apps.users.models import User
+
+        student = self.get_object()
+        teacher_id = request.data.get('teacher_id')
+
+        if teacher_id is None:
+            student.teacher = None
+        else:
+            try:
+                teacher = User.objects.get(pk=teacher_id, role=User.Role.TEACHER)
+            except User.DoesNotExist:
+                return Response(
+                    {'error': "Aucun enseignant trouvé avec cet identifiant."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            student.teacher = teacher
+
+        student.save(update_fields=['teacher', 'updated_at'])
+
+        return Response(StudentSerializer(student, context={'request': request}).data)
 
     @action(detail=True, methods=['get'])
     def predictions(self, request, pk=None):

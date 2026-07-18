@@ -1,6 +1,7 @@
 """
 Student models for SPAS.
 """
+from django.conf import settings
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
@@ -73,6 +74,15 @@ class Student(models.Model):
         default=Status.ACTIVE,
         db_index=True
     )
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='assigned_students',
+        verbose_name=_('teacher'),
+        null=True,
+        blank=True,
+        help_text=_('Teacher assigned to this student for read/write access scoping')
+    )
     level = models.CharField(
         _('level'),
         max_length=5,
@@ -115,6 +125,7 @@ class Student(models.Model):
             models.Index(fields=['status']),
             models.Index(fields=['risk_level']),
             models.Index(fields=['program', 'session']),
+            models.Index(fields=['teacher']),
         ]
 
     def __str__(self):
