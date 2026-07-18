@@ -10,10 +10,26 @@ These mixins provide common functionality:
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Model
 from django.utils import timezone
 
 from .models import AuditLog
 from .utils import get_client_ip
+
+
+def audit_safe(value):
+    """
+    Recursively convert a value into something JSONField(encoder=DjangoJSONEncoder)
+    can store: model instances become their string representation (DjangoJSONEncoder
+    already handles date/datetime/Decimal/UUID on its own).
+    """
+    if isinstance(value, Model):
+        return str(value)
+    if isinstance(value, dict):
+        return {key: audit_safe(val) for key, val in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [audit_safe(val) for val in value]
+    return value
 
 
 class RoleBasedPermissionMixin:
@@ -129,7 +145,7 @@ class AuditLogMixin:
             # Get changes if enabled
             changes = None
             if self.audit_log_changes:
-                changes = serializer.validated_data
+                changes = audit_safe(serializer.validated_data)
 
             self.create_audit_log(
                 action_type=AuditLog.Action.CREATE,
@@ -154,8 +170,8 @@ class AuditLogMixin:
             changes = None
             if self.audit_log_changes:
                 changes = {
-                    'before': original_data,
-                    'after': serializer.validated_data
+                    'before': audit_safe(original_data),
+                    'after': audit_safe(serializer.validated_data)
                 }
 
             self.create_audit_log(

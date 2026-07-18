@@ -39,3 +39,14 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 SECURE_HSTS_SECONDS = 0
+
+# Désactiver le throttling en test : le cache de throttle (LocMemCache) n'est
+# pas réinitialisé entre les méthodes de test comme la base de données l'est,
+# donc plusieurs TestCase appelant /login/ ou /register/ dans leur setUp()
+# finissent par se faire mutuellement throttle. Aucun test ne vérifie le
+# comportement de throttling lui-même.
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # noqa: F405
+    'DEFAULT_THROTTLE_CLASSES': [],
+    'DEFAULT_THROTTLE_RATES': {},
+}

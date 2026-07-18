@@ -104,11 +104,12 @@ class SoftDeleteModelTestCase(TestCase):
 
     def test_soft_delete(self):
         """Test soft deletion."""
-        # Note: This is a conceptual test since TestSoftDeleteModel
-        # won't actually be in the database. In real usage, you would
-        # test this with actual models that inherit from SoftDeleteModel.
+        # Note: This is a conceptual test since TestSoftDeleteModel isn't a
+        # migrated table. delete()/restore() call self.save(), which requires
+        # a persisted row, so we stub it out to check the field mutations only.
         obj = TestSoftDeleteModel()
         obj.is_deleted = False
+        obj.save = lambda *args, **kwargs: None
 
         # Soft delete
         obj.delete(user=self.user)
@@ -123,6 +124,7 @@ class SoftDeleteModelTestCase(TestCase):
         obj.is_deleted = True
         obj.deleted_at = timezone.now()
         obj.deleted_by = self.user
+        obj.save = lambda *args, **kwargs: None
 
         # Restore
         obj.restore()

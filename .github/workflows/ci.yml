@@ -69,14 +69,16 @@ jobs:
       - name: 🧪 Run tests with pytest
         run: |
           cd backend
-          # Run all tests with coverage
-          pytest tests/ -v --tb=short --cov=apps --cov-report=term-missing || echo "No tests found or tests failed"
+          # Run the full suite (tests/ + every app's tests.py/tests/) with coverage.
+          # settings_test.py overrides DATABASES with an in-memory SQLite DB, but
+          # settings.py still evaluates env('DB_PASSWORD') at import time before
+          # that override applies, so DATABASE_URL must be set to something to
+          # skip that required lookup.
+          pytest tests/ apps/core/tests/ apps/*/tests.py -v --tb=short --cov=apps --cov-report=term-missing
         env:
-          DJANGO_SETTINGS_MODULE: config.settings
+          DJANGO_SETTINGS_MODULE: config.settings_test
           SECRET_KEY: 'ci-test-secret-key-not-for-production'
-          DEBUG: 'True'
-          DATABASE_URL: 'sqlite:///test_db.sqlite3'
-        continue-on-error: true
+          DATABASE_URL: 'sqlite:///ci_test_db.sqlite3'
 
       - name: 📊 Upload test coverage
         uses: actions/upload-artifact@v4

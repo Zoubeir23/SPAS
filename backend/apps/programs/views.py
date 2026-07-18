@@ -10,7 +10,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Department, Program, Subject
 from .serializers import (
     DepartmentSerializer, DepartmentListSerializer,
-    ProgramSerializer, ProgramListSerializer
+    ProgramSerializer, ProgramListSerializer,
+    SubjectSerializer, SubjectListSerializer
 )
 
 
@@ -127,6 +128,12 @@ class SubjectViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'code']
     ordering_fields = ['code', 'name', 'created_at']
     ordering = ['code']
+
+    def get_serializer_class(self):
+        """Return appropriate serializer class."""
+        if self.action == 'list':
+            return SubjectListSerializer
+        return SubjectSerializer
 
     def get_queryset(self):
         """Optimize queryset with prefetch_related."""

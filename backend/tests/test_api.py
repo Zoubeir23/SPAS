@@ -49,11 +49,11 @@ class TestStudentEndpoints:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data['matricule'] == '2024099'
 
-    def test_update_student(self, authenticated_client, student):
-        """Test updating a student."""
+    def test_update_student(self, admin_authenticated_client, student):
+        """Test updating a student (DS/Admin only; teachers are read-only)."""
         url = f'/api/students/{student.id}/'
         data = {'first_name': 'Alexandre Updated'}
-        response = authenticated_client.patch(url, data, format='json')
+        response = admin_authenticated_client.patch(url, data, format='json')
         assert response.status_code == status.HTTP_200_OK
         assert response.data['first_name'] == 'Alexandre Updated'
 
@@ -106,20 +106,20 @@ class TestProgramEndpoints:
 
     def test_list_programs(self, authenticated_client, program):
         """Test listing programs."""
-        url = '/api/programs/'
+        url = '/api/programs/programs/'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_program_detail(self, authenticated_client, program):
         """Test getting program detail."""
-        url = f'/api/programs/{program.id}/'
+        url = f'/api/programs/programs/{program.id}/'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data['code'] == program.code
 
     def test_create_program(self, admin_authenticated_client):
         """Test creating a program."""
-        url = '/api/programs/'
+        url = '/api/programs/programs/'
         data = {
             'name': 'Nouveau Programme',
             'code': 'NP.01',
@@ -132,7 +132,7 @@ class TestProgramEndpoints:
 
     def test_program_students_action(self, authenticated_client, program, student):
         """Test getting students in a program."""
-        url = f'/api/programs/{program.id}/students/'
+        url = f'/api/programs/programs/{program.id}/students/'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
@@ -143,20 +143,20 @@ class TestSessionEndpoints:
 
     def test_list_sessions(self, authenticated_client, session):
         """Test listing sessions."""
-        url = '/api/sessions/'
+        url = '/api/sessions/sessions/'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_session_detail(self, authenticated_client, session):
         """Test getting session detail."""
-        url = f'/api/sessions/{session.id}/'
+        url = f'/api/sessions/sessions/{session.id}/'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data['name'] == session.name
 
     def test_create_session(self, admin_authenticated_client):
         """Test creating a session."""
-        url = '/api/sessions/'
+        url = '/api/sessions/sessions/'
         data = {
             'name': 'Hiver 2025',
             'year': '2024-2025',
@@ -174,20 +174,20 @@ class TestAlertEndpoints:
 
     def test_list_alerts(self, authenticated_client, alert):
         """Test listing alerts."""
-        url = '/api/alerts/'
+        url = '/api/alerts/alerts/'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_alert_detail(self, authenticated_client, alert):
         """Test getting alert detail."""
-        url = f'/api/alerts/{alert.id}/'
+        url = f'/api/alerts/alerts/{alert.id}/'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data['type'] == alert.type
 
     def test_create_alert(self, authenticated_client, student):
         """Test creating an alert."""
-        url = '/api/alerts/'
+        url = '/api/alerts/alerts/'
         data = {
             'student': student.id,
             'type': 'attendance',
@@ -200,20 +200,20 @@ class TestAlertEndpoints:
 
     def test_update_alert_status(self, authenticated_client, alert):
         """Test updating alert status."""
-        url = f'/api/alerts/{alert.id}/'
+        url = f'/api/alerts/alerts/{alert.id}/'
         data = {'status': 'acknowledged'}
         response = authenticated_client.patch(url, data, format='json')
         assert response.status_code == status.HTTP_200_OK
 
     def test_filter_alerts_by_level(self, authenticated_client, alert):
         """Test filtering alerts by level."""
-        url = '/api/alerts/?level=medium'
+        url = '/api/alerts/alerts/?level=medium'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
     def test_filter_alerts_by_status(self, authenticated_client, alert):
         """Test filtering alerts by status."""
-        url = '/api/alerts/?status=new'
+        url = '/api/alerts/alerts/?status=new'
         response = authenticated_client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
@@ -226,8 +226,7 @@ class TestSubjectEndpoints:
         """Test listing subjects."""
         url = '/api/programs/subjects/'
         response = authenticated_client.get(url)
-        # Might be nested under programs or separate
-        assert response.status_code in [status.HTTP_200_OK, status.HTTP_404_NOT_FOUND]
+        assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db

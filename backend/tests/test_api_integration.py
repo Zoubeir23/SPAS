@@ -557,17 +557,18 @@ class TestUserAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['email'] == 'admin@test.com'
 
-    def test_create_user(self, authenticated_client):
-        """Test de création d'un utilisateur."""
+    def test_create_user(self, admin_authenticated_client):
+        """Test de création d'un utilisateur (Admin only)."""
         url = '/api/users/'
         data = {
             'email': 'newuser@test.com',
-            'password': 'newpass123',
+            'password': 'N3wSecure#Pass',
+            'password_confirm': 'N3wSecure#Pass',
             'first_name': 'New',
             'last_name': 'User',
             'role': 'teacher'
         }
-        response = authenticated_client.post(url, data, format='json')
-        
+        response = admin_authenticated_client.post(url, data, format='json')
+
         assert response.status_code == status.HTTP_201_CREATED
         assert User.objects.filter(email='newuser@test.com').exists()

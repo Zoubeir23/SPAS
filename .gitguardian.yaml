@@ -5,3 +5,5 @@ ignore-paths:
   - backend/tests/
   - "**/test_*.py"
   - "**/*_test.py"
+  - "**/tests.py"
+  - "**/tests/**"

@@ -4,6 +4,7 @@ Core models for SPAS.
 This module contains shared models used across the application:
 - AuditLog: Tracks important actions and changes for security and compliance
 """
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -104,6 +105,7 @@ class AuditLog(models.Model):
         _('changements'),
         null=True,
         blank=True,
+        encoder=DjangoJSONEncoder,
         help_text=_("Détails des changements effectués (format JSON)")
     )
 
@@ -152,6 +154,7 @@ class AuditLog(models.Model):
         _('données supplémentaires'),
         null=True,
         blank=True,
+        encoder=DjangoJSONEncoder,
         help_text=_("Informations supplémentaires (format JSON)")
     )
 
@@ -174,8 +177,8 @@ class AuditLog(models.Model):
 
     @classmethod
     def log_action(cls, user, action, content_object=None, changes=None,
-                   ip_address=None, user_agent=None, endpoint=None,
-                   method=None, status_code=None, extra_data=None):
+                   ip_address=None, user_agent='', endpoint='',
+                   method='', status_code=None, extra_data=None):
         """
         Convenience method to create an audit log entry.
 
