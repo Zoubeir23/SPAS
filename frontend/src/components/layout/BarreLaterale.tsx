@@ -71,6 +71,7 @@ interface NavItemComponentProps {
   isActive: boolean
   isExpanded: boolean
   onToggle: () => void
+  onNavigate?: () => void
 }
 
 function NavItemComponent({
@@ -78,6 +79,7 @@ function NavItemComponent({
   isActive,
   isExpanded,
   onToggle,
+  onNavigate,
 }: NavItemComponentProps) {
   const hasChildren = item.children && item.children.length > 0
 
@@ -105,7 +107,7 @@ function NavItemComponent({
         {isExpanded && (
           <div className="flex flex-col mt-1 space-y-1 pl-11 pr-2 pb-2">
             {(item.children ?? []).map((child, childIndex) => (
-              <NavLink key={`${item.label}-${child.label}-${childIndex}`} item={child} />
+              <NavLink key={`${item.label}-${child.label}-${childIndex}`} item={child} onNavigate={onNavigate} />
             ))}
           </div>
         )}
@@ -113,19 +115,22 @@ function NavItemComponent({
     )
   }
 
-  return <NavLink item={item} isActive={isActive} />
+  return <NavLink item={item} isActive={isActive} onNavigate={onNavigate} />
 }
 
 function NavLink({
   item,
   isActive = false,
+  onNavigate,
 }: {
   item: NavItem
   isActive?: boolean
+  onNavigate?: () => void
 }) {
   return (
     <Link
       to={item.path}
+      onClick={onNavigate}
       className={clsx(
         'flex items-center gap-3 px-3 py-3 rounded-lg transition-all border-l-[3px]',
         isActive
@@ -139,7 +144,12 @@ function NavLink({
   )
 }
 
-export default function BarreLaterale() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export default function BarreLaterale({ isOpen = false, onClose }: SidebarProps) {
   const location = useLocation()
   const { user } = useAuthStore()
   const { logout } = useAuth()
@@ -221,10 +231,24 @@ export default function BarreLaterale() {
   const filteredNavItems = getFilteredNavItems()
 
   return (
-    <aside className="w-[280px] h-full flex flex-col bg-white dark:bg-[#1a1f2e] border-r border-slate-200 dark:border-slate-800 shrink-0 transition-colors duration-300">
+    <aside
+      className={clsx(
+        'w-sidebar h-full flex flex-col bg-white dark:bg-surface-dark border-r border-slate-200 dark:border-slate-800 shrink-0 transition-transform duration-300',
+        'fixed inset-y-0 left-0 z-50 lg:static lg:z-auto lg:translate-x-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      )}
+    >
       {/* Brand Header */}
-      <div className="h-20 flex items-center px-6 gap-3 shrink-0 border-b border-slate-200 dark:border-slate-800">
+      <div className="h-20 flex items-center justify-between px-6 gap-3 shrink-0 border-b border-slate-200 dark:border-slate-800">
         <Logo size="sm" variant="compact" showText={true} />
+        <button
+          type="button"
+          onClick={onClose}
+          className="lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          aria-label="Fermer le menu"
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
       </div>
 
       {/* Navigation Menu */}
@@ -236,6 +260,7 @@ export default function BarreLaterale() {
             isActive={isItemActive(item)}
             isExpanded={expandedItems.has(item.path)}
             onToggle={() => toggleExpanded(item.path)}
+            onNavigate={onClose}
           />
         ))}
       </nav>

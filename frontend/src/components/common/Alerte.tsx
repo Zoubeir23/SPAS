@@ -18,12 +18,12 @@ export default function Alerte({
 }: AlertProps) {
   const styles = {
     success:
-      'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
+      'bg-success-50 text-success-800 border-success-200 dark:bg-success-900/20 dark:text-success-400 dark:border-success-800',
     error:
-      'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
+      'bg-danger-50 text-danger-800 border-danger-200 dark:bg-danger-900/20 dark:text-danger-400 dark:border-danger-800',
     warning:
-      'bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800',
-    info: 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
+      'bg-warning-50 text-warning-800 border-warning-200 dark:bg-warning-900/20 dark:text-warning-400 dark:border-warning-800',
+    info: 'bg-info-50 text-info-800 border-info-200 dark:bg-info-900/20 dark:text-info-400 dark:border-info-800',
   }
 
   return (
