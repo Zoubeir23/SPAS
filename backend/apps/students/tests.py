@@ -8,6 +8,7 @@ from rest_framework import status
 from datetime import date
 from .models import Student
 from apps.programs.models import Program
+from apps.sessions.models import Session
 
 User = get_user_model()
 
@@ -20,35 +21,42 @@ class StudentModelTest(TestCase):
         self.program = Program.objects.create(
             code='TEST-001',
             name='Test Program',
-            duration_months=24,
-            credits_required=60
+            duration=3,
+        )
+        self.session = Session.objects.create(
+            name='Test Session',
+            year='2024-2025',
+            start_date=date(2024, 9, 1),
+            end_date=date(2024, 12, 20),
         )
 
     def test_create_student(self):
         """Test creating a student."""
         student = Student.objects.create(
-            student_id='TEST001',
+            matricule='TEST001',
             first_name='Test',
             last_name='Student',
             email='test.student@test.ca',
+            date_of_birth=date(2000, 1, 1),
             program=self.program,
-            admission_date=date.today(),
+            session=self.session,
             status=Student.Status.ACTIVE
         )
 
-        self.assertEqual(student.student_id, 'TEST001')
+        self.assertEqual(student.matricule, 'TEST001')
         self.assertEqual(student.get_full_name(), 'Test Student')
         self.assertEqual(student.status, Student.Status.ACTIVE)
 
     def test_student_str(self):
         """Test student string representation."""
         student = Student.objects.create(
-            student_id='TEST002',
+            matricule='TEST002',
             first_name='John',
             last_name='Doe',
             email='john.doe@test.ca',
+            date_of_birth=date(2000, 1, 1),
             program=self.program,
-            admission_date=date.today()
+            session=self.session,
         )
 
         expected_str = 'TEST002 - John Doe'
@@ -60,18 +68,24 @@ class StudentAPITest(APITestCase):
 
     def setUp(self):
         """Set up test data."""
-        # Create program
         self.program = Program.objects.create(
             code='TEST-001',
             name='Test Program',
-            duration_months=24,
-            credits_required=60
+            duration=3,
+        )
+        self.session = Session.objects.create(
+            name='Test Session',
+            year='2024-2025',
+            start_date=date(2024, 9, 1),
+            end_date=date(2024, 12, 20),
         )
 
         # Create user
         self.user = User.objects.create_user(
             email='admin@test.ca',
             password='testpass123',
+            first_name='Admin',
+            last_name='User',
             role=User.Role.ADMIN
         )
 
@@ -81,12 +95,13 @@ class StudentAPITest(APITestCase):
 
         # Create test student
         self.student = Student.objects.create(
-            student_id='TEST001',
+            matricule='TEST001',
             first_name='Test',
             last_name='Student',
             email='test.student@test.ca',
+            date_of_birth=date(2000, 1, 1),
             program=self.program,
-            admission_date=date.today(),
+            session=self.session,
             status=Student.Status.ACTIVE
         )
 
@@ -100,18 +115,19 @@ class StudentAPITest(APITestCase):
         """Test getting student details."""
         response = self.client.get(f'/api/students/{self.student.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['student_id'], 'TEST001')
+        self.assertEqual(response.data['matricule'], 'TEST001')
         self.assertEqual(response.data['full_name'], 'Test Student')
 
     def test_create_student(self):
         """Test creating a new student."""
         data = {
-            'student_id': 'TEST002',
+            'matricule': 'TEST002',
             'first_name': 'New',
             'last_name': 'Student',
             'email': 'new.student@test.ca',
+            'date_of_birth': date(2000, 1, 1).isoformat(),
             'program': self.program.id,
-            'admission_date': date.today().isoformat(),
+            'session': self.session.id,
         }
 
         response = self.client.post('/api/students/', data)
@@ -119,7 +135,7 @@ class StudentAPITest(APITestCase):
         self.assertEqual(Student.objects.count(), 2)
 
         # Verify created student
-        new_student = Student.objects.get(student_id='TEST002')
+        new_student = Student.objects.get(matricule='TEST002')
         self.assertEqual(new_student.first_name, 'New')
         self.assertEqual(new_student.last_name, 'Student')
 
@@ -140,34 +156,32 @@ class StudentAPITest(APITestCase):
         self.assertEqual(self.student.last_name, 'Name')
 
     def test_change_student_status(self):
-        """Test changing student status."""
-        data = {'status': Student.Status.DROPPED}
+        """Test changing student status via a partial update."""
+        data = {'status': Student.Status.INACTIVE}
 
-        response = self.client.post(
-            f'/api/students/{self.student.id}/change_status/',
-            data
-        )
+        response = self.client.patch(f'/api/students/{self.student.id}/', data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Refresh from database
         self.student.refresh_from_db()
-        self.assertEqual(self.student.status, Student.Status.DROPPED)
+        self.assertEqual(self.student.status, Student.Status.INACTIVE)
 
     def test_filter_students_by_status(self):
         """Test filtering students by status."""
         # Create another student with different status
         Student.objects.create(
-            student_id='TEST003',
+            matricule='TEST003',
             first_name='Inactive',
             last_name='Student',
             email='inactive@test.ca',
+            date_of_birth=date(2000, 1, 1),
             program=self.program,
-            admission_date=date.today(),
+            session=self.session,
             status=Student.Status.INACTIVE
         )
 
         # Filter by active status
-        response = self.client.get('/api/students/?status=ACTIVE')
+        response = self.client.get('/api/students/?status=active')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Should only return active students

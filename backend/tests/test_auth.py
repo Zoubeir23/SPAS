@@ -15,11 +15,10 @@ class TestAuthenticationEndpoints:
         url = '/api/auth/register/'
         data = {
             'email': 'newuser@spas.ca',
-            'password': 'SecurePassword123!',
-            'password_confirm': 'SecurePassword123!',
+            'password': 'S3cure#Passw',
+            'password_confirm': 'S3cure#Passw',
             'first_name': 'New',
             'last_name': 'User',
-            'role': 'teacher'
         }
         response = api_client.post(url, data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
@@ -129,8 +128,8 @@ class TestAuthenticationEndpoints:
         url = '/api/auth/password/change/'
         data = {
             'old_password': 'teacher123',
-            'new_password': 'NewSecurePass123!',
-            'new_password_confirm': 'NewSecurePass123!'
+            'new_password': 'N3wSecure#Pass',
+            'new_password_confirm': 'N3wSecure#Pass'
         }
         response = authenticated_client.post(url, data, format='json')
         assert response.status_code == status.HTTP_200_OK

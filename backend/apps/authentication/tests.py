@@ -277,7 +277,7 @@ class ChangePasswordTestCase(APITestCase):
             self.change_password_url,
             {
                 'old_password': 'TestPass123!',
-                'new_password': 'NewPass123!'
+                'new_password': 'S3cure#Pw9'
             },
             format='json'
         )
@@ -289,7 +289,7 @@ class ChangePasswordTestCase(APITestCase):
             self.login_url,
             {
                 'email': 'teacher@test.com',
-                'password': 'NewPass123!'
+                'password': 'S3cure#Pw9'
             },
             format='json'
         )

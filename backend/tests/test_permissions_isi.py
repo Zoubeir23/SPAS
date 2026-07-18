@@ -55,7 +55,8 @@ class TestTeacherPermissions(TestCase):
         self.session = Session.objects.create(
             name='2024-2025',
             year='2024',
-            type='annual',
+            start_date='2024-09-01',
+            end_date='2025-06-30',
             status='active'
         )
 
@@ -116,6 +117,9 @@ class TestTeacherPermissions(TestCase):
 
     def test_teacher_can_create_grade_for_their_subject(self):
         """✓ Teacher CAN create grades for their own subject."""
+        self.student.teacher = self.teacher1
+        self.student.save(update_fields=['teacher'])
+
         self.client.force_authenticate(user=self.teacher1)
 
         grade_data = {
@@ -128,7 +132,7 @@ class TestTeacherPermissions(TestCase):
             'date': '2024-11-15'
         }
 
-        response = self.client.post('/api/grades/', grade_data, format='json')
+        response = self.client.post('/api/grades/grades/', grade_data, format='json')
 
         # Should succeed (200 or 201)
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED])
@@ -159,6 +163,9 @@ class TestTeacherPermissions(TestCase):
 
     def test_teacher_cannot_modify_other_teacher_grades(self):
         """✗ Teacher CANNOT modify grades created by another teacher."""
+        self.student.teacher = self.teacher2
+        self.student.save(update_fields=['teacher'])
+
         # Create grade by teacher2
         self.client.force_authenticate(user=self.teacher2)
 
@@ -172,7 +179,7 @@ class TestTeacherPermissions(TestCase):
             'date': '2024-11-15'
         }
 
-        create_response = self.client.post('/api/grades/', grade_data, format='json')
+        create_response = self.client.post('/api/grades/grades/', grade_data, format='json')
         self.assertIn(create_response.status_code, [status.HTTP_200_OK, status.HTTP_201_CREATED])
 
         grade_id = create_response.data.get('id')
@@ -181,7 +188,7 @@ class TestTeacherPermissions(TestCase):
         self.client.force_authenticate(user=self.teacher1)
 
         update_data = {'value': 18.0}
-        response = self.client.patch(f'/api/grades/{grade_id}/', update_data, format='json')
+        response = self.client.patch(f'/api/grades/grades/{grade_id}/', update_data, format='json')
 
         # Should be forbidden (or 404 if filtered out)
         self.assertIn(response.status_code, [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND])
@@ -219,7 +226,8 @@ class TestAdminPermissions(TestCase):
         self.session = Session.objects.create(
             name='2024-2025',
             year='2024',
-            type='annual',
+            start_date='2024-09-01',
+            end_date='2025-06-30',
             status='active'
         )
 
@@ -351,13 +359,15 @@ class TestRoleHierarchy(TestCase):
         response = self.client.post('/api/predictions/predictions/generate/', {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        # DS should succeed (or get 400 if no active model, but NOT 403)
+        # DS should succeed (or get 400/404 since this TestCase has no active
+        # model or students set up), but NOT 403 Forbidden.
         self.client.force_authenticate(user=self.ds)
         response = self.client.post('/api/predictions/predictions/generate/', {}, format='json')
         self.assertIn(response.status_code, [
             status.HTTP_200_OK,
             status.HTTP_201_CREATED,
-            status.HTTP_400_BAD_REQUEST  # OK if no model, but not forbidden
+            status.HTTP_400_BAD_REQUEST,  # OK if no active model
+            status.HTTP_404_NOT_FOUND,    # OK if no active students
         ])
 
 
