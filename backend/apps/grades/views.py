@@ -11,6 +11,7 @@ import csv
 import io
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, JSONParser
@@ -22,13 +23,13 @@ from decimal import Decimal, InvalidOperation
 
 from .models import Grade
 from .serializers import GradeSerializer
-from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
+from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin
 from apps.core.permissions import (
-    IsAdmin, IsDSOrAdmin, IsTeacherOrAdmin, IsPedagogicalOrAbove
+    IsAdmin, IsDSOrAdmin, IsTeacherOrAdmin, IsPedagogicalOrAbove, teacher_can_access_student
 )
 
 
-class GradeViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSet):
+class GradeViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin, viewsets.ModelViewSet):
     """
     ViewSet for Grade model.
 
@@ -66,13 +67,18 @@ class GradeViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSe
     ordering = ['-date']
 
     def get_queryset(self):
-        """Optimize queryset with select_related."""
-        queryset = Grade.objects.select_related(
-            'student',
-            'subject',
-            'session'
-        )
-        return queryset
+        """Optimize queryset with select_related, filtered by role via QuerySetFilterMixin."""
+        self.queryset = Grade.objects.select_related('student', 'subject', 'session')
+        return super().get_queryset()
+
+    def perform_create(self, serializer):
+        """Reject grade creation for a student the teacher isn't assigned to."""
+        user = self.request.user
+        student = serializer.validated_data.get('student')
+        if user.is_teacher() and not user.has_elevated_permissions():
+            if student is None or not teacher_can_access_student(user, student):
+                raise PermissionDenied("Vous n'avez pas accès à cet étudiant.")
+        serializer.save()
 
     @action(detail=False, methods=['get'], url_path='student/(?P<student_id>[^/.]+)')
     def student_grades(self, request, student_id=None):
@@ -119,11 +125,21 @@ class GradeViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSe
 
         created_grades = []
         errors = []
+        user = request.user
+        is_scoped_teacher = user.is_teacher() and not user.has_elevated_permissions()
 
         with transaction.atomic():
             for idx, grade_data in enumerate(grades_data):
                 serializer = self.get_serializer(data=grade_data)
                 if serializer.is_valid():
+                    student = serializer.validated_data.get('student')
+                    if is_scoped_teacher and (student is None or not teacher_can_access_student(user, student)):
+                        errors.append({
+                            'index': idx,
+                            'data': grade_data,
+                            'errors': {'student': ["Vous n'avez pas accès à cet étudiant."]}
+                        })
+                        continue
                     grade = serializer.save()
                     created_grades.append(grade)
                 else:

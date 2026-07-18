@@ -3,6 +3,7 @@ Views for Alert app.
 """
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -100,6 +101,15 @@ class AlertViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(status=alert_status)
 
         return queryset
+
+    def perform_create(self, serializer):
+        """Reject alert creation for a student the teacher isn't assigned to."""
+        user = self.request.user
+        student = serializer.validated_data.get('student')
+        if user.is_teacher() and not user.has_elevated_permissions():
+            if student is None or not teacher_can_access_student(user, student):
+                raise PermissionDenied("Vous n'avez pas accès à cet étudiant.")
+        serializer.save()
 
     @action(detail=True, methods=['post'])
     def acknowledge(self, request, pk=None):
@@ -315,7 +325,14 @@ class InterventionViewSet(RoleBasedPermissionMixin, viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        """Auto-assign current user as responsible if not specified."""
+        """Reject creation for a student the teacher isn't assigned to, and
+        auto-assign current user as responsible if not specified."""
+        user = self.request.user
+        student = serializer.validated_data.get('student')
+        if user.is_teacher() and not user.has_elevated_permissions():
+            if student is None or not teacher_can_access_student(user, student):
+                raise PermissionDenied("Vous n'avez pas accès à cet étudiant.")
+
         if not serializer.validated_data.get('responsible'):
             serializer.save(responsible=self.request.user)
         else:

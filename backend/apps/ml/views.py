@@ -9,7 +9,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
-from apps.core.permissions import IsAdmin
+from apps.core.mixins import RoleBasedPermissionMixin
+from apps.core.permissions import IsAdmin, CanRunMLPredictions
 from .models import MLModel, TrainingJob
 from .serializers import (
     MLModelSerializer, MLModelListSerializer,
@@ -247,16 +248,21 @@ class TrainingJobViewSet(viewsets.ModelViewSet):
         })
 
 
-class PredictionViewSet(viewsets.ViewSet):
+class PredictionViewSet(RoleBasedPermissionMixin, viewsets.ViewSet):
     """
     ViewSet for ML predictions.
 
     Provides prediction endpoints:
-    - POST /predictions/predict/ - Predict risk for a single student
-    - POST /predictions/predict-bulk/ - Predict risk for multiple students
+    - POST /predictions/predict/ - Predict risk for a single student (DS/Admin only)
+    - POST /predictions/predict-bulk/ - Predict risk for multiple students (DS/Admin only)
     - GET /predictions/model-info/ - Get active model information
     """
     permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'predict': [IsAuthenticated, CanRunMLPredictions],
+        'predict_bulk': [IsAuthenticated, CanRunMLPredictions],
+        'model_info': [IsAuthenticated],
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

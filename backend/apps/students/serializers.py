@@ -11,6 +11,7 @@ class StudentSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='get_full_name', read_only=True)
     program_name = serializers.CharField(source='program.name', read_only=True)
     session_name = serializers.CharField(source='session.name', read_only=True)
+    teacher_name = serializers.CharField(source='teacher.get_full_name', read_only=True, default=None)
 
     level_display = serializers.CharField(source='get_level_display', read_only=True)
 
@@ -21,11 +22,12 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'matricule', 'first_name', 'last_name', 'full_name',
             'email', 'phone', 'date_of_birth', 'photo', 'photo_url',
-            'program', 'program_name', 'session', 'session_name', 
+            'program', 'program_name', 'session', 'session_name',
+            'teacher', 'teacher_name',
             'status', 'level', 'level_display', 'risk_score', 'risk_level',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'teacher', 'created_at', 'updated_at']
 
     def get_photo_url(self, obj):
         """Return the full URL of the photo."""
@@ -136,6 +138,6 @@ class StudentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = [
-            'id', 'matricule', 'full_name', 'email',
+            'id', 'matricule', 'full_name', 'email', 'teacher',
             'program_name', 'status', 'level', 'risk_score', 'risk_level'
         ]

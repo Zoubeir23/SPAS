@@ -386,6 +386,32 @@ def teacher_can_access_student(user, student):
     return teacher_classes.filter(id__in=student_classes).exists()
 
 
+def get_accessible_student_ids(user):
+    """
+    Return a queryset of Student pks that the teacher `user` is authorised to access.
+
+    Mirrors the fail-closed logic of `teacher_can_access_student` so that every
+    queryset scoped "to a teacher's own students" (Student, Grade, Attendance,
+    Prediction, ...) uses the same rule instead of a re-derived copy of it.
+    """
+    from apps.students.models import Student
+
+    if hasattr(Student, 'teacher'):
+        direct_ids = Student.objects.filter(teacher=user).values_list('id', flat=True)
+    else:
+        direct_ids = Student.objects.none().values_list('id', flat=True)
+
+    if not hasattr(user, 'teaching_sessions'):
+        return direct_ids
+
+    teacher_session_ids = user.teaching_sessions.values_list('id', flat=True)
+    enrolled_ids = Student.objects.filter(
+        enrollments__session_id__in=teacher_session_ids
+    ).values_list('id', flat=True)
+
+    return (direct_ids | enrolled_ids).distinct()
+
+
 class ReadOnlyPermission(permissions.BasePermission):
     """
     Permission class that allows read-only access.

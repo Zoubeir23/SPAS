@@ -134,8 +134,8 @@ def session(db):
 
 
 @pytest.fixture
-def student(db, program, session):
-    """Create a test student."""
+def student(db, program, session, teacher_user):
+    """Create a test student, assigned to the default teacher_user fixture."""
     from apps.students.models import Student
     from datetime import date
     return Student.objects.create(
@@ -147,6 +147,7 @@ def student(db, program, session):
         date_of_birth=date(2000, 1, 15),
         program=program,
         session=session,
+        teacher=teacher_user,
         status='active',
         risk_level='low',
         risk_score=15

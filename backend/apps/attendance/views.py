@@ -9,6 +9,7 @@ Permissions par rôle:
 """
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,13 +18,13 @@ from django.db import transaction
 
 from .models import Attendance
 from .serializers import AttendanceSerializer
-from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin
+from apps.core.mixins import RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin
 from apps.core.permissions import (
-    IsAdmin, IsDSOrAdmin, IsTeacherOrAdmin, IsPedagogicalOrAbove
+    IsAdmin, IsDSOrAdmin, IsTeacherOrAdmin, IsPedagogicalOrAbove, teacher_can_access_student
 )
 
 
-class AttendanceViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelViewSet):
+class AttendanceViewSet(RoleBasedPermissionMixin, AuditLogMixin, QuerySetFilterMixin, viewsets.ModelViewSet):
     """
     ViewSet for Attendance model.
 
@@ -60,12 +61,18 @@ class AttendanceViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelV
     ordering = ['-date']
 
     def get_queryset(self):
-        """Optimize queryset with select_related."""
-        queryset = Attendance.objects.select_related(
-            'student',
-            'subject'
-        )
-        return queryset
+        """Optimize queryset with select_related, filtered by role via QuerySetFilterMixin."""
+        self.queryset = Attendance.objects.select_related('student', 'subject')
+        return super().get_queryset()
+
+    def perform_create(self, serializer):
+        """Reject attendance creation for a student the teacher isn't assigned to."""
+        user = self.request.user
+        student = serializer.validated_data.get('student')
+        if user.is_teacher() and not user.has_elevated_permissions():
+            if student is None or not teacher_can_access_student(user, student):
+                raise PermissionDenied("Vous n'avez pas accès à cet étudiant.")
+        serializer.save()
 
     @action(detail=False, methods=['get'], url_path='student/(?P<student_id>[^/.]+)')
     def student_attendance(self, request, student_id=None):
@@ -109,11 +116,21 @@ class AttendanceViewSet(RoleBasedPermissionMixin, AuditLogMixin, viewsets.ModelV
 
         created_records = []
         errors = []
+        user = request.user
+        is_scoped_teacher = user.is_teacher() and not user.has_elevated_permissions()
 
         with transaction.atomic():
             for idx, record_data in enumerate(records_data):
                 serializer = self.get_serializer(data=record_data)
                 if serializer.is_valid():
+                    student = serializer.validated_data.get('student')
+                    if is_scoped_teacher and (student is None or not teacher_can_access_student(user, student)):
+                        errors.append({
+                            'index': idx,
+                            'data': record_data,
+                            'errors': {'student': ["Vous n'avez pas accès à cet étudiant."]}
+                        })
+                        continue
                     record = serializer.save()
                     created_records.append(record)
                 else:
